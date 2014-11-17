@@ -1,0 +1,2 @@
+<?php
+return array ('CLASS_CANNOT_LOAD' => '无法定位到 %s 类文件的路径','PAGE_NOT_FOUND' => '该网页没有找到','VAL_ARGS_LESS' => '验证规则参数个数少了！','VAL_ARGS_NO_TYPE' => '验证规则中没有填写type','MODEL_FORM_ARGS_LESS' => '规则参数个数少了！');

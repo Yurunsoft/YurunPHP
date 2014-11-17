@@ -1,0 +1,128 @@
+<?php
+/**
+ * 公共函数集
+ * @author Yurun <admin@yurunsoft.com>
+ */
+
+/**
+ * 引入多个文件
+ *
+ * @param array $files        	
+ * @param boolean $all        	
+ * @return boolean
+ */
+function require_once_multi($files, $all = true)
+{
+	if (is_array($files))
+	{
+		foreach ($files as $value)
+		{
+			if (is_file($value))
+			{
+				require_once $value;
+				if (! $all)
+				{
+					return true;
+				}
+			}
+		}
+		return false;
+	}
+	else if (is_string($files))
+	{
+		require_once $files;
+		return true;
+	}
+	else
+	{
+		return false;
+	}
+}
+/**
+ * 获取规范的类命名第一段
+ *
+ * @param type $str        	
+ * @return type
+ */
+function getClassFirst($str)
+{
+	preg_match_all('/^([A-Z]{1}[^A-Z]*)\S*/', $str, $out);
+	return $out[1][0];
+}
+function enumFiles($path, $event)
+{
+	if (substr(str_replace('\\', '/', $path), '-1', 1) !== '/')
+	{
+		$path .= '/';
+	}
+	$dir = dir($path);
+	while (($file = $dir->read()) !== false)
+	{
+		if ($file !== '.' && $file !== '..')
+		{
+			$fileName = $path . $file;
+			if (is_dir($fileName))
+			{
+				enumFiles($fileName, $event);
+			}
+			else
+			{
+				call_user_func_array($event, array ($fileName));
+			}
+		}
+	}
+	$dir->close();
+}
+/**
+ * 执行过滤操作
+ *
+ * @param mixed $value        	
+ * @param mixed $filter        	
+ * @return mixed
+ */
+function execFilter($value, $filter)
+{
+	if (! is_array($filter))
+	{
+		$filter = explode(',', $filter);
+	}
+	foreach ($filter as $item)
+	{
+		$value = call_user_func_array($item, array ($value));
+	}
+	return $value;
+}
+/**
+ * 随机多个数字，可设定是否重复
+ *
+ * @param int $min        	
+ * @param int $max        	
+ * @param int $num        	
+ * @param boolean $re        	
+ * @return array
+ */
+function randomNums($min, $max, $num, $re = false)
+{
+	$arr = array ();
+	$t = 0;
+	$i = 0;
+	// 如果数字不可重复，防止无限死循环
+	if (! $re)
+	{
+		$num = min($num, $max - $min + 1);
+	}
+	do
+	{
+		// 取随机数
+		$t = mt_rand($min, $max);
+		if (! $re && in_array($t, $arr))
+		{
+			// 数字重复
+			continue;
+		}
+		$arr[] = $t;
+		++ $i;
+	}
+	while ($i < $num);
+	return $arr;
+}

@@ -1,0 +1,62 @@
+<?php
+return array (
+		// 核心配置，擅改或覆盖同名配置项可能会造成网站无法访问
+		'CORE_CLASSES' => array ('Control','Model','View',		// 核心类
+		'ArrayData','Dispatch','Driver','Request','Event','Validator','Response','Lang','Cookie','Session'),'CORE_REQUIRE' => array ('ArrayData','Control','Dispatch','Request','Driver'),		// 必须加载的核心类
+		'CORE_DRIVER_CLASSES' => array ('Cache','Config','Db'),'CORE_DRIVER_REQUIRE' => array ('Config/ConfigBase',		// 核心驱动类
+		'Config/Config','Config/ConfigPhp'),		// 必须加载的核心驱动类
+		'CORE_FUNCTIONS' => array ('common'),		// 核心函数库们
+		                                      
+		// 模块
+		'MODULE_ON' => true,		// 是否开启模块功能
+		'MODULE_NAME' => 'm',		// 模块参数名
+		'MODULE_FOLDER' => 'Module',		// 模块文件夹名称
+		'MODULE_DEFAULT' => 'Index',		// 默认模块名
+		                             
+		// 控制器
+		'CONTROL_NAME' => 'c',		// 控制器参数名
+		'CONTROL_DEFAULT' => 'Index',		// 默认控制器名
+		'CONTROL_FOLDER' => 'Control',		// 控制器文件夹名称
+		                               
+		// 动作
+		'ACTION_NAME' => 'a',		// 动作参数名
+		'ACTION_DEFAULT' => 'index',		// 默认参数名
+		                             
+		// 模型
+		'MODEL_FOLDER' => 'Model',		// 模型文件夹名称
+		                           
+		// 模版
+		'TEMPLATE_FOLDER' => 'Template',		// 模版文件夹名称
+		'TEMPLATE_EXT' => '.php',		// 模版扩展名
+		                          
+		// 主题
+		'THEME_ON' => false,		// 是否开启主题功能
+		'THEME_DEFAULT' => 'Default',		// 默认主题
+		                              
+		// 类库
+		'LIB_FOLDER' => 'Lib',		// 类库文件夹名称
+		'LIB_EX_FOLDER' => 'Ex',		// 类库扩展文件夹名称
+		'LIB_DRIVER_FOLDER' => 'Driver',		// 驱动扩展文件夹名称
+		                                 
+		// 配置
+		'CONFIG_FOLDER' => 'Config',		// 配置文件夹名称
+		                             
+		// 缓存
+		'CACHE_FOLDER' => 'Cache',		// 缓存文件夹名称
+		'CACHE_TEMPLATE_FOLDER' => 'Template',		// 模版缓存文件夹名称
+		'CACHE_DATA_FOLDER' => 'Data',		// 数据缓存文件夹名称
+		'CACHE_PAGE_FOLDER' => 'Page',		// 页面缓存文件夹名称
+		
+		'LANG_FOLDER' => 'Lang',		// 语言包目录名
+		'LANG_AUTO' => true,		// 自动识别语言
+		                     
+		// 默认
+		'DEFAULT_FILTER' => 'addslashes',		// 默认过滤方法，支持数组实现多个
+		'DEFAULT_LANG' => 'zh-cn',		// 默认语言
+		
+		'PLUGIN_FOLDER' => 'Plugin',		// 插件目录
+		
+		'TIMEZONE' => 'Asia/Shanghai',		// 时区设置
+		
+		'DB_PREFIX' => 'tb_',		// 默认表前缀
+		'DB_DEFAULT_TYPE' => 'Mysql');// 默认数据库类型
