@@ -7,7 +7,8 @@ class View extends ArrayData
 {
 	// 是否使用主题
 	protected $theme;
-
+	// 内容类型
+	protected $contentType='text/html';
 	// 对应的控制器
 	protected $control;
 	function __construct($theme = null,$control=null)
@@ -152,6 +153,8 @@ class View extends ArrayData
 	 */
 	public function display($template = null, $theme = null)
 	{
+		// 设置内容类型和编码
+		header("Content-type: {$this->contentType}; charset=utf-8");
 		if (is_file($template))
 		{
 			$file = $template;
@@ -262,6 +265,19 @@ class View extends ArrayData
 	{
 		return $this->control;
 	}
+
+	// 设置内容类型
+	public function setContentType($contentType)
+	{
+		$this->contentType=$contentType;
+	}
+
+	// 获取内容类型
+	public function getContentType()
+	{
+		return $this->contentType;
+	}
+
 	/**
 	 * 魔术方法
 	 * @param string $name

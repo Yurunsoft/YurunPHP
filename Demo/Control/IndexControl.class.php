@@ -3,6 +3,7 @@ class IndexControl extends Control
 {
 	public function index()
 	{
-		echo Model::obj('','test')->getMsg();
+		$this->view->set('msg',Model::obj('','test')->getMsg());
+		$this->view->display();
 	}
 }
