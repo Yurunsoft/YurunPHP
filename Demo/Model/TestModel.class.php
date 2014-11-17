@@ -3,6 +3,6 @@ class TestModel extends Model
 {
 	public function getMsg()
 	{
-		return 'ÕâÊÇÒ»¸öYurunPHPÑİÊ¾£¡';
+		return 'è¿™æ˜¯ä¸€ä¸ªYurunPHPæ¼”ç¤ºï¼';
 	}
 }
