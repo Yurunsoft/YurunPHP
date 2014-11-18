@@ -555,6 +555,13 @@ abstract class DbBase
 		$result = '';
 		foreach ($order as $key => $value)
 		{
+			if(is_array($value))
+			{
+				if(isset($value['_exp']))
+				{
+					$result.="{$value['_exp']},";
+				}
+			}
 			if (is_numeric($key))
 			{
 				$result .= "{$value},";

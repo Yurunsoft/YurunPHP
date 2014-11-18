@@ -22,7 +22,7 @@ class Model extends ArrayData
 	// 连贯操作
 	protected $options = array ();
 	// 连贯操作方法名
-	protected $methods = array ('distinct','field','from','where','group','having','order','limit','join');
+	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join');
 	// 连贯操作函数
 	protected $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
@@ -106,13 +106,11 @@ class Model extends ArrayData
 	}
 	
 	/**
-	 * 随机获取记录
-	 *
-	 * @param int $num
-	 *        	获取记录数量，默认为1条
+	 * 随机获取记录，不依靠主键，效率略低
+	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function random($num = 1)
+	public function randomEx($num = 1)
 	{
 		$opt = $this->getOption();
 		$field = isset($opt['field']) ? $opt['field'] : '';
@@ -131,7 +129,60 @@ class Model extends ArrayData
 		}
 		return $results;
 	}
-	
+
+	/**
+	 * 随机获取记录，依靠主键，效率高
+	 * @param int $num 获取记录数量，默认为1条
+	 * @return array
+	 */
+	public function random($num = 1)
+	{
+		$opt = $this->getOption();
+		$field = isset($opt['field']) ? $opt['field'] : '';
+		$opt['field'] = array('count(*)'=>'count',"max({$this->pk})"=>'max',"min({$this->pk})"=>'min');
+		$result = $this->db->select($opt,true);
+		$opt['field'] = $field;
+		$max_count=$result['max']-$result['count'];
+		if($max_count>0)
+		{
+			++$max_count;
+		}
+		// 随机出记录位置
+		$limits = randomNums($result['min'], $result['max'], $max_count);
+		if(isset($opt['where']))
+		{
+			if(is_array($opt['where']))
+			{
+				$opt['where'][$this->pk]=array('in',$limits);
+			}
+			else
+			{
+				$opt['where']=array('_exp'=>$opt['where'],$this->pk=>array('in',$limits));
+			}
+		}
+		else
+		{
+			$opt['where']=array($this->pk=>array('in',$limits));
+		}
+		$opt['limit'] = $num;
+		if(isset($opt['order']))
+		{
+			if(is_array($opt))
+			{
+				$opt['order'][]=array('_exp'=>"field({$this->pk},".implode(',',$limits).")");
+			}
+			else
+			{
+				$opt['order']=$opt['order'].",field({$this->pk},".implode(',',$limits).")";
+			}
+		}
+		else
+		{
+			$opt['order']="field({$this->pk},".implode(',',$limits).")";
+		}
+		$results = $this->db->select($opt);
+		return $results;
+	}
 	/**
 	 * 实现连贯操作
 	 *
