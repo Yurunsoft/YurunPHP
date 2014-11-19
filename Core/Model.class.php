@@ -106,7 +106,7 @@ class Model extends ArrayData
 	}
 	
 	/**
-	 * 随机获取记录，不依靠主键，效率略低
+	 * 随机获取记录，不依靠主键，效率略低。$num=1时效率比random高。
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
@@ -131,7 +131,7 @@ class Model extends ArrayData
 	}
 
 	/**
-	 * 随机获取记录，依靠主键，效率高
+	 * 随机获取记录，依靠主键，效率高。$num=1时效率比randomEx低，$num>1时效率比randomEx高。
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
