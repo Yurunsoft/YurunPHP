@@ -54,14 +54,14 @@ class Model extends ArrayData
 	 * @param type $model        	
 	 * @return Model
 	 */
-	public static function obj($table, $model = '')
+	public static function obj($model,$table=null)
 	{
 		$ref = new ReflectionClass(ucfirst($model) . 'Model');
 		$args = func_get_args();
-		unset($args[1]);
+		unset($args[0]);
 		return $ref->newInstanceArgs($args);
 	}
-	
+
 	/**
 	 * 设置模型数据库对象
 	 *
