@@ -96,17 +96,17 @@ class View extends ArrayData
 						break;
 				}
 			}
-			if (stripos($template, '@m/') !== false)
+			if (stripos($template, '@m') !== false)
 			{
-				$template = str_replace('@m/', "{$module}/", $template);
+				$template = str_replace('@m', $module, $template);
 			}
-			if (stripos($template, '@c/') !== false)
+			if (stripos($template, '@c') !== false)
 			{
-				$template = str_replace('@c/', "{$control}/", $template);
+				$template = str_replace('@c', $control, $template);
 			}
-			if (stripos($template, '@a/') !== false)
+			if (stripos($template, '@a') !== false)
 			{
-				$template = str_replace('@a/', "{$action}/", $template);
+				$template = str_replace('@a', $action, $template);
 			}
 			// 返回结果
 			return $template . Config::get('@.TEMPLATE_EXT');
