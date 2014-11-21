@@ -45,6 +45,14 @@ abstract class Config extends Driver
 				$args[0] = $type;
 			}
 			$obj = call_user_func_array(array ('parent','create'), $args);
+			$data=$obj->get('CONFIGS');
+			if(is_array($data))
+			{
+				foreach($data as $val)
+				{
+					call_user_func_array(array ('Config','create'), $val);
+				}
+			}
 			if ($obj !== false && $name !== '@')
 			{
 				// 将数据合并到公用项
