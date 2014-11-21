@@ -74,7 +74,15 @@ class Session
 	 */
 	public static function delete($name)
 	{
-		unset($_SESSION[$name]);
+		if(!is_array($name))
+		{
+			$name=func_get_args();
+		}
+		foreach ($name as $val)
+		{
+			unset($_SESSION[$val]);
+		}
+		return true;
 	}
 	
 	/**

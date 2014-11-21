@@ -79,9 +79,17 @@ class Cookie
 	 * @param int $secure        	
 	 * @return type
 	 */
-	public static function delete($name, $path = '', $domain = '', $secure = '')
+	public static function delete($name)
 	{
-		return setcookie($name, '', 0, $path == '' ? self::$path : $path, $domain == '' ? self::$domain : $domain, $secure == '' ? self::$secure : $secure);
+		if(!is_array($name))
+		{
+			$name=func_get_args();
+		}
+		foreach ($name as $val)
+		{
+			setcookie($val,null,0);
+		}
+		return true;
 	}
 	
 	/**
