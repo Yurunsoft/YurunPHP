@@ -160,7 +160,7 @@ class Dispatch
 			$result = self::checkRule(Config::get($cfgName), $param);
 			if (empty($domain))
 			{
-				$domain = $_SERVER['HTTP_HOST'].$_SERVER['REQUEST_URI'];
+				$domain = $_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME'];
 			}
 			if ($result === false)
 			{
@@ -203,6 +203,7 @@ class Dispatch
 	 */
 	public static function checkRule($rules, $param)
 	{
+		if(!is_array($rules))return false;
 		foreach ($rules as $key => $value)
 		{
 			$arr = preg_split('/\s/', $value);
