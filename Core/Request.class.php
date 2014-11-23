@@ -40,7 +40,7 @@ class Request
 		else
 		{
 			// 判断
-			return strcmp($_SERVER['REQUEST_METHOD'], $compare) === 0;
+			return strcasecmp($_SERVER['REQUEST_METHOD'], $compare) === 0;
 		}
 	}
 	/**
