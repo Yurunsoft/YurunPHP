@@ -126,3 +126,11 @@ function randomNums($min, $max, $num, $re = false)
 	while ($i < $num);
 	return $arr;
 }
+// boolval函数
+if (!function_exists('boolval'))
+{
+	function boolval($val)
+	{
+		return (bool) $val;
+	}
+}
