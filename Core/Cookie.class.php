@@ -50,7 +50,17 @@ class Cookie
 	{
 		return isset($_COOKIE[$name]) ? $_COOKIE[$name] : $default;
 	}
-	
+
+	/**
+	 * cookie值是否存在
+	 *
+	 * @param string $name
+	 */
+	public static function exists($name)
+	{
+		return isset($_COOKIE[$name]);
+	}
+
 	/**
 	 * 获取cookie值并过滤
 	 *

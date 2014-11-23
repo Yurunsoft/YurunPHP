@@ -1,7 +1,7 @@
 <?php
-// ÍøÕ¾¸ùÄ¿Â¼
+// ç½‘ç«™æ ¹ç›®å½•
 define('DEMO_ROOT_PATH',__DIR__.DIRECTORY_SEPARATOR);
-// YurunBlogÏµÍ³¸ùÄ¿Â¼
+// YurunBlogç³»ç»Ÿæ ¹ç›®å½•
 define('APP_PATH',DEMO_ROOT_PATH.'Demo'.DIRECTORY_SEPARATOR);
-// ÒýÈëYurunPHP¿ò¼ÜÈë¿ÚÎÄ¼þ
+// å¼•å…¥YurunPHPæ¡†æž¶å…¥å£æ–‡ä»¶
 require 'Yurun.php';
