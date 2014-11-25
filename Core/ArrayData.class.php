@@ -126,29 +126,36 @@ class ArrayData
 	 */
 	public function remove($name)
 	{
-		if (is_string($name))
+		if(!is_array($name))
 		{
-			$name = explode('.', $name);
+			$name=func_get_args();
 		}
-		else if (! is_array($name))
+		foreach($name as $val)
 		{
-			return false;
-		}
-		$last = array_pop($name);
-		$result = &$this->data;
-		foreach ($name as $value)
-		{
-			if (isset($result[$value]))
+			if (is_string($val))
 			{
-				$result = &$result[$value];
+				$val = explode('.', $val);
 			}
-			else
+			else if (!is_array($val))
 			{
-				return true;
+				return false;
 			}
+			$last = array_pop($val);
+			$result = &$this->data;
+			foreach ($val as $value)
+			{
+				if (isset($result[$value]))
+				{
+					$result = &$result[$value];
+				}
+				else
+				{
+					return true;
+				}
+			}
+			unset($result[$last]);
+			return true;
 		}
-		unset($result[$last]);
-		return true;
 	}
 	/**
 	 * 清空数据
