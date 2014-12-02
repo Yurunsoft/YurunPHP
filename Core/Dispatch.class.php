@@ -16,13 +16,30 @@ class Dispatch
 	 */
 	public static function resolve()
 	{
+		// 2014-12-02:新增多入口绑定模块控制器
+		if(isset($GLOBALS['DEFAULT_MC']))
+		{
+			$dmc=explode('/',$GLOBALS['DEFAULT_MC']);
+		}
 		// 模块
 		if (Config::get('@.MODULE_ON'))
 		{
-			self::$module = ucfirst(Request::get(Config::get('@.MODULE_NAME'), false));
-			if (! self::$module)
+			self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
+			if (self::$module)
 			{
-				self::$module = Config::get('@.MODULE_DEFAULT', '');
+				self::$module=ucfirst(self::$module);
+			}
+			else 
+			{
+				// 判断使用绑定模块还是默认模块
+				if(isset($dmc[0]))
+				{
+					self::$module = $dmc[0];
+				}
+				else
+				{
+					self::$module = Config::get('@.MODULE_DEFAULT', '');
+				}
 			}
 		}
 		else
@@ -30,10 +47,22 @@ class Dispatch
 			self::$module = '';
 		}
 		// 控制器
-		self::$control = ucfirst(Request::get(Config::get('@.CONTROL_NAME'), false));
-		if (! self::$control)
+		self::$control = Request::get(Config::get('@.CONTROL_NAME'), false);
+		if (self::$control)
 		{
-			self::$control = Config::get('@.CONTROL_DEFAULT');
+			self::$control=ucfirst(self::$control);
+		}
+		else 
+		{
+			// 判断使用绑定控制器还是默认控制器
+			if(isset($dmc[1]))
+			{
+				self::$control = $dmc[1];
+			}
+			else
+			{
+				self::$control = Config::get('@.CONTROL_DEFAULT');
+			}
 		}
 		// 动作
 		self::$action = ucfirst(Request::get(Config::get('@.ACTION_NAME'), false));
@@ -71,7 +100,7 @@ class Dispatch
 		}
 		$class = self::$control . 'Control';
 		// 控制器是否存在
-		if (class_exists($class))
+		if (self::checkControl(self::$module,self::$control) && class_exists($class))
 		{
 			// 实例化控制器
 			$yurunControl = new $class();
@@ -240,6 +269,69 @@ class Dispatch
 			}
 		}
 		return false;
+	}
+
+	/**
+	 * 判断是否有权限访问控制器
+	 * $GLOBALS['DENY_CONTROLS']优先级大于$GLOBALS['ALLOW_CONTROLS']
+	 * 精准定位模块控制器的优先级 大于 单独控制器名 大于 模块=>array(*)
+	 * @param string $module
+	 * @param string $control
+	 * @return boolean
+	 */
+	public static function checkControl($module,$control)
+	{
+		// 判断具体模块中的控制器是否不允许访问
+		if(isset($GLOBALS['DENY_CONTROLS']))
+		{
+			if(isset($GLOBALS['DENY_CONTROLS'][$module])
+					&& in_array($control,$GLOBALS['DENY_CONTROLS'][$module])!==false)
+			{
+				return false;
+			}
+		}
+		// 判断具体模块中的控制器是否允许访问
+		if(isset($GLOBALS['ALLOW_CONTROLS']))
+		{
+			if(isset($GLOBALS['ALLOW_CONTROLS'][$module]) 
+					&& in_array($control,$GLOBALS['ALLOW_CONTROLS'][$module])!==false)
+			{
+				return true;
+			}
+		}
+		// 判断控制器是否不允许访问
+		if(isset($GLOBALS['DENY_CONTROLS']))
+		{
+			if(in_array($control,$GLOBALS['DENY_CONTROLS'])!==false)
+			{
+				return false;
+			}
+		}
+		// 判断控制器是否允许访问
+		if(isset($GLOBALS['ALLOW_CONTROLS']))
+		{
+			if(in_array($control,$GLOBALS['ALLOW_CONTROLS'])!==false)
+			{
+				return true;
+			}
+		}
+		// 判断模块下全部控制器是否不允许访问
+		if(isset($GLOBALS['DENY_CONTROLS'][$module]))
+		{
+			if(in_array('*',$GLOBALS['DENY_CONTROLS'][$module])!==false)
+			{
+				return false;
+			}
+		}
+		// 判断模块下全部控制器是否允许访问
+		if(isset($GLOBALS['ALLOW_CONTROLS'][$module]))
+		{
+			if(in_array('*',$GLOBALS['ALLOW_CONTROLS'][$module])!==false)
+			{
+				return true;
+			}
+		}
+		return isset($GLOBALS['DENY_CONTROLS']);
 	}
 	/**
 	 * 获取模块名
