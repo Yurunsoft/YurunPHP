@@ -54,7 +54,7 @@ class View extends ArrayData
 				// 当前控制器动作对应的模版，根据是否启用模块，自动识别模版目录
 				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
 				{
-					$template = APP_TEMPLATE . "{$themeName}{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
+					$template = APP_TEMPLATE . $themeName.($module===''?'':"{$module}/")."{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
 				}
 				else
 				{
