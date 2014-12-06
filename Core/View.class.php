@@ -52,13 +52,24 @@ class View extends ArrayData
 			if (empty($template))
 			{
 				// 当前控制器动作对应的模版，根据是否启用模块，自动识别模版目录
-				if ($module === '')
+				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
 				{
 					$template = APP_TEMPLATE . "{$themeName}{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
 				}
 				else
 				{
 					$template = APP_MODULE . $module . '/' . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
+				}
+			}
+			else if(isset($template[0]) && $template[0]==='/')
+			{
+				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
+				{
+					$template = APP_TEMPLATE . substr($template,1) . Config::get('@.TEMPATE_EXT');
+				}
+				else
+				{
+					$template = APP_MODULE . substr($template,1) . Config::get('@.TEMPATE_EXT');
 				}
 			}
 			// 替换项目模版路径
@@ -175,11 +186,11 @@ class View extends ArrayData
 				Cache::set($file, self::parseTemplate($file), array ('expire_on' => false));
 			}
 			// 执行
-			echo self::execTemplate($cacheFile);
+			echo $this->execTemplate($cacheFile);
 		}
 		else
 		{
-			echo self::execTemplate($file);
+			echo $this->execTemplate($file);
 		}
 	}
 	

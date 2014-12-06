@@ -12,6 +12,7 @@ return array (
 		'MODULE_NAME' => 'm',		// 模块参数名
 		'MODULE_FOLDER' => 'Module',		// 模块文件夹名称
 		'MODULE_DEFAULT' => 'Index',		// 默认模块名
+		'MODULE_TEMPLATE'=>	true,	// 使用模块功能时，模版是否存放在模块中。为false时存放在APP_TEMPLATE中
 		                             
 		// 控制器
 		'CONTROL_NAME' => 'c',		// 控制器参数名
