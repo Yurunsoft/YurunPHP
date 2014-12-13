@@ -203,31 +203,30 @@ class Request
 	}
 	/**
 	 * 获取访客IP
-	 *
-	 * @param bool $isHeader
-	 *        	是否从请求头中判断，请求头可被伪造IP，所以不推荐使用，默认为false
+	 * @param bool $isHeader 是否从请求头中判断，请求头可被伪造IP，所以不推荐使用，默认为false
+	 * @param mixed $default 获取IP失败后返回的默认值，默认是0.0.0.0
 	 * @return string
 	 */
-	public static function getIP($isHeader = false)
+	public static function getIP($isHeader=false,$default='0.0.0.0')
 	{
-		if ($isHeader)
+		if($isHeader)
 		{
-			if (isset($_SERVER['HTTP_CLIENT_IP']) && Validator::check_ip($_SERVER['HTTP_CLIENT_IP']))
+			if (isset($_SERVER['HTTP_CLIENT_IP']) && Filter::check_ip($_SERVER['HTTP_CLIENT_IP']))
 			{
 				return $_SERVER['HTTP_CLIENT_IP'];
 			}
-			else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && Validator::check_ip($_SERVER['HTTP_X_FORWARDED_FOR']))
+			else if (isset($_SERVER['HTTP_X_FORWARDED_FOR']) && Filter::check_ip($_SERVER['HTTP_X_FORWARDED_FOR']))
 			{
 				return $_SERVER['HTTP_X_FORWARDED_FOR'];
 			}
 		}
-		if (isset($_SERVER['REMOTE_ADDR']) && Validator::check_ip($_SERVER['REMOTE_ADDR']))
+		if (isset($_SERVER['REMOTE_ADDR']) && Validator::ip($_SERVER['REMOTE_ADDR']))
 		{
 			return $_SERVER['REMOTE_ADDR'];
 		}
 		else
 		{
-			return '';
+			return $default;
 		}
 	}
 }
