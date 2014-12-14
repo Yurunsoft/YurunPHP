@@ -3,10 +3,8 @@
  * 公共函数集
  * @author Yurun <admin@yurunsoft.com>
  */
-
 /**
  * 引入多个文件
- *
  * @param array $files        	
  * @param boolean $all        	
  * @return boolean
@@ -40,7 +38,6 @@ function require_once_multi($files, $all = true)
 }
 /**
  * 获取规范的类命名第一段
- *
  * @param type $str        	
  * @return type
  */
@@ -75,7 +72,6 @@ function enumFiles($path, $event)
 }
 /**
  * 执行过滤操作
- *
  * @param mixed $value        	
  * @param mixed $filter        	
  * @return mixed
@@ -94,7 +90,6 @@ function execFilter($value, $filter)
 }
 /**
  * 随机多个数字，可设定是否重复
- *
  * @param int $min        	
  * @param int $max        	
  * @param int $num        	

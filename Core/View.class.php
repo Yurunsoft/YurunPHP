@@ -61,15 +61,15 @@ class View extends ArrayData
 					$template = APP_MODULE . $module . '/' . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
 				}
 			}
-			else if(isset($template[0]) && $template[0]==='/')
+			else if(substr($template,0,2)==='@/')
 			{
 				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
 				{
-					$template = APP_TEMPLATE . substr($template,1) . Config::get('@.TEMPATE_EXT');
+					$template = APP_TEMPLATE . substr($template,2) . Config::get('@.TEMPATE_EXT');
 				}
 				else
 				{
-					$template = APP_MODULE . substr($template,1) . Config::get('@.TEMPATE_EXT');
+					$template = APP_MODULE . substr($template,2) . Config::get('@.TEMPATE_EXT');
 				}
 			}
 			// 替换项目模版路径
