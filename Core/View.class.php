@@ -90,17 +90,35 @@ class View extends ArrayData
 				{
 					case 0 :
 						// 动作名
-						$template = APP_MODULE . $module . '/' . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$template}";
+						if($module !== '' && Config::get('@.MODULE_TEMPLATE'))
+						{
+							$template = APP_MODULE . $module . '/'
+								. Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$template}";
+						}
+						else 
+						{
+							$template = APP_TEMPLATE .$themeName. $module . ($module===''?'':'/')
+									 . "{$control}/{$template}";
+						}
 						break;
 					case 1 :
 						// 控制器+动作名
-						$template = APP_MODULE . $module . '/' . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$template}";
+						if($module !== '' && Config::get('@.MODULE_TEMPLATE'))
+						{
+							$template = APP_MODULE . $module . '/'
+									. Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$template}";
+						}
+						else
+						{
+							$template = APP_TEMPLATE .$themeName. $module . ($module===''?'':'/')
+							. "{$template}";
+						}
 						break;
 					case 2 :
 						// 模块名+控制器+动作名
 						$arr = explode('/', $template);
 						$arr[1] = $themeName . $arr[1];
-						$template = APP_MODULE . implode('/', $arr);
+						$template = ($module !== '' && Config::get('@.MODULE_TEMPLATE'))?APP_MODULE:APP_TEMPLATE . implode('/', $arr);
 						break;
 					default :
 						return false;
@@ -166,6 +184,16 @@ class View extends ArrayData
 	{
 		// 设置内容类型和编码
 		header("Content-type: {$this->contentType}; charset=utf-8");
+		$this->showTemplate($template,$theme);
+	}
+	
+	public function _R_include($template = null, $theme = null)
+	{
+		$this->showTemplate($template,$theme);
+	}
+	
+	private function showTemplate($template = null, $theme = null)
+	{
 		if (is_file($template))
 		{
 			$file = $template;
@@ -296,8 +324,14 @@ class View extends ArrayData
 	 */
 	public function __call($name, $arguments)
 	{
+		// 不存在的方法
+		$name="_R_{$name}";
+		if(method_exists($this,$name))
+		{
+			call_user_func_array(array($this,$name),$arguments);
+		}
 		// 判断绑定的控制器存在
-		if(!empty($this->control))
+		else if(!empty($this->control))
 		{
 			// 调用控制器中的方法
 			call_user_func_array(array($this->control,$name),$arguments);
