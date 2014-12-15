@@ -39,107 +39,105 @@ class View extends ArrayData
 		}
 		else
 		{
-			// 取出模块控制器动作名
-			$module = Dispatch::module();
-			$control = Dispatch::control();
-			$action = Dispatch::action();
-			// 获取主题名称
-			$themeName = $this->getThemeName($theme);
-			if ($themeName !== '')
+			if(is_string($template))
 			{
-				$themeName .= '/';
-			}
-			if (empty($template))
-			{
-				// 当前控制器动作对应的模版，根据是否启用模块，自动识别模版目录
-				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
+				// 主题名
+				if (stripos($template, '@t/') !== false)
 				{
-					$template = APP_TEMPLATE . $themeName.($module===''?'':"{$module}/")."{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
+					$template = str_replace('@t/', $this->getThemeName($theme), $template);
+				}
+				// 模块名
+				if (stripos($template, '@m/') !== false)
+				{
+					$template = str_replace('@m/', Dispatch::module(), $template);
+				}
+				// 控制器名
+				if (stripos($template, '@c/') !== false)
+				{
+					$template = str_replace('@c/', Dispatch::control(), $template);
+				}
+				// 动作名
+				if (stripos($template, '@a/') !== false)
+				{
+					$template = str_replace('@a/', Dispatch::action(), $template);
+				}
+				
+				// 项目模版目录
+				if (stripos($template, '@app/') !== false)
+				{
+					$template = str_replace('@app/', APP_TEMPLATE, $template);
+				}
+				// 模块模版目录
+				else if (stripos($template, '@module/') !== false)
+				{
+					if(Config::get('@.MODULE_ON'))
+					{
+						$template = str_replace('@module/', 
+								APP_MODULE . Dispatch::module() . '/' . Config::get('@.TEMPLATE_FOLDER'), $template);
+					}
+					else
+					{
+						$template = str_replace('@module/','', $template);
+					}
+				}
+				else 
+				{
+					$arr=explode('/',$template);
+					switch(count($arr))
+					{
+						case 1:
+							// 动作
+							list($action) = $arr;
+							break;
+						case 2:
+							// 控制器/动作
+							list($control,$action) = $arr;
+							break;
+						case 3:
+							// 模块/控制器/动作
+							list($module,$control,$action) = $arr;
+							break;
+						case 4:
+							// 主题/模块/控制器/动作
+							list($themeName,$module,$control,$action) = $arr;
+							break;
+					}
+				}
+			}
+			if(!isset($themeName))
+			{
+				$themeName = $this->getThemeName($theme);
+			}
+			if(!isset($module))
+			{
+				$module = Dispatch::module();
+			}
+			if(!isset($control))
+			{
+				$control = Dispatch::control();
+			}
+			if(!isset($action))
+			{
+				$action = Dispatch::action();
+			}
+			if(Config::get('@.MODULE_ON'))
+			{
+				if(Config::get('@.MODULE_TEMPLATE'))
+				{
+					$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
 				}
 				else
 				{
-					$template = APP_MODULE . $module . '/' . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$action}" . Config::get('@.TEMPATE_EXT');
+					$template=APP_TEMPLATE."/{$themeName}/{$module}/{$control}/{$action}";
 				}
-			}
-			else if(substr($template,0,2)==='@/')
-			{
-				if ($module === '' || Config::get('@.MODULE_TEMPLATE')===false)
-				{
-					$template = APP_TEMPLATE . substr($template,2) . Config::get('@.TEMPATE_EXT');
-				}
-				else
-				{
-					$template = APP_MODULE . substr($template,2) . Config::get('@.TEMPATE_EXT');
-				}
-			}
-			// 替换项目模版路径
-			else if (stripos($template, '@app/') !== false)
-			{
-				$template = str_replace('@app/', APP_TEMPLATE . $themeName, $template);
-			}
-			// 替换模块模版路径
-			else if (stripos($template, '@module/') !== false)
-			{
-				$template = str_replace('@module/', APP_MODULE . "/{$module}/" . Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}", $template);
 			}
 			else
 			{
-				// 取出斜杠出现次数
-				$num = substr_count($template, '/');
-				switch ($num)
-				{
-					case 0 :
-						// 动作名
-						if($module !== '' && Config::get('@.MODULE_TEMPLATE'))
-						{
-							$template = APP_MODULE . $module . '/'
-								. Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$control}/{$template}";
-						}
-						else 
-						{
-							$template = APP_TEMPLATE .$themeName. $module . ($module===''?'':'/')
-									 . "{$control}/{$template}";
-						}
-						break;
-					case 1 :
-						// 控制器+动作名
-						if($module !== '' && Config::get('@.MODULE_TEMPLATE'))
-						{
-							$template = APP_MODULE . $module . '/'
-									. Config::get('@.TEMPLATE_FOLDER') . "/{$themeName}{$template}";
-						}
-						else
-						{
-							$template = APP_TEMPLATE .$themeName. $module . ($module===''?'':'/')
-							. "{$template}";
-						}
-						break;
-					case 2 :
-						// 模块名+控制器+动作名
-						$arr = explode('/', $template);
-						$arr[1] = $themeName . $arr[1];
-						$template = ($module !== '' && Config::get('@.MODULE_TEMPLATE'))?APP_MODULE:APP_TEMPLATE . implode('/', $arr);
-						break;
-					default :
-						return false;
-						break;
-				}
+				$template=APP_TEMPLATE."/{$themeName}/{$control}/{$action}";
 			}
-			if (stripos($template, '@m') !== false)
-			{
-				$template = str_replace('@m', $module, $template);
-			}
-			if (stripos($template, '@c') !== false)
-			{
-				$template = str_replace('@c', $control, $template);
-			}
-			if (stripos($template, '@a') !== false)
-			{
-				$template = str_replace('@a', $action, $template);
-			}
-			// 返回结果
-			return $template . Config::get('@.TEMPLATE_EXT');
+			$template.=Config::get('@.TEMPLATE_EXT');
 		}
+		return $template;
 	}
 	
 	/**
