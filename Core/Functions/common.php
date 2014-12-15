@@ -121,11 +121,23 @@ function randomNums($min, $max, $num, $re = false)
 	while ($i < $num);
 	return $arr;
 }
-// boolval函数
+/**
+ * boolval函数
+ */
 if (!function_exists('boolval'))
 {
 	function boolval($val)
 	{
 		return (bool) $val;
 	}
+}
+/**
+ * 从HTML代码中提取图片
+ * @param string $str
+ * @return string
+ */
+function getImages($str)
+{
+	preg_match_all("/<img([^>]*)\s*src=('|\")([^'\"]+)('|\")/i",$str,$matchs);
+	return $matchs[3];
 }
