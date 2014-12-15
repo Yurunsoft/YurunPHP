@@ -42,24 +42,24 @@ class View extends ArrayData
 			if(is_string($template))
 			{
 				// 主题名
-				if (stripos($template, '@t') !== false)
+				if (stripos($template, '@theme') !== false)
 				{
-					$template = str_replace('@t', $this->getThemeName($theme), $template);
+					$template = str_replace('@theme', $this->getThemeName($theme), $template);
 				}
 				// 模块名
-				if (stripos($template, '@m') !== false)
+				if (stripos($template, '@module') !== false)
 				{
-					$template = str_replace('@m', Dispatch::module(), $template);
+					$template = str_replace('@module', Dispatch::module(), $template);
 				}
 				// 控制器名
-				if (stripos($template, '@c') !== false)
+				if (stripos($template, '@control') !== false)
 				{
-					$template = str_replace('@c', Dispatch::control(), $template);
+					$template = str_replace('@control', Dispatch::control(), $template);
 				}
 				// 动作名
-				if (stripos($template, '@a') !== false)
+				if (stripos($template, '@action') !== false)
 				{
-					$template = str_replace('@a', Dispatch::action(), $template);
+					$template = str_replace('@action', Dispatch::action(), $template);
 				}
 				
 				// 项目模版目录
@@ -68,21 +68,22 @@ class View extends ArrayData
 					$template = str_replace('@app/', APP_TEMPLATE, $template);
 				}
 				// 模块模版目录
-				else if (stripos($template, '@module/') !== false)
+				else if (stripos($template, '@m/') !== false)
 				{
 					if(Config::get('@.MODULE_ON'))
 					{
-						$template = str_replace('@module/', 
+						$template = str_replace('@m/', 
 								APP_MODULE . Dispatch::module() . '/' . Config::get('@.TEMPLATE_FOLDER').'/', $template);
 					}
 					else
 					{
-						$template = str_replace('@module/',APP_TEMPLATE, $template);
+						$template = str_replace('@m/',APP_TEMPLATE, $template);
 					}
 				}
 				else 
 				{
 					$arr=explode('/',$template);
+					$template='';
 					switch(count($arr))
 					{
 						case 1:
@@ -102,38 +103,42 @@ class View extends ArrayData
 							list($themeName,$module,$control,$action) = $arr;
 							break;
 					}
+					
 				}
 			}
-			if(!isset($themeName))
+			if(empty($template))
 			{
-				$themeName = $this->getThemeName($theme);
-			}
-			if(!isset($module))
-			{
-				$module = Dispatch::module();
-			}
-			if(!isset($control))
-			{
-				$control = Dispatch::control();
-			}
-			if(!isset($action))
-			{
-				$action = Dispatch::action();
-			}
-			if(Config::get('@.MODULE_ON'))
-			{
-				if(Config::get('@.MODULE_TEMPLATE'))
+				if(!isset($themeName))
 				{
-					$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
+					$themeName = $this->getThemeName($theme);
+				}
+				if(!isset($module))
+				{
+					$module = Dispatch::module();
+				}
+				if(!isset($control))
+				{
+					$control = Dispatch::control();
+				}
+				if(!isset($action))
+				{
+					$action = Dispatch::action();
+				}
+				if(Config::get('@.MODULE_ON'))
+				{
+					if(Config::get('@.MODULE_TEMPLATE'))
+					{
+						$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
+					}
+					else
+					{
+						$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
+					}
 				}
 				else
 				{
-					$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
+					$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
 				}
-			}
-			else
-			{
-				$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
 			}
 			$template.=Config::get('@.TEMPLATE_EXT');
 		}

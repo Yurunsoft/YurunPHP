@@ -44,7 +44,7 @@ class Page
 		$this->setParam($param);
 		$this->setPageField(Config::get('@.PAGEBAR_FIELD','p'));
 		$this->setPageItemCount(Config::get('@.PAGEBAR_ITEM_COUNT',10));
-		$this->setTemplate(Config::get('@.PAGEBAR_TEMPLATE','@module/pagebar'));
+		$this->setTemplate(Config::get('@.PAGEBAR_TEMPLATE','@m/pagebar'));
 		$this->view=$view;
 	}
 
