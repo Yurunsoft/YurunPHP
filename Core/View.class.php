@@ -128,12 +128,12 @@ class View extends ArrayData
 				}
 				else
 				{
-					$template=APP_TEMPLATE."/{$themeName}/{$module}/{$control}/{$action}";
+					$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
 				}
 			}
 			else
 			{
-				$template=APP_TEMPLATE."/{$themeName}/{$control}/{$action}";
+				$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
 			}
 			$template.=Config::get('@.TEMPLATE_EXT');
 		}
