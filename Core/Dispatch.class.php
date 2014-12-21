@@ -65,7 +65,7 @@ class Dispatch
 			}
 		}
 		// 动作
-		self::$action = ucfirst(Request::get(Config::get('@.ACTION_NAME'), false));
+		self::$action = Request::get(Config::get('@.ACTION_NAME'), false);
 		if (! self::$action)
 		{
 			self::$action = Config::get('@.ACTION_DEFAULT');
@@ -189,10 +189,11 @@ class Dispatch
 			$result = self::checkRule(Config::get($cfgName), $param);
 			if (empty($domain))
 			{
-				$domain = $_SERVER['HTTP_HOST'].$_SERVER['SCRIPT_NAME'];
+				$domain = Config::get('@.DOMAIN');
 			}
 			if ($result === false)
 			{
+				$domain.='/'.basename($_SERVER['SCRIPT_NAME']);
 				// 系统默认URL
 				if ($module === '')
 				{

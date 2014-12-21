@@ -112,6 +112,8 @@ unset($GLOBALS['cfg']);
 spl_autoload_register('yurunAutoload');
 // 载入项目配置
 Config::create('App', 'php', APP_CONFIG . 'config.php');
+// 根据调试和正式应用载入不同配置
+Config::create('App_Run', 'php', APP_CONFIG . (IS_DEBUG ? 'debug.php' : 'release.php'));
 // 载入插件列表
 Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
 // 插件初始化
