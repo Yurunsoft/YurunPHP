@@ -710,7 +710,14 @@ class Model extends ArrayData
 			// 清空数据
 			$this->data = array ();
 			// 返回验证结果
-			return $result;
+			if($all)
+			{
+				return $result;
+			}
+			else
+			{
+				return $result[0];
+			}
 		}
 	}
 	
