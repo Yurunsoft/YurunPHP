@@ -766,4 +766,8 @@ class Model extends ArrayData
 			$this->table=$table;
 		}
 	}
+	public function lastSql()
+	{
+		return $this->db->lastSql();
+	}
 }

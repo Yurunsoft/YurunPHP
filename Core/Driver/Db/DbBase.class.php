@@ -668,6 +668,11 @@ abstract class DbBase
 					{ // 处理出现名称中出现.的情况
 						$last .= '.';
 					}
+					else if($value === '*')
+					{
+						$result .= $last.'*.';
+						$last = '';
+					}
 					else
 					{
 						$result .= $this->parseArgs($last . $value) . '.';
