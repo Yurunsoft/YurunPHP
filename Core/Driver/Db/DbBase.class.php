@@ -620,7 +620,7 @@ abstract class DbBase
 				{
 					$sql .= $value;
 				}
-				else if (isset($value['_exp']))
+				else if (is_array($value) && isset($value['_exp']))
 				{
 					$sql .= "{$value['_exp']},";
 				}
