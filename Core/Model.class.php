@@ -225,7 +225,7 @@ class Model extends ArrayData
 					}
 					break;
 				case 'limit':
-					switch($arguments)
+					switch(count($arguments))
 					{
 						case 1:
 							$this->options['limit']=$arguments[0];
