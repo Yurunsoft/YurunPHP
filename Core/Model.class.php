@@ -224,6 +224,17 @@ class Model extends ArrayData
 						}
 					}
 					break;
+				case 'limit':
+					switch($arguments)
+					{
+						case 1:
+							$this->options['limit']=$arguments[0];
+							break;
+						case 2:
+							$this->options['limit']=$arguments;
+							break;
+					}
+					break;
 				default:
 					$this->options[$name] = $arguments[0];
 					break;
@@ -714,9 +725,13 @@ class Model extends ArrayData
 			{
 				return $result;
 			}
-			else
+			else if(isset($result[0]))
 			{
 				return $result[0];
+			}
+			else
+			{
+				return false;
 			}
 		}
 	}
