@@ -534,7 +534,7 @@ class Validator
 	{
 		return $value >= $min && $value <= $max;
 	}
-	
+
 	/**
 	 * 小于
 	 *

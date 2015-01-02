@@ -244,23 +244,28 @@ class Dispatch
 			$status = true;
 			foreach ($arr as $val)
 			{
-				list ($k, $v) = explode(':', $val);
-				if (strlen($v) >= 2 && $v[0] === '\\' && $v[1] === 'R')
+				$tarr=explode(':', $val);
+				if(count($tarr)>1)
 				{
-					// 正则
-					if (preg_match('/^' . substr($v, 2) . '$/', $param[$k]) <= 0)
+					if (strlen($tarr[1]) >= 2 && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
 					{
-						$status = false;
-						break;
+						$k=$tarr[0];
+						// 正则
+						if (preg_match('/^' . substr(implode(':',$tarr), 2) . '$/', $param[$k]) <= 0)
+						{
+							$status = false;
+							break;
+						}
 					}
-				}
-				else
-				{
-					// Filter类
-					if (! Validator::check($param[$k], $v))
+					else
 					{
-						$status = false;
-						break;
+						$tarr[0]=$param[$tarr[0]];
+						// Filter类
+						if (! call_user_func_array('Validator::check',$tarr))
+						{
+							$status = false;
+							break;
+						}
 					}
 				}
 			}

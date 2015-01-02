@@ -688,7 +688,7 @@ class Model extends ArrayData
 			if ($d === false)
 			{
 				// 判断是否有默认值
-				if(isset($value['default']))
+				if(array_key_exists('default',$value))
 				{
 					$this->data[$value['name']] = $value['default'];
 				}
