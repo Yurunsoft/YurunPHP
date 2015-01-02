@@ -259,12 +259,15 @@ class Dispatch
 					}
 					else
 					{
-						$tarr[0]=$param[$tarr[0]];
-						// Filter类
-						if (! call_user_func_array('Validator::check',$tarr))
+						if(array_key_exists($tarr[0],$param))
 						{
-							$status = false;
-							break;
+							$tarr[0]=$param[$tarr[0]];
+							// Filter类
+							if (! call_user_func_array('Validator::check',$tarr))
+							{
+								$status = false;
+								break;
+							}
 						}
 					}
 				}
