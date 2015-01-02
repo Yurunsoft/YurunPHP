@@ -105,7 +105,7 @@ class Dispatch
 			// 实例化控制器
 			$yurunControl = new $class();
 			$action = self::$action;
-			if (method_exists($yurunControl, $action))
+			if (is_callable(array($yurunControl, $action)))
 			{
 				$yurunControl->$action();
 			}
