@@ -269,6 +269,11 @@ class Dispatch
 								break;
 							}
 						}
+						else 
+						{
+							$status = false;
+							break;
+						}
 					}
 				}
 			}
