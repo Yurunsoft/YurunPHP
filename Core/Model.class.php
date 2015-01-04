@@ -236,7 +236,14 @@ class Model extends ArrayData
 					}
 					break;
 				default:
-					$this->options[$name] = $arguments[0];
+					if(isset($this->options[$name]))
+					{
+						$this->options[$name]+=$arguments[0];
+					}
+					else 
+					{
+						$this->options[$name] = $arguments[0];
+					}
 					break;
 			}
 			return $this;

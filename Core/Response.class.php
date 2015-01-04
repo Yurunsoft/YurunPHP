@@ -93,16 +93,14 @@ class Response
 					}
 					// 输出并结束脚本
 					exit(
-<<<EOF
-{$msg}
+"{$msg}
 <script>
 function redirect()
 {
 	{$js};
 }
 setTimeout('redirect()',1000);
-</script>
-EOF
+</script>"
 );
 				}
 			}
