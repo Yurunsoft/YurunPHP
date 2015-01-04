@@ -721,18 +721,7 @@ class Model extends ArrayData
 			// 清空数据
 			$this->data = array ();
 			// 返回验证结果
-			if($all)
-			{
-				return $result;
-			}
-			else if(isset($result[0]))
-			{
-				return $result[0];
-			}
-			else
-			{
-				return false;
-			}
+			return $result;
 		}
 	}
 	

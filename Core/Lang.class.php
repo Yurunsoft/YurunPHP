@@ -36,9 +36,9 @@ class Lang
 		{
 			unset($args[0]);
 		}
-		array_unshift($args, self::$list[$name]);
 		if (isset(self::$list[$name]))
 		{
+			array_unshift($args, self::$list[$name]);
 			return call_user_func_array('sprintf', $args);
 		}
 		else
