@@ -741,7 +741,7 @@ class Model extends ArrayData
 	 */
 	public function calcLimitStart($page, $quantity)
 	{
-		return (int)(($page - 1) * $quantity);
+		return max((int)(($page - 1) * $quantity),0);
 	}
 
 	/**
