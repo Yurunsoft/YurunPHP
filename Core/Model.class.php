@@ -91,8 +91,7 @@ class Model extends ArrayData
 	 */
 	public function select($first = false)
 	{
-		$this->data = $this->db->select($this->getOption(), $first);
-		return $this->data;
+		return $this->db->select($this->getOption(), $first);
 	}
 	
 	/**
@@ -423,7 +422,7 @@ class Model extends ArrayData
 	{
 		if ($sqlMode)
 		{
-			$this->data = $this->db->query($config);
+			$data = $this->db->query($config);
 		}
 		else
 		{
@@ -446,15 +445,14 @@ class Model extends ArrayData
 			{
 				$config['limit'] = '1';
 			}
-			$this->data = $this->db->select($config, true);
+			$data = $this->db->select($config, true);
 		}
-		if (is_array($this->data))
+		if (is_array($data))
 		{
-			return $this->data;
+			return $data;
 		}
 		else
 		{
-			$this->data = array ();
 			return array ();
 		}
 	}
@@ -471,13 +469,12 @@ class Model extends ArrayData
 	{
 		if ($sqlMode)
 		{
-			$this->data = $this->db->queryA($config);
+			return $this->db->queryA($config);
 		}
 		else
 		{
-			$this->data = $this->db->select($config);
+			return $this->db->select($config);
 		}
-		return $this->data;
 	}
 	
 	/**
