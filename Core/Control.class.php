@@ -20,5 +20,9 @@ class Control
 		{
 			$this->$name();
 		}
+		else
+		{
+			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+		}
 	}
 }
