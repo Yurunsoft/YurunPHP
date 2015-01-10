@@ -99,6 +99,11 @@ class Dispatch
 			}
 		}
 		$class = self::$control . 'Control';
+		if (Config::get('@.MODULE_ON'))
+		{
+			// 载入模块配置
+			Config::create('Module', 'php', APP_MODULE . self::$control .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
+		}
 		// 控制器是否存在
 		if (self::checkControl(self::$module,self::$control) && class_exists($class))
 		{
@@ -195,7 +200,7 @@ class Dispatch
 			{
 				$domain.='/'.basename($_SERVER['SCRIPT_NAME']);
 				// 系统默认URL
-				if ($module === '')
+				if ($module === '' || (isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE']))
 				{
 					return Request::getProtocol() . "{$domain}?" . http_build_query(array_merge(array (Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param));
 				}

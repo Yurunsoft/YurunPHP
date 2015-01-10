@@ -120,11 +120,6 @@ Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
 Event::init();
 // 调度解析
 Dispatch::resolve();
-if (Config::get('MODULE_ON'))
-{
-	// 载入模块配置
-	Config::create('Module', 'php', APP_MODULE . MODULE_FOLDER . '/config.php');
-}
 // 设置时区
 date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 调度
