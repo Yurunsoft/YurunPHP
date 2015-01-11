@@ -104,6 +104,7 @@ setTimeout('redirect()',1000);
 		}
 		// 设置http状态码
 		self::status($status);
+		exit;
 	}
 	
 	/**
