@@ -52,8 +52,6 @@ class Response
 	 */
 	public static function msg($msg, $url = null, $status = 200)
 	{
-		// 设置http状态码
-		self::status($status);
 		$ext = Config::get('@.TEMPLATE_EXT');
 		// 项目模版目录下对应http状态的模版文件
 		$file = APP_TEMPLATE . "_Msg/{$status}{$ext}";
@@ -92,7 +90,7 @@ class Response
 						$js="location='{$url}';";
 					}
 					// 输出并结束脚本
-					exit(
+					echo
 "{$msg}
 <script>
 function redirect()
@@ -100,17 +98,17 @@ function redirect()
 	{$js};
 }
 setTimeout('redirect()',1000);
-</script>"
-);
+</script>";
 				}
 			}
 		}
-		exit;
+		// 设置http状态码
+		self::status($status);
 	}
 	
 	/**
 	 * 跳转
-	 *
+	 * 直接URL
 	 * @param string $url        	
 	 * @param int $status        	
 	 */
@@ -120,5 +118,19 @@ setTimeout('redirect()',1000);
 		self::status($status);
 		// 跳转
 		header("Location:{$url}");
+	}
+	
+	/**
+	 * 跳转
+	 * 快捷URL
+	 * @param string $url
+	 * @param int $status
+	 */
+	public static function redirectU($url, $status = 301,$param=array())
+	{
+		// 设置http状态码
+		self::status($status);
+		// 跳转
+		header('Location:'.Dispatch::url($url,$param));
 	}
 }
