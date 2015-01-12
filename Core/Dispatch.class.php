@@ -102,7 +102,7 @@ class Dispatch
 		if (Config::get('@.MODULE_ON'))
 		{
 			// 载入模块配置
-			Config::create('Module', 'php', APP_MODULE . self::$control .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
+			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
 		}
 		// 控制器是否存在
 		if (self::checkControl(self::$module,self::$control) && class_exists($class))
