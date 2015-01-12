@@ -32,7 +32,7 @@ return array (
 		                          
 		// 主题
 		'THEME_ON' => false,		// 是否开启主题功能
-		'THEME_DEFAULT' => 'Default',		// 默认主题
+		'THEME' => 'Default',		// 默认主题
 		                              
 		// 类库
 		'LIB_FOLDER' => 'Lib',		// 类库文件夹名称

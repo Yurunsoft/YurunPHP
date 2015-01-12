@@ -168,7 +168,7 @@ class View extends ArrayData
 			// 配置中默认主题
 			else
 			{
-				return Config::get('@.THEME_DEFAULT', null);
+				return Config::get('@.THEME', null);
 			}
 		}
 		else
