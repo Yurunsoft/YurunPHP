@@ -54,7 +54,7 @@ class Model extends ArrayData
 	 * @param type $model        	
 	 * @return Model
 	 */
-	public static function obj($model,$table=null)
+	public static function obj($model='',$table=null)
 	{
 		$ref = new ReflectionClass(ucfirst($model) . 'Model');
 		$args = func_get_args();
