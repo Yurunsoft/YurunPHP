@@ -234,14 +234,35 @@ class Model extends ArrayData
 							break;
 					}
 					break;
-				default:
+				case 'where':
 					if(isset($this->options[$name]))
 					{
-						$this->options[$name]+=$arguments[0];
+						if(is_string($arguments[0]))
+						{
+							if(isset($this->options[$name]['_exp']))
+							{
+								$this->options[$name]['_exp'].=" and {$arguments[0]}";
+							}
+							else
+							{
+								$this->options[$name]['_exp']=$arguments[0];
+							}
+						}
+						else
+						{
+							$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
+						}
 					}
-					else 
+					else
 					{
-						$this->options[$name] = $arguments[0];
+						if(is_array($arguments[0]))
+						{
+							$this->options[$name] = ($arguments[0]);
+						}
+						else
+						{
+							$this->options[$name] = array('_exp'=>$arguments[0]);
+						}
 					}
 					break;
 			}
