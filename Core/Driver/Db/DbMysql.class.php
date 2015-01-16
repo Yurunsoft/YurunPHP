@@ -184,7 +184,7 @@ class DbMysql extends DbBase
 		$this->result = mysql_query($sql, $this->conn);
 		if($this->result===false && IS_DEBUG)
 		{
-			throw new Exception($this->getError());
+			throw new Exception($this->getError().'<br/>SQL:'.$this->lastSql());
 		}
 		// 解决执行存储过程后再执行语句就出错
 		if (substr($sql, 0, 5) == 'call ')
