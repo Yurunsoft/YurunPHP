@@ -5,9 +5,15 @@
  */
 class Model extends ArrayData
 {
-	// 读
+	/**
+	 * 转换为数据库字段
+	 * @var int
+	 */
 	const TO_DB = 0;
-	// 写
+	/**
+	 * 转换为表单字段
+	 * @var int
+	 */
 	const TO_FORM = 1;
 	// 主键
 	protected $pk = 'id';
@@ -18,7 +24,9 @@ class Model extends ArrayData
 	// 数据库操作对象
 	protected $db;
 	// 字段映射
-	protected $fieldsMap = array ();
+	protected $fieldsMap = array (
+			// '表单字段'=>'数据库字段'
+	);
 	// 连贯操作
 	protected $options = array ();
 	// 连贯操作方法名
