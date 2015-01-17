@@ -334,7 +334,7 @@ class View extends ArrayData
 			call_user_func_array(array($this,$name),$arguments);
 		}
 		// 判断绑定的控制器存在
-		else if(!empty($this->control))
+		else if(!empty($this->control) && method_exists($this->control,$name))
 		{
 			// 调用控制器中的方法
 			call_user_func_array(array($this->control,$name),$arguments);
