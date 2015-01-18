@@ -564,11 +564,11 @@ abstract class DbBase
 			}
 			if (is_numeric($key))
 			{
-				$result .= "{$value},";
+				$result .= $this->parseField($value).',';
 			}
 			else
 			{
-				$result .= $this->parseField($key) . " $value,";
+				$result .= $this->parseField($key) . " {$value},";
 			}
 		}
 		if ($result === '')
