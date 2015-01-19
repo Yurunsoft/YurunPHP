@@ -571,7 +571,7 @@ abstract class DbBase
 				$result .= $this->parseField($key) . " {$value},";
 			}
 		}
-		if ($result === '')
+		if ($result === '*,' || $result==='')
 		{
 			return '';
 		}
