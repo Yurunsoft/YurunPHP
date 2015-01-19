@@ -102,6 +102,10 @@ class View extends ArrayData
 							// 主题/模块/控制器/动作
 							list($themeName,$module,$control,$action) = $arr;
 							break;
+						default:
+							list($themeName,$module,$control) = $arr;
+							$action=implode('/',array_slice($arr,3));
+							break;
 					}
 					
 				}
