@@ -247,7 +247,7 @@ class DbMysql extends DbBase
 	 */
 	public function foundRows()
 	{
-		return $this->queryValue('select found_rows()');
+		return mysql_num_rows();
 	}
 	
 	/**
@@ -258,7 +258,7 @@ class DbMysql extends DbBase
 	 */
 	public function rowCount()
 	{
-		return $this->queryValue('select row_count()');
+		return mysql_affected_rows();
 	}
 	
 	/**
@@ -269,7 +269,7 @@ class DbMysql extends DbBase
 	 */
 	public function lastInsertID()
 	{
-		return $this->queryValue('select LAST_INSERT_ID()');
+		return mysql_insert_id();
 	}
 	
 	/**
