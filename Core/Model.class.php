@@ -311,7 +311,8 @@ class Model extends ArrayData
 	 */
 	public function add($data = null, $return = DbBase::RETURN_ISOK)
 	{
-		return $this->db->insert($this->tableName(), $data === null ? $this->data : $data, $return);
+		$option=$this->getOption();
+		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data === null ? $this->data : $data, $return);
 	}
 	
 	/**
