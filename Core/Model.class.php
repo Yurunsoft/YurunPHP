@@ -274,13 +274,27 @@ class Model extends ArrayData
 					}
 					break;
 				default:
-					if(isset($this->options[$name]))
+					if(count($arguments)===1)
 					{
-						$this->options[$name]+=$arguments[0];
+						if(isset($this->options[$name]))
+						{
+							$this->options[$name]+=$arguments[0];
+						}
+						else
+						{
+							$this->options[$name] = $arguments[0];
+						}
 					}
-					else
+					else 
 					{
-						$this->options[$name] = $arguments[0];
+						if(isset($this->options[$name]))
+						{
+							$this->options[$name]+=$arguments;
+						}
+						else
+						{
+							$this->options[$name] = $arguments;
+						}
 					}
 					break;
 			}
