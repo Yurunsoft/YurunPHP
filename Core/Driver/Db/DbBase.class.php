@@ -424,6 +424,10 @@ abstract class DbBase
 									case 'not in' :
 										if ($s === 2)
 										{
+											if(!is_array($value[1]))
+											{
+												$value[1]=explode(',',$value[1]);
+											}
 											$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]) . '(' . $this->filterValue($value[1]) . ')';
 										}
 										else if ($s > 2)
