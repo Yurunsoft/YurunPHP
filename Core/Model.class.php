@@ -18,7 +18,7 @@ class Model extends ArrayData
 	// 主键
 	protected $pk = 'id';
 	// 前缀
-	protected $prefix = '';
+	protected $prefix ='';
 	// 表名
 	protected $table = '';
 	// 数据库操作对象
@@ -371,7 +371,15 @@ class Model extends ArrayData
 		}
 		return $option;
 	}
-	
+
+	/**
+	 * 设置连贯操作配置
+	 * @param array $option
+	 */
+	public function setOption($option)
+	{
+		$this->options=$option;
+	}
 	/**
 	 * 使用存储过程添加记录
 	 *
