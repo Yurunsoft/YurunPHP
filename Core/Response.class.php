@@ -119,6 +119,7 @@ setTimeout('redirect()',1000);
 		self::status($status);
 		// 跳转
 		header("Location:{$url}");
+		exit;
 	}
 	
 	/**
@@ -133,5 +134,6 @@ setTimeout('redirect()',1000);
 		self::status($status);
 		// 跳转
 		header('Location:'.Dispatch::url($url,$param));
+		exit;
 	}
 }
