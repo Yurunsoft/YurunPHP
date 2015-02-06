@@ -48,7 +48,7 @@ class ConfigPhp extends ConfigBase
 	 * @access protected
 	 * @param string $fileName        	
 	 */
-	protected function save($fileName = null)
+	public function save($fileName = null)
 	{
 		file_put_contents(empty($fileName) ? $this->fileName : $fileName, '<?php return ' . var_export($this->data, true) . ';');
 	}

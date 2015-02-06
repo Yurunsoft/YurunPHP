@@ -69,5 +69,5 @@ abstract class ConfigBase extends ArrayData
 	 * @access protected
 	 * @param string $fileName        	
 	 */
-	protected abstract function save($fileName = null);
+	public abstract function save($fileName = null);
 }
