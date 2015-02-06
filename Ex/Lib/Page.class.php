@@ -295,12 +295,16 @@ class Page
 	 */
 	private function calcTotalPages()
 	{
-		if($this->pageShow>0 && $this->totalRecords>0)
+		if($this->pageShow>0 && is_numeric($this->totalRecords))
 		{
 			$this->totalPages=(int)($this->totalRecords/$this->pageShow);
 			if($this->totalRecords % $this->pageShow!=0)
 			{
 				++$this->totalPages;
+			}
+			else if($this->totalPages<1)
+			{
+				$this->totalPages=1;
 			}
 		}
 	}
