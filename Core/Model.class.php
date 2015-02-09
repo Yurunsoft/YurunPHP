@@ -840,4 +840,13 @@ class Model extends ArrayData
 	{
 		return $this->db->lastSql();
 	}
+	/**
+	 * 查询结果自动添加编号字段，从1开始编号
+	 * @param unknown $field
+	 */
+	public function number($field)
+	{
+		$this->options['number']=$field;
+		return $this;
+	}
 }

@@ -141,3 +141,12 @@ function getImages($str)
 	preg_match_all("/<img([^>]*)\s*src=('|\")([^'\"]+)('|\")/i",$str,$matchs);
 	return $matchs[3];
 }
+function autoNumber($arr,$name)
+{
+	$s=count($arr);
+	for($i=0;$i<$s;++$i)
+	{
+		$arr[$i][$name]=$i+1;
+	}
+	return $arr;
+}

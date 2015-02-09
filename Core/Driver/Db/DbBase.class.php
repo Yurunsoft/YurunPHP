@@ -228,7 +228,12 @@ abstract class DbBase
 		}
 		else
 		{
-			return $this->queryA($sql);
+			$result=$this->queryA($sql);
+			if(!empty($option['number']))
+			{
+				$result=autoNumber($result, $option['number']);
+			}
+			return $result;
 		}
 	}
 	
