@@ -44,6 +44,11 @@ class Upload
 	 */
 	public $result;
 	/**
+	 * 已上传的所有文件
+	 * @var array
+	 */
+	public $files;
+	/**
 	 * 构造方法
 	 * @param string $savePath
 	 * @param string $subPath
@@ -106,6 +111,7 @@ class Upload
 			$files=$this->parseFiles(array($name=>$_FILES[$name]));
 		}
 		$this->result=array();
+		$this->files=array();
 		$result=true;
 		foreach($files as $key=>$item)
 		{
@@ -193,6 +199,7 @@ class Upload
 			$result['file']=$file;
 			$result['subpath']=$subPath;
 			$result['filename']=$filename;
+			$this->files[]=$result;
 			return true;
 		}
 		else 
@@ -278,7 +285,13 @@ class Upload
 	 */
 	public function rollback()
 	{
-		
+		if(is_array($this->files))
+		{
+			foreach($this->files as $item)
+			{
+				unlink($item);
+			}
+		}
 	}
 	public function parseFiles($files)
 	{

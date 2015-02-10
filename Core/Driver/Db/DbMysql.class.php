@@ -184,7 +184,9 @@ class DbMysql extends DbBase
 		$this->result = mysql_query($sql, $this->conn);
 		if($this->result===false && IS_DEBUG)
 		{
-			throw new Exception($this->getError().'<br/>SQL:'.$this->lastSql());
+			// 用于调试
+			$GLOBALS['debug']['lastsql']=$this->lastSql;
+			throw new Exception($this->getError());
 		}
 		// 解决执行存储过程后再执行语句就出错
 		if (substr($sql, 0, 5) == 'call ')
@@ -343,5 +345,26 @@ class DbMysql extends DbBase
 			// 返回结果
 			return $r;
 		}
+	}
+	/**
+	 * 开始事务
+	 */
+	public function begin()
+	{
+		$this->execute('begin');
+	}
+	/**
+	 * 回滚事务
+	 */
+	public function rollback()
+	{
+		$this->execute('rollback');
+	}
+	/**
+	 * 提交事务
+	 */
+	public function commit()
+	{
+		$this->execute('commit');
 	}
 }

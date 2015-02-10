@@ -77,6 +77,72 @@ defined('APP_MODULE') or define('APP_MODULE', APP_PATH . $GLOBALS['cfg']['MODULE
 defined('APP_PLUGIN') or define('APP_PLUGIN', APP_PATH . $GLOBALS['cfg']['PLUGIN_FOLDER'] . '/');
 // 项目语言目录
 defined('APP_LANG') or define('APP_LANG', APP_PATH . $GLOBALS['cfg']['LANG_FOLDER'] . '/');
+register_shutdown_function(function(){
+	if ($e = error_get_last())
+	{
+		switch($e['type']){
+			case E_ERROR:
+			case E_PARSE:
+			case E_CORE_ERROR:
+			case E_COMPILE_ERROR:
+			case E_USER_ERROR:
+				ob_end_clean();
+				$error = array();
+			 	$error['message']=$e['message'];
+			 	$error['file']=$e['file'];
+			 	$error['line']=$e['line'];
+			 	ob_start();
+			 	debug_print_backtrace();
+			 	$error['trace']=ob_get_clean();
+			 	if(isset($GLOBALS['debug']['lastsql']))
+			 	{
+			 		$error['lastsql']=$GLOBALS['debug']['lastsql'];
+			 		unset($GLOBALS['debug']['lastsql']);
+			 	}
+				include PATH_TEMPLATE.'error.php';
+				break;
+		}
+	}
+});
+set_error_handler(function($errno, $errstr, $errfile, $errline){
+	switch ($errno)
+	{
+		case E_ERROR:
+		case E_PARSE:
+		case E_CORE_ERROR:
+		case E_COMPILE_ERROR:
+		case E_USER_ERROR:
+			ob_end_clean();
+			$error = array();
+			$error['message']=$errstr;
+			$error['file']=$errfile;
+			$error['line']=$errline;
+			ob_start();
+			debug_print_backtrace();
+			$error['trace']=ob_get_clean();
+			if(isset($GLOBALS['debug']['lastsql']))
+			{
+				$error['lastsql']=$GLOBALS['debug']['lastsql'];
+				unset($GLOBALS['debug']['lastsql']);
+			}
+			include PATH_TEMPLATE.'error.php';
+			exit;
+			break;
+	}
+});
+set_exception_handler(function($exception){
+ 	$error = array();
+ 	$error['message']=$exception->getMessage();
+ 	$error['file']=$exception->getFile();
+ 	$error['line']=$exception->getLine();
+ 	$error['trace']=$exception->getTraceAsString();
+ 	if(isset($GLOBALS['debug']['lastsql']))
+ 	{
+ 		$error['lastsql']=$GLOBALS['debug']['lastsql'];
+ 		unset($GLOBALS['debug']['lastsql']);
+ 	}
+	include PATH_TEMPLATE.'error.php';
+});
 // 引用框架配置中规定的必须文件
 if (defined('IS_COMPILED'))
 {

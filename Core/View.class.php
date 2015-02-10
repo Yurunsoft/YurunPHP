@@ -247,31 +247,22 @@ class View extends ArrayData
 	 */
 	public function execTemplate($file)
 	{
-		ob_start();
-		try
+		if (is_array($file))
 		{
-			if (is_array($file))
+			foreach ($file as $value)
 			{
-				foreach ($file as $value)
+				if (is_file($value))
 				{
-					if (is_file($value))
-					{
-						include $value;
-						break;
-					}
+					include $value;
+					break;
 				}
 			}
-			else
-			{
-				include $file;
-			}
-			return ob_get_clean();
 		}
-		catch (Exception $ex)
+		else
 		{
-			ob_end_clean();
-			return '';
+			include $file;
 		}
+		return ob_get_clean();
 	}
 	
 	/**
