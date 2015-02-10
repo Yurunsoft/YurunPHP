@@ -199,7 +199,7 @@ class Upload
 			$result['file']=$file;
 			$result['subpath']=$subPath;
 			$result['filename']=$filename;
-			$this->files[]=$result;
+			$this->files[]=$file;
 			return true;
 		}
 		else 
