@@ -178,6 +178,12 @@ class DbMysql extends DbBase
 	 */
 	public function execute($sql)
 	{
+		// 解决执行存储过程后再执行语句就出错
+		if (substr($this->lastSql, 0, 5) == 'call ')
+		{
+			$this->disconnect();
+			$this->connect();
+		}
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
 		// 执行SQL语句
@@ -187,12 +193,6 @@ class DbMysql extends DbBase
 			// 用于调试
 			$GLOBALS['debug']['lastsql']=$this->lastSql;
 			throw new Exception($this->getError());
-		}
-		// 解决执行存储过程后再执行语句就出错
-		if (substr($sql, 0, 5) == 'call ')
-		{
-			$this->disconnect();
-			$this->connect();
 		}
 		return $this->result !== false ? true : false;
 	}
@@ -215,7 +215,7 @@ class DbMysql extends DbBase
 		}
 		else
 		{
-			return $this->queryA("call $procName(" . implode(',', $this->filterValue($p)) . ')');
+			return $this->queryA("call $procName(" . $this->filterValue($p) . ')');
 		}
 	}
 	
