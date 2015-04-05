@@ -18,7 +18,7 @@ class ArrayData
 		if (is_array($name))
 		{
 			// 如果传入数组就合并当前数据
-			$this->data = array_merge($this->data, $name);
+			$this->data = multimerge($this->data,$name);
 		}
 		else
 		{
@@ -27,6 +27,8 @@ class ArrayData
 		}
 		return true;
 	}
+	
+
 	/**
 	 * 设置数据
 	 *
@@ -148,14 +150,10 @@ class ArrayData
 				{
 					$result = &$result[$value];
 				}
-				else
-				{
-					return true;
-				}
 			}
 			unset($result[$last]);
-			return true;
 		}
+		return true;
 	}
 	/**
 	 * 清空数据

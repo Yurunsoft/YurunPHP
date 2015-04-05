@@ -141,6 +141,12 @@ function getImages($str)
 	preg_match_all("/<img([^>]*)\s*src=('|\")([^'\"]+)('|\")/i",$str,$matchs);
 	return $matchs[3];
 }
+/**
+ * 将数据查询结果自动编号
+ * @param array $arr
+ * @param name $name
+ * @return array
+ */
 function autoNumber($arr,$name)
 {
 	$s=count($arr);
@@ -149,4 +155,53 @@ function autoNumber($arr,$name)
 		$arr[$i][$name]=$i+1;
 	}
 	return $arr;
+}
+/**
+ * 将数组每个成员都设置为引用
+ * @param array $array
+ * @return array
+ */
+function arrayRefer(&$array)
+{
+	$result=array();
+	foreach($array as &$item)
+	{
+		$result[]=&$item;
+	}
+	return $result;
+}
+/**
+ * 多维数组递归合并
+ */
+function multimerge()
+{
+	$arrs = func_get_args ();
+	$merged = array ();
+	while ( $arrs )
+	{
+		$array = array_shift ( $arrs );
+		if (! $array)
+		{
+			continue;
+		}
+		foreach ( $array as $key => $value )
+		{
+			if (is_string ( $key ))
+			{
+				if (is_array ( $value ) && array_key_exists ( $key, $merged ) && is_array ( $merged [$key] ))
+				{
+					$merged [$key] = multimerge ( $merged [$key], $value );
+				}
+				else
+				{
+					$merged [$key] = $value;
+				}
+			}
+			else
+			{
+				$merged [] = $value;
+			}
+		}
+	}
+	return $merged;
 }
