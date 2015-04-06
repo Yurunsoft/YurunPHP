@@ -170,3 +170,38 @@ function arrayRefer(&$array)
 	}
 	return $result;
 }
+/**
+ * 多维数组递归合并
+ */
+function multimerge()
+{
+	$arrs = func_get_args ();
+	$merged = array ();
+	while ( $arrs )
+	{
+		$array = array_shift ( $arrs );
+		if (! $array)
+		{
+			continue;
+		}
+		foreach ( $array as $key => $value )
+		{
+			if (is_string ( $key ))
+			{
+				if (is_array ( $value ) && array_key_exists ( $key, $merged ) && is_array ( $merged [$key] ))
+				{
+					$merged [$key] = multimerge ( $merged [$key], $value );
+				}
+				else
+				{
+					$merged [$key] = $value;
+				}
+			}
+			else
+			{
+				$merged [] = $value;
+			}
+		}
+	}
+	return $merged;
+}
