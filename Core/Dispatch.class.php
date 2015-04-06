@@ -139,21 +139,23 @@ class Dispatch
 	public static function url($rule = null, $param = array(), $domain = null, $subDomain = false)
 	{
 		// 插件
-		$eventValue = Event::trigger('COMBILE_URL', false, $rule, $param, $domain, $subDomain);
-		if (! empty($eventValue))
+		$args=array('rule'=>$rule, 'param'=>$param, 'domain'=>$domain, 'subDomain'=>$subDomain,'result'=>'');
+		if (!empty($args['result']))
 		{
-			foreach ($eventValue as $value)
-			{
-				if (! empty($value))
-				{
-					return $value;
-				}
-			}
+			return $args['result'];
 		}
 		else
 		{
+			// 解析url
+			$urlInfo=parse_url($rule);
+			// url规则查询参数处理
+			if(!empty($urlInfo['query']))
+			{
+				parse_str($url['query'], $tmpParam);
+				$param=array_merge($tmpParam,$param);
+			}
 			// 模块名、控制器名和动作名
-			if (empty($rule))
+			if (empty($urlInfo['path']))
 			{
 				$module = self::$module;
 				$control = self::$control;
@@ -161,7 +163,7 @@ class Dispatch
 			}
 			else
 			{
-				$arr = explode('/', $rule, 3);
+				$arr = explode('/', $urlInfo['path'], 3);
 				switch (count($arr))
 				{
 					case 1 :
@@ -181,52 +183,115 @@ class Dispatch
 						break;
 				}
 			}
+			// 提供给URL规则使用的参数
+			if(!isset($param[Config::get('@.MODULE_NAME')]))
+			{
+				$param[Config::get('@.MODULE_NAME')]=$module;
+			}
+			if(!isset($param[Config::get('@.CONTROL_NAME')]))
+			{
+				$param[Config::get('@.CONTROL_NAME')]=$control;
+			}
+			if(!isset($param[Config::get('@.ACTION_NAME')]))
+			{
+				$param[Config::get('@.ACTION_NAME')]=$action;
+			}
 			// 根据是否有模块取不同的配置
 			if ($module === '')
 			{
-				$cfgName = "@.URL_RULE.{$control}.{$action}";
+				$cfgName = array($control,$action);
 			}
 			else
 			{
-				$cfgName = "@.URL_RULE.{$module}.{$control}.{$action}";
+				$cfgName = array($module,$control,$action);
 			}
 			// 检测是否有自定义URL
-			$result = self::checkRule(Config::get($cfgName), $param);
+			$result = self::checkRule($cfgName, $param);
 			if (empty($domain))
 			{
 				$domain = Config::get('@.DOMAIN');
 			}
-			if ($result === false)
+			$url=Request::getProtocol()."{$domain}/";
+			if(!$result['hidefile'])
 			{
-				$domain.='/'.basename($_SERVER['SCRIPT_NAME']);
-				// 系统默认URL
-				if ($module === '' || (isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE']))
+				if($result['filename']==='')
 				{
-					return Request::getProtocol() . "{$domain}?" . http_build_query(array_merge(array (Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param));
+					$url.=basename($_SERVER['SCRIPT_NAME']);
 				}
-				else
+				else 
 				{
-					return Request::getProtocol() . "{$domain}?" . http_build_query(array_merge(array (Config::get('@.MODULE_NAME') => $module,Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param));
+					$url.=$result['filename'];
 				}
+			}
+			if ($module === '')
+			{
+				$param = array_merge(array (Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param);
 			}
 			else
 			{
-				if ($module === '')
-				{
-					$param = array_merge(array ('c' => $control,'a' => $action), $param);
-				}
-				else
-				{
-					$param = array_merge(array ('m' => $module,'c' => $control,'a' => $action), $param);
-				}
+				$param = array_merge(array (Config::get('@.MODULE_NAME') => $module,Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param);
+			}
+			if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'])
+			{
+				unset($param[Config::get('@.MODULE_NAME')]);
+			}
+			if($result['hideaction'] && $action===Config::get('@.ACTION_DEFAULT'))
+			{
+				unset($param[Config::get('@.ACTION_NAME')]);
+			}
+			if(!empty($GLOBALS['DEFAULT_MC']))
+			{
+				list($dm,$dc)=explode('/',$GLOBALS['DEFAULT_MC']);
+			}
+			if($result['hidecontrol'] && ((isset($dc) && $control===$dc) || $control===Config::get('@.CONTROL_DEFAULT')))
+			{
+				unset($param[Config::get('@.CONTROL_NAME')]);
+			}
+			if($result['hidemodule'] && ((isset($dm) && $module===$dm) || $module===Config::get('@.MODULE_DEFAULT')))
+			{
+				unset($param[Config::get('@.MODULE_NAME')]);
+			}
+			if ($result['result'])
+			{
 				// 自定义URL，替换变量
-				$s = preg_match_all('/{([^}]+)}/', $result, $r);
+				$s = preg_match_all('/{([^}]+)}/', $result['rule'], $r);
 				for ($i = 0; $i < $s; ++ $i)
 				{
-					$result = str_replace($r[0][$i], isset($param[$r[1][$i]]) ? urlencode($param[$r[1][$i]]) : '', $result);
+					if(isset($param[$r[1][$i]]))
+					{
+						$result['rule'] = str_replace($r[0][$i], urlencode($param[$r[1][$i]]), $result['rule']);
+						unset($param[$r[1][$i]]);
+					}
+					else if($r[1][$i]!=='#query#')
+					{
+						$result['rule'] = str_replace($r[0][$i], '', $result['rule']);
+					}
 				}
-				return Request::getProtocol() . "{$domain}/{$result}";
+				if(stripos($result['rule'],'{#query#}')!==false)
+				{
+					if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'])
+					{
+						unset($param[Config::get('@.MODULE_NAME')]);
+					}
+					$query=http_build_query($param);
+					if($query!=='' && stripos($result['rule'],'&')===false)
+					{
+						$query="&{$query}";
+					}
+					$result['rule'] = str_replace('{#query#}', $query, $result['rule']);
+				}
+				$url.=$result['rule'];
 			}
+			else 
+			{
+				$url.='?'.http_build_query($param);
+			}
+			// 锚点支持
+			if(!empty($urlInfo['fragment']))
+			{
+				$url.="#{$urlInfo['fragment']}";
+			}
+			return $url;
 		}
 	}
 	/**
@@ -236,58 +301,133 @@ class Dispatch
 	 * @param array $param        	
 	 * @return boolean
 	 */
-	public static function checkRule($rules, $param)
+	public static function checkRule($rule, $param)
 	{
-		if(!is_array($rules))return false;
-		foreach ($rules as $key => $value)
+		$result=array('result'=>false);
+		static $outRules=array('filename','hidefile','hideaction','hidecontrol','hidemodule');
+		while(count($rule)>0)
 		{
-			$arr = preg_split('/\s/', $value);
-			if (count($arr) === 1 && $arr[0] === '')
+			$rules=Config::get('@.URL_RULE.'.implode('.',$rule));
+			array_pop($rule);
+			if(is_array($rules))
 			{
-				return $key;
-			}
-			$status = true;
-			foreach ($arr as $val)
-			{
-				$tarr=explode(':', $val);
-				if(count($tarr)>1)
+				foreach($outRules as $ruleItem)
 				{
-					if (strlen($tarr[1]) >= 2 && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
+					if(!isset($result[$ruleItem]))
 					{
-						$k=$tarr[0];
-						// 正则
-						if (preg_match('/^' . substr(implode(':',$tarr), 2) . '$/', $param[$k]) <= 0)
+						if(isset($rules["-{$ruleItem}"]))
 						{
-							$status = false;
-							break;
-						}
-					}
-					else
-					{
-						if(array_key_exists($tarr[0],$param))
-						{
-							$tarr[0]=$param[$tarr[0]];
-							// Filter类
-							if (! call_user_func_array('Validator::check',$tarr))
-							{
-								$status = false;
-								break;
-							}
-						}
-						else 
-						{
-							$status = false;
-							break;
+							$result[$ruleItem]=$rules["-{$ruleItem}"];
 						}
 					}
 				}
 			}
-			if ($status)
+			else
 			{
-				return $key;
+				continue;
+			}
+			if($result['result'])
+			{
+				$isAllIsset=true;
+				foreach($outRules as $ruleItem)
+				{
+					if(!isset($result[$ruleItem]))
+					{
+						$isAllIsset=false;
+						break;
+					}
+				}
+				if($isAllIsset)
+				{
+					break;
+				}
+				else 
+				{
+					continue;
+				}
+			}
+			foreach ($rules as $key => $value)
+			{
+				if(is_array($value) || in_array(substr($key,1),$outRules)!==false)
+				{
+					continue;
+				}
+				$result['result']=true;
+				$arr = preg_split('/\s/', $value);
+				if (count($arr) === 1 && $arr[0] === '')
+				{
+					break;
+				}
+				foreach ($arr as $val)
+				{
+					$tarr=explode(':', $val);
+					if(count($tarr)>1)
+					{
+						if (strlen($tarr[1]) >= 2 && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
+						{
+							$k=$tarr[0];
+							// 正则
+							if (preg_match('/^' . substr($tarr[1], 2) . '$/', $param[$k]) <= 0)
+							{
+								$result['result']=false;
+								break;
+							}
+						}
+						else
+						{
+							if(array_key_exists($tarr[0],$param))
+							{
+								$tarr[0]=$param[$tarr[0]];
+								// Filter类
+								if (! call_user_func_array('Validator::check',$tarr))
+								{
+									$result['result']=false;
+									break;
+								}
+							}
+							else
+							{
+								$result['result']=false;
+								break;
+							}
+						}
+					}
+				}
+				if($result['result'])
+				{
+					break;
+				}
 			}
 		}
-		return false;
+		if(!isset($result['filename']))
+		{
+			$result['filename']='';
+		}
+		if(!isset($result['hidefile']))
+		{
+			$result['hidefile']=false;
+		}
+		if(!isset($result['hideaction']))
+		{
+			$result['hideaction']=false;
+		}
+		if(!isset($result['hidecontrol']))
+		{
+			$result['hidecontrol']=false;
+		}
+		if(!isset($result['hidemodule']))
+		{
+			$result['hidemodule']=false;
+		}
+		if($result['result'])
+		{
+			$result['rule']=$key;
+		}
+		else 
+		{
+			$result['rule']='';
+		}
+		return $result;
 	}
 
 	/**

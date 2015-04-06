@@ -16,27 +16,16 @@ class CacheFile extends CacheBase
 	public function __construct($config = null)
 	{
 		parent::__construct();
-		if ($config === null)
-		{
-			$config = Config::get('@.CACHE_FILE');
-		}
-		// 缓存路径
-		if (isset($config['CACHE_PATH']))
-		{
-			$this->path = $config['CACHE_PATH'];
-		}
-		else
+		// 缓存设置
+		if (empty($config))
 		{
 			$this->path = APP_CACHE;
-		}
-		// 缓存文件扩展名
-		if (isset($config['CACHE_EXT']))
-		{
-			$this->ext = $config['CACHE_EXT'];
+			$this->ext = Config::get('@.CACHE_EXT');
 		}
 		else
 		{
-			$this->ext = '.php';
+			$this->path = $config['CACHE_PATH'];
+			$this->ext = $config['CACHE_EXT'];
 		}
 	}
 	
@@ -104,7 +93,7 @@ class CacheFile extends CacheBase
 		}
 		else
 		{
-			if (flock($fp, LOCK_SH | LOCK_NB))
+			if (flock($fp, LOCK_SH))
 			{
 				$data = '';
 				while (! feof($fp))

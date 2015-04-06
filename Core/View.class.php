@@ -11,6 +11,7 @@ class View extends ArrayData
 	protected $contentType='text/html';
 	// 对应的控制器
 	protected $control;
+	protected $pathStack=array();
 	function __construct($theme = null,$control=null)
 	{
 		if (is_string($theme))
@@ -83,7 +84,7 @@ class View extends ArrayData
 				else 
 				{
 					$arr=explode('/',$template);
-					$template='';
+// 					$template='';
 					switch(count($arr))
 					{
 						case 1:
@@ -110,38 +111,47 @@ class View extends ArrayData
 					
 				}
 			}
-			if(empty($template))
+			if(empty($template) || isset($arr))
 			{
-				if(!isset($themeName))
+				$path=array_pop($this->pathStack);
+				array_push($this->pathStack,$path);
+				if($template[0]!=='/' && $path!==null)
 				{
-					$themeName = $this->getThemeName($theme);
+					$template="{$path}{$template}";
 				}
-				if(!isset($module))
+				else 
 				{
-					$module = Dispatch::module();
-				}
-				if(!isset($control))
-				{
-					$control = Dispatch::control();
-				}
-				if(!isset($action))
-				{
-					$action = Dispatch::action();
-				}
-				if(Config::get('@.MODULE_ON'))
-				{
-					if(Config::get('@.MODULE_TEMPLATE'))
+					if(!isset($themeName))
 					{
-						$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
+						$themeName = $this->getThemeName($theme);
+					}
+					if(!isset($module))
+					{
+						$module = Dispatch::module();
+					}
+					if(!isset($control))
+					{
+						$control = Dispatch::control();
+					}
+					if(!isset($action))
+					{
+						$action = Dispatch::action();
+					}
+					if(Config::get('@.MODULE_ON'))
+					{
+						if(Config::get('@.MODULE_TEMPLATE'))
+						{
+							$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
+						}
+						else
+						{
+							$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
+						}
 					}
 					else
 					{
-						$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
+						$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
 					}
-				}
-				else
-				{
-					$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
 				}
 			}
 			$template.=Config::get('@.TEMPLATE_EXT');
@@ -194,22 +204,35 @@ class View extends ArrayData
 		$this->showTemplate($template,$theme);
 	}
 	
+	public function getHtml($template = null, $theme = null)
+	{
+		// 解析出模版文件名
+		$file = $this->getTemplateFile($template, $theme);
+		// 模版引擎处理后的文件名
+		$file = $this->templateEngineParse($file);
+		ob_start();
+		include $file;
+		return ob_get_clean();
+	}
+	
 	public function _R_include($template = null, $theme = null)
 	{
 		$this->showTemplate($template,$theme);
 	}
 	
+	
 	private function showTemplate($template = null, $theme = null)
 	{
-		if (is_file($template))
-		{
-			$file = $template;
-		}
-		else
-		{
-			// 解析出模版文件名
-			$file = $this->getTemplateFile($template, $theme);
-		}
+		// 解析出模版文件名
+		$file = $this->getTemplateFile($template, $theme);
+		array_push($this->pathStack,dirname($file).'/');
+		// 返回模版引擎处理后的文件名
+		include $this->templateEngineParse($file);
+		array_pop($this->pathStack);
+	}
+	
+	private function templateEngineParse($file)
+	{
 		if (Config::get('@.TEMPLATE_ENGINE_ON'))
 		{
 			// 启用模版引擎
@@ -218,14 +241,14 @@ class View extends ArrayData
 			if (! Cache::cacheExists($file))
 			{
 				// 没有模版缓存，解析模版并写入缓存
-				Cache::set($file, self::parseTemplate($file), array ('expire_on' => false));
+				Cache::set($file, $this->parseTemplate($file), array ('expire_on' => false));
 			}
 			// 执行
-			echo $this->execTemplate($cacheFile);
+			return $cacheFile;
 		}
 		else
 		{
-			echo $this->execTemplate($file);
+			return $file;
 		}
 	}
 	
@@ -238,31 +261,6 @@ class View extends ArrayData
 	{
 		$content = file_get_content($file);
 		return $content;
-	}
-	
-	/**
-	 * 执行模版，返回执行后内容
-	 *
-	 * @param string $file        	
-	 */
-	public function execTemplate($file)
-	{
-		if (is_array($file))
-		{
-			foreach ($file as $value)
-			{
-				if (is_file($value))
-				{
-					include $value;
-					break;
-				}
-			}
-		}
-		else
-		{
-			include $file;
-		}
-		return ob_get_clean();
 	}
 	
 	/**
@@ -323,16 +321,16 @@ class View extends ArrayData
 	public function __call($name, $arguments)
 	{
 		// 不存在的方法
-		$name="_R_{$name}";
-		if(method_exists($this,$name))
+		$name2="_R_{$name}";
+		if(method_exists($this,$name2))
 		{
-			call_user_func_array(array($this,$name),$arguments);
+			return call_user_func_array(array($this,$name2),$arguments);
 		}
 		// 判断绑定的控制器存在
-		else if(!empty($this->control) && method_exists($this->control,$name))
+		else if(!empty($this->control) && is_callable(array($this->control,$name)))
 		{
 			// 调用控制器中的方法
-			call_user_func_array(array($this->control,$name),$arguments);
+			return call_user_func_array(array($this->control,$name),$arguments);
 		}
 	}
 }

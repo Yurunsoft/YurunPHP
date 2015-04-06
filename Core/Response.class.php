@@ -52,6 +52,7 @@ class Response
 	 */
 	public static function msg($msg, $url = null, $status = 200)
 	{
+		ob_end_clean();
 		$ext = Config::get('@.TEMPLATE_EXT');
 		// 项目模版目录下对应http状态的模版文件
 		$file = APP_TEMPLATE . "_Msg/{$status}{$ext}";

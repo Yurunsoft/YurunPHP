@@ -18,7 +18,7 @@ class Control
 		$name="_R_{$name}";
 		if(method_exists($this,$name))
 		{
-			$this->$name();
+			return $this->$name();
 		}
 		else
 		{

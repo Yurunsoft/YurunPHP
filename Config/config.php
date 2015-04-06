@@ -2,9 +2,13 @@
 return array (
 		// 核心配置，擅改或覆盖同名配置项可能会造成网站无法访问
 		'CORE_CLASSES' => array ('Control','Model','View',		// 核心类
-		'ArrayData','Dispatch','Driver','Request','Event','Validator','Response','Lang','Cookie','Session'),'CORE_REQUIRE' => array ('ArrayData','Control','Dispatch','Request','Driver'),		// 必须加载的核心类
-		'CORE_DRIVER_CLASSES' => array ('Cache','Config','Db'),'CORE_DRIVER_REQUIRE' => array ('Config/ConfigBase',		// 核心驱动类
-		'Config/Config','Config/ConfigPhp'),		// 必须加载的核心驱动类
+		'ArrayData','Dispatch','Driver','Request','Event','Validator','Response','Lang','Cookie','Session'),
+		'CORE_REQUIRE' => array ('ArrayData','Control','Dispatch','Request','Driver'),		// 必须加载的核心类
+		'CORE_DRIVER_CLASSES' => array ('Cache','Config','Db','Log'),
+		'CORE_DRIVER_REQUIRE' => array (
+				'Config/ConfigBase',		// 核心驱动类
+				'Config/Config','Config/ConfigPhp'
+		),		// 必须加载的核心驱动类
 		'CORE_FUNCTIONS' => array ('common'),		// 核心函数库们
 		                                      
 		// 模块
@@ -47,6 +51,7 @@ return array (
 		'CACHE_TEMPLATE_FOLDER' => 'Template',		// 模版缓存文件夹名称
 		'CACHE_DATA_FOLDER' => 'Data',		// 数据缓存文件夹名称
 		'CACHE_PAGE_FOLDER' => 'Page',		// 页面缓存文件夹名称
+		'CACHE_EXT'			=> '.php',		// 缓存文件扩展名
 		
 		'LANG_FOLDER' => 'Lang',		// 语言包目录名
 		'LANG_AUTO' => true,		// 自动识别语言
@@ -59,5 +64,19 @@ return array (
 		
 		'TIMEZONE' => 'Asia/Shanghai',		// 时区设置
 		
-		'DB_PREFIX' => 'tb_',		// 默认表前缀
-		'DB_DEFAULT_TYPE' => 'Mysql');// 默认数据库类型
+		'DB_PREFIX' => 'tb_',			// 默认表前缀
+		'DB_DEFAULT_TYPE' => 'Mysql',	// 默认数据库类型
+		
+		'ERROR_DEBUG_TEMPLATE'	=>	PATH_TEMPLATE.'error.php',			// 错误异常模版，调试时使用
+		'ERROR_RELEASE_TEMPLATE'=>	PATH_TEMPLATE.'error_release.php',	// 错误异常模版，正式运行时使用
+		'ERROR_URL'				=>	'',									// 错误异常跳转页，非调试状态下使用
+		
+		// 日志
+		'LOG_ON'			=>	true,				// 是否开启日志记录功能
+		'LOG_TYPE'			=>	'file',				// 日志存储类型
+		'LOG_MAX_SIZE'		=>	104857600,			// 单个日志文件最大大小
+		'LOG_ERROR'			=>	true,				// 是否记录PHP异常和错误
+		'LOG_DATE_FORMAT'	=>	'Y-m-d H:i:s',		// 日志中显示的日期时间格式
+		'LOG_PATH'			=>	ROOT_PATH.'Logs/',	// 日志文件保存路径
+		'LOG_EXT'			=>	'.log',				// 日志文件扩展名
+);

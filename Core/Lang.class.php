@@ -25,7 +25,7 @@ class Lang
 			// 浏览器语言和默认语言不一致就加载覆盖
 			if ($default != $lang)
 			{
-				self::$list = array_merget(self::$list, self::loadLang($lang));
+				self::$list = array_merge(self::$list, self::loadLang($lang));
 			}
 		}
 	}

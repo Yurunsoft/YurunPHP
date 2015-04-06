@@ -48,65 +48,19 @@ class Event
 	 * @param boolean $once        	
 	 * @return mixed
 	 */
-	public static function trigger($event, $once = false,&$a=null,&$b=null,&$c=null,&$d=null,&$e=null)
+	public static function trigger($event, &$params=array())
 	{
 		if (isset(self::$events[$event]))
 		{
-			// 返回的值们
-			$return = array ();
-			// 获取参数
-			$args = func_get_args();
-			// 删除前2个，你懂的
-			array_splice($args, 0, 2);
-			// 参数数量
-			$an=count($args);
-			// 组合执行命令
-			$code='return call_user_func_array($item, array(';
-			for($i=0;$i<$an;++$i)
-			{
-				// 判断是否需要引用参数
-				if($i<=self::$args_num)
-				{
-					$code.="&\$args[{$i}],";
-				}
-				else
-				{
-					$code.="\$args[{$i}],";
-				}
-			}
-			if(substr($code,-1)==='(')
-			{
-				$code.='));';
-			}
-			else
-			{
-				$code=substr($code,0,-1).'));';
-			}
-			// 执行事件
 			foreach (self::$events[$event] as $item)
 			{
-				if ($once)
+				if(call_user_func_array($item,arrayRefer($params))===true)
 				{
-					$return=eval($code);
-					break;
-				}
-				else
-				{
-					$return[] = eval($code);
+					return true;
 				}
 			}
-			// 引用参数返回值
-			$str='a';
-			for($i=0;$i<$an;++$i)
-			{
-				$$str=$args[$i];
-				++$str;
-			}
-			return $return;
-		}
-		else
-		{
 			return false;
 		}
+		return true;
 	}
 }

@@ -188,7 +188,7 @@ class DbMysql extends DbBase
 		$this->lastSql = $sql;
 		// 执行SQL语句
 		$this->result = mysql_query($sql, $this->conn);
-		if($this->result===false && IS_DEBUG)
+		if($this->result===false)
 		{
 			// 用于调试
 			$GLOBALS['debug']['lastsql']=$this->lastSql;
@@ -282,7 +282,7 @@ class DbMysql extends DbBase
 		$error = mysql_error();
 		if ($error !== '')
 		{
-			$error .= PHP_EOL . '错误代码:' . mysql_errno();
+			$error .= PHP_EOL . '错误代码:' . mysql_errno() . " SQL语句:{$this->lastSql}";
 		}
 		return $error;
 	}

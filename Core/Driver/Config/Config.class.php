@@ -24,7 +24,7 @@ abstract class Config extends Driver
 	 * @param array $data        	
 	 * @return boolean
 	 */
-	public static function create($name, $type = 'php', $merge=true)
+	public static function create($name, $type = 'php')
 	{
 		if (self::exists($name))
 		{
@@ -45,7 +45,6 @@ abstract class Config extends Driver
 				$args[0] = $type;
 			}
 			$obj = call_user_func_array(array ('parent','create'), $args);
-			// 配置文件中载入配置文件
 			$data=$obj->get('CONFIGS');
 			if(is_array($data))
 			{
@@ -56,11 +55,8 @@ abstract class Config extends Driver
 			}
 			if ($obj !== false && $name !== '@')
 			{
-				if($merge)
-				{
-					// 将数据合并到公用项
-					self::getObj('@')->set($obj->get());
-				}
+				// 将数据合并到公用项
+				self::getObj('@')->set($obj->get());
 				return true;
 			}
 			else

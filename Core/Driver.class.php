@@ -77,7 +77,7 @@ abstract class Driver
 	 * @param type $name        	
 	 * @return mixed
 	 */
-	public static function getObj($name)
+	public static function getObj($name='')
 	{
 		static $driver;
 		// 第一次获取当前驱动名
