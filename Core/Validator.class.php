@@ -266,10 +266,15 @@ class Validator
 	 * @param int $max        	
 	 * @return boolean
 	 */
-	public static function length($val, $min, $max)
+	public static function length($val, $min, $max=null)
 	{
 		$len = strlen($val);
-		return $len >= $min && $len <= $max;
+		$result = ($len >= $min);
+		if($max!==null)
+		{
+			$result = ($result && $len <= $max);
+		}
+		return $result;
 	}
 	
 	/**
@@ -280,10 +285,15 @@ class Validator
 	 * @param int $max
 	 * @return boolean
 	 */
-	public static function lengthChar($val, $min, $max)
+	public static function lengthChar($val, $min, $max=null)
 	{
 		$len = mb_strlen($val);
-		return $len >= $min && $len <= $max;
+		$result = ($len >= $min);
+		if($max!==null)
+		{
+			$result = ($result && $len <= $max);
+		}
+		return $result;
 	}
 	/**
 	 * 判断空文本
