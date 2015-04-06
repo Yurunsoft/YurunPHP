@@ -49,7 +49,10 @@ class Model extends ArrayData
 			// 尝试获取数据库配置
 			$dbConfig = Config::get('@.DB');
 		}
-		$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
+		if(!empty($dbConfig))
+		{
+			$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
+		}
 		// 表前缀
 		$this->prefix=Config::get('@.DB.prefix');
 	}
