@@ -259,7 +259,7 @@ class Validator
 	}
 	
 	/**
-	 * 判断文本长度
+	 * 判断文本长度，以字节为单位
 	 *
 	 * @param string $val        	
 	 * @param int $min        	
@@ -272,6 +272,19 @@ class Validator
 		return $len >= $min && $len <= $max;
 	}
 	
+	/**
+	 * 判断文本长度，以字符为单位
+	 *
+	 * @param string $val
+	 * @param int $min
+	 * @param int $max
+	 * @return boolean
+	 */
+	public static function lengthChar($val, $min, $max)
+	{
+		$len = mb_strlen($val);
+		return $len >= $min && $len <= $max;
+	}
 	/**
 	 * 判断空文本
 	 *
