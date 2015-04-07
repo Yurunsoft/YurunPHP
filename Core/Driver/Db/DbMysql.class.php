@@ -7,7 +7,7 @@ class DbMysql extends DbBase
 {
 	// 参数标识
 	protected $param_flag = array ('`','`');
-	
+	private $fp;
 	/**
 	 * 连接数据库
 	 */
@@ -366,5 +366,74 @@ class DbMysql extends DbBase
 	public function commit()
 	{
 		$this->execute('commit');
+	}
+	/**
+	 * 解析sql文件，支持返回sql数组，或者使用回调函数
+	 * @param string $file
+	 * @param callback $callback
+	 * @return mixed
+	 */
+	public function parseMultiSql($file,$callback=null)
+	{
+		$this->fp = fopen($file, 'r');
+		if($this->fp===false)
+		{
+			return false;
+		}
+		else 
+		{
+			if(empty($callback))
+			{
+				$result=array();
+			}
+			$sql='';
+			while ($line = fgets($this->fp, 40960))
+			{
+				$line=trim($line);
+				if (strlen($line)>=1)
+				{
+					if ($line[0]==='#' || ($line[0]==='-' && $line[1]==='-'))
+					{
+						continue;
+					}
+				}
+				$sql.="{$line}\r\n";
+				if (strlen($line)>0)
+				{
+					if ($line[strlen($line)-1]===';')
+					{
+						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
+						if(empty($callback))
+						{
+							$result[]=$sql;
+						}
+						else 
+						{
+							call_user_func($callback,$sql);
+						}
+						$sql='';
+					}
+				}
+			}
+			if(empty($callback))
+			{
+				return $result;
+			}
+		}
+	}
+	/**
+	 * 导入sql文件，成功返回true，失败返回false
+	 * @param string $file
+	 * @return bool
+	 */
+	public function importSql($file)
+	{
+		$this->parseMultiSql($file,function($sql){
+			if(!$this->execute($sql))
+			{
+				return false;
+			}
+		});
+		return true;
 	}
 }
