@@ -231,7 +231,7 @@ class Dispatch
 			{
 				$param = array_merge(array (Config::get('@.MODULE_NAME') => $module,Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param);
 			}
-			if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'])
+			if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'] && Config::get('@.MODULE_NAME')===self::$module)
 			{
 				unset($param[Config::get('@.MODULE_NAME')]);
 			}
