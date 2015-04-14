@@ -57,7 +57,7 @@ return array (
 		'LANG_AUTO' => true,		// 自动识别语言
 		                     
 		// 默认
-		'DEFAULT_FILTER' => 'addslashes',		// 默认过滤方法，支持数组实现多个
+		'DEFAULT_FILTER' => 'htmlspecialchars',		// 默认过滤方法，支持数组实现多个
 		'DEFAULT_LANG' => 'zh-cn',		// 默认语言
 		
 		'PLUGIN_FOLDER' => 'Plugin',		// 插件目录

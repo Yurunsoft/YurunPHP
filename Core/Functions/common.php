@@ -78,13 +78,16 @@ function enumFiles($path, $event)
  */
 function execFilter($value, $filter)
 {
-	if (! is_array($filter))
+	if(!empty($filter))
 	{
-		$filter = explode(',', $filter);
-	}
-	foreach ($filter as $item)
-	{
-		$value = call_user_func_array($item, array ($value));
+		if (! is_array($filter))
+		{
+			$filter = explode(',', $filter);
+		}
+		foreach ($filter as $item)
+		{
+			$value = call_user_func_array($item, array ($value));
+		}
 	}
 	return $value;
 }

@@ -177,7 +177,7 @@ class Request
 			// 返回默认值
 			return $default;
 		}
-		if ($filter === false)
+		if (empty($filter))
 		{
 			// 不过滤直接返回
 			return $value;
@@ -189,16 +189,8 @@ class Request
 				// 按照配置中的过滤
 				$filter = Config::get('@.DEFAULT_FILTER');
 			}
-			if ($filter === false)
-			{
-				// 不过滤直接返回
-				return $value;
-			}
-			else
-			{
-				// 执行所有过滤操作
-				return execFilter($value, $filter);
-			}
+			// 执行所有过滤操作
+			return execFilter($value, $filter);
 		}
 	}
 	/**
