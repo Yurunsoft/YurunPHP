@@ -230,26 +230,18 @@ class Dispatch
 			else
 			{
 				$param = array_merge(array (Config::get('@.MODULE_NAME') => $module,Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param);
+				if($result['hidemodule'] || (Config::get('@.URL_HIDE_DEFAULT_MODULE') && $module===Config::get('@.MODULE_DEFAULT')))
+				{
+					unset($param[Config::get('@.MODULE_NAME')]);
+				}
 			}
-			if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'] && Config::get('@.MODULE_NAME')===self::$module)
-			{
-				unset($param[Config::get('@.MODULE_NAME')]);
-			}
-			if($result['hideaction'] && $action===Config::get('@.ACTION_DEFAULT'))
-			{
-				unset($param[Config::get('@.ACTION_NAME')]);
-			}
-			if(!empty($GLOBALS['DEFAULT_MC']))
-			{
-				list($dm,$dc)=explode('/',$GLOBALS['DEFAULT_MC']);
-			}
-			if($result['hidecontrol'] && ((isset($dc) && $control===$dc) || $control===Config::get('@.CONTROL_DEFAULT')))
+			if($result['hidecontrol'] || (Config::get('@.URL_HIDE_DEFAULT_CONTROL') && $control===Config::get('@.CONTROL_DEFAULT')))
 			{
 				unset($param[Config::get('@.CONTROL_NAME')]);
 			}
-			if($result['hidemodule'] && ((isset($dm) && $module===$dm) || $module===Config::get('@.MODULE_DEFAULT')))
+			if($result['hideaction'] || (Config::get('@.URL_HIDE_DEFAULT_ACTION') && $action===Config::get('@.ACTION_DEFAULT')))
 			{
-				unset($param[Config::get('@.MODULE_NAME')]);
+				unset($param[Config::get('@.ACTION_NAME')]);
 			}
 			if ($result['result'])
 			{
@@ -269,10 +261,6 @@ class Dispatch
 				}
 				if(stripos($result['rule'],'{#query#}')!==false)
 				{
-					if(isset($GLOBALS['HIDE_MODULE']) && $GLOBALS['HIDE_MODULE'])
-					{
-						unset($param[Config::get('@.MODULE_NAME')]);
-					}
 					$query=http_build_query($param);
 					if($query!=='' && stripos($result['rule'],'&')===false)
 					{
@@ -282,7 +270,7 @@ class Dispatch
 				}
 				$url.=$result['rule'];
 			}
-			else 
+			else if(!empty($param))
 			{
 				$url.='?'.http_build_query($param);
 			}

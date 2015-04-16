@@ -79,4 +79,9 @@ return array (
 		'LOG_DATE_FORMAT'	=>	'Y-m-d H:i:s',		// 日志中显示的日期时间格式
 		'LOG_PATH'			=>	ROOT_PATH.'Logs/',	// 日志文件保存路径
 		'LOG_EXT'			=>	'.log',				// 日志文件扩展名
+		
+		// URL配置
+		'URL_HIDE_DEFAULT_MODULE'	=>	true,		// 隐藏URL中默认模块
+		'URL_HIDE_DEFAULT_CONTROL'	=>	true,		// 隐藏URL中默认控制器
+		'URL_HIDE_DEFAULT_ACTION'	=>	true,		// 隐藏URL中默认动作
 );

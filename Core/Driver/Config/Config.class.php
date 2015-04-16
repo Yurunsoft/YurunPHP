@@ -21,7 +21,7 @@ abstract class Config extends Driver
 	 *
 	 * @param string $name        	
 	 * @param string $type        	
-	 * @param array $data        	
+	 * @param bool $merge
 	 * @return boolean
 	 */
 	public static function create($name, $type = 'php', $merge=true)
