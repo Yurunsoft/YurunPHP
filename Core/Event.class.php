@@ -43,12 +43,34 @@ class Event
 	
 	/**
 	 * 触发事件(监听事件)
-	 *
+	 * 不是引用传参方式，如有需要请使用triggerReference方法
 	 * @param name $event        	
 	 * @param boolean $once        	
 	 * @return mixed
 	 */
-	public static function trigger($event, &$params=array())
+	public static function trigger($event, $params=array())
+	{
+		if (isset(self::$events[$event]))
+		{
+			foreach (self::$events[$event] as $item)
+			{
+				if(call_user_func_array($item,$params)===true)
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+		return true;
+	}
+	/**
+	 * 触发事件(监听事件)
+	 * 引用传参方式
+	 * @param name $event        	
+	 * @param boolean $once        	
+	 * @return mixed
+	 */
+	public static function triggerReference($event, &$params=array())
 	{
 		if (isset(self::$events[$event]))
 		{
