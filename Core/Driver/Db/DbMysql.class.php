@@ -428,8 +428,9 @@ class DbMysql extends DbBase
 	 */
 	public function importSql($file)
 	{
-		$this->parseMultiSql($file,function($sql){
-			if(!$this->execute($sql))
+		$_this=$this;
+		$this->parseMultiSql($file,function($sql)use($_this){
+			if(!$_this->execute($sql))
 			{
 				return false;
 			}

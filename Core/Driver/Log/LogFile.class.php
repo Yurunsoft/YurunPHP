@@ -35,6 +35,10 @@ class LogFile extends LogBase
 	 */
 	public function save($data)
 	{
+		if(!is_dir($this->path))
+		{
+			mkdir($this->path,0777,true);
+		}
 		$fileName=date('Y-m-d');
 		$fileURI="{$this->path}{$fileName}{$this->ext}";
 		$i=1;
