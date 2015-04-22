@@ -224,6 +224,11 @@ class Dispatch
 			{
 				$domain="{$subDomain}.{$domain}";
 			}
+			// 去除域名后尾的/
+			if(substr($domain,-1,1)==='/')
+			{
+				$domain=substr($domain,0,-1);
+			}
 			// 协议，http、https……
 			if(isset($urlInfo['scheme']))
 			{
