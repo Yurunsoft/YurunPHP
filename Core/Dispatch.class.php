@@ -131,15 +131,14 @@ class Dispatch
 	 *
 	 * @param string $rule        	
 	 * @param array $param        	
-	 * @param string $domain        	
-	 * @param boolean $subDomain
-	 *        	$domain是否作为子域名前缀
+	 * @param mixed $subDomain 子域名前缀
 	 * @return type
 	 */
-	public static function url($rule = null, $param = array(), $domain = null, $subDomain = false)
+	public static function url($rule = null, $param = array(), $subDomain = null)
 	{
 		// 插件
-		$args=array('rule'=>$rule, 'param'=>$param, 'domain'=>$domain, 'subDomain'=>$subDomain,'result'=>'');
+		$args=array('rule'=>$rule, 'param'=>$param, 'subDomain'=>$subDomain, 'result'=>'');
+		Event::triggerReference('YP_URL_CREATE',$args);
 		if (!empty($args['result']))
 		{
 			return $args['result'];
@@ -207,11 +206,38 @@ class Dispatch
 			}
 			// 检测是否有自定义URL
 			$result = self::checkRule($cfgName, $param);
-			if (empty($domain))
+			// 域名
+			if(isset($urlInfo['host']))
+			{
+				$domain=$urlInfo['host'];
+			}
+			else 
 			{
 				$domain = Config::get('@.DOMAIN');
+				if(empty($domain))
+				{
+					$domain=$_SERVER['HTTP_HOST'].str_replace('\\','/',dirname($_SERVER['SCRIPT_NAME']));
+				}
 			}
-			$url=Request::getProtocol()."{$domain}/";
+			// 子域名
+			if(!empty($subDomain))
+			{
+				$domain="{$subDomain}.{$domain}";
+			}
+			// 协议，http、https……
+			if(isset($urlInfo['scheme']))
+			{
+				$protocol=$urlInfo['scheme'];
+			}
+			else 
+			{
+				$protocol = Config::get('@.URL_PROTOCOL');
+				if(empty($protocol))
+				{
+					$protocol=Request::getProtocol();
+				}
+			}
+			$url="{$protocol}://{$domain}/";
 			if(!$result['hidefile'])
 			{
 				if($result['filename']==='')

@@ -84,4 +84,5 @@ return array (
 		'URL_HIDE_DEFAULT_MODULE'	=>	true,		// 隐藏URL中默认模块
 		'URL_HIDE_DEFAULT_CONTROL'	=>	true,		// 隐藏URL中默认控制器
 		'URL_HIDE_DEFAULT_ACTION'	=>	true,		// 隐藏URL中默认动作
+		'URL_PROTOCOL'				=>	'http'		// URL的协议，留空则取当前协议
 );
