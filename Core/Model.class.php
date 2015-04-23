@@ -276,6 +276,25 @@ class Model extends ArrayData
 						}
 					}
 					break;
+				case 'field':
+					if(!isset($this->options[$name]))
+					{
+						$this->options[$name]=array();
+					}
+					if(count($arguments)>1)
+					{
+						$this->options[$name] = array_merge($this->options[$name],$arguments);
+					}
+					else if(is_array($arguments[0]))
+					{
+						$this->options[$name] = array_merge($this->options[$name],$arguments[0]);
+					}
+					else 
+					{
+						$this->options[$name] = array_merge($this->options[$name],explode(',',$arguments[0]));
+					}
+					$this->options[$name] = array_unique($this->options[$name]);
+					break;
 				default:
 					if(count($arguments)===1)
 					{
