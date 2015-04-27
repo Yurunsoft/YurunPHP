@@ -203,14 +203,18 @@ else
 }
 // 删除临时核心配置
 unset($GLOBALS['cfg']);
-// 注册autoload方法，自动加载核心类
-spl_autoload_register('yurunAutoload');
+// 注册临时autoload方法，自动加载核心类
+spl_autoload_register('yurunAutoloadTmp');
 // 载入项目配置
 Config::create('App', 'php', APP_CONFIG . 'config.php');
 // 根据调试和正式应用载入不同配置
 Config::create('App_Run', 'php', APP_CONFIG . (IS_DEBUG ? 'debug.php' : 'release.php'));
 // 载入插件列表
 Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
+// 移除临时autoload方法
+spl_autoload_unregister('yurunAutoloadTmp');
+// 注册autoload方法，自动加载核心类
+spl_autoload_register('yurunAutoload');
 // 插件初始化
 Event::init();
 // 调度解析
@@ -219,80 +223,74 @@ Dispatch::resolve();
 date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 调度
 Dispatch::exec();
+function yurunAutoloadTmp($class)
+{
+	$file = "{$class}.class.php";
+	// 使用临时核心配置
+	if (in_array($class, $GLOBALS['cfg']['CORE_CLASSES']))
+	{
+		// 核心
+		require_once PATH_CORE . $file;
+		return;
+	}
+	else if (in_array($class, $GLOBALS['cfg']['CORE_DRIVER_CLASSES']))
+	{
+		// 类库核心
+		require_once PATH_CORE_DRIVER . "{$class}/{$file}";
+		return;
+	}
+}
 function yurunAutoload($class)
 {
 	$file = "{$class}.class.php";
-	if (isset($GLOBALS['cfg']))
+	// 使用配置类
+	if (in_array($class, Config::get('@.CORE_CLASSES')))
 	{
-		// 使用临时核心配置
-		if (in_array($class, $GLOBALS['cfg']['CORE_CLASSES']))
-		{
-			// 核心
-			require_once PATH_CORE . $file;
-			return;
-		}
-		else if (in_array($class, $GLOBALS['cfg']['CORE_DRIVER_CLASSES']))
-		{
-			// 类库核心
-			require_once PATH_CORE_DRIVER . "{$class}/{$file}";
-			return;
-		}
+		// 核心
+		require_once PATH_CORE . $file;
+		return;
 	}
-	else
+	else if (in_array($class, Config::get('@.CORE_DRIVER_CLASSES')))
 	{
-		// 使用配置类
-		if (in_array($class, Config::get('@.CORE_CLASSES')))
-		{
-			// 核心
-			require_once PATH_CORE . $file;
-			return;
-		}
-		else if (in_array($class, Config::get('@.CORE_DRIVER_CLASSES')))
-		{
-			// 类库核心
-			require_once PATH_CORE_DRIVER . "{$class}/{$file}";
-			return;
-		}
-		$currModulePath = APP_MODULE . Dispatch::module() . '/';
-		if (substr($class, - 7) === 'Control')
-		{
-			// 控制器
-			if (			// 其他扩展
-			require_once_multi(array ($currModulePath . Config::get('@.CONTROL_FOLDER') . "/{$file}",			// 模块模型目录
-			APP_CONTROL . $file,			// 项目控制器目录
-			PATH_EX_CONTROL . "/{$file}"), 			// 框架控制器扩展目录
-			false))
-			{
-				return;
-			}
-		}
-		if (substr($class, - 5) === 'Model')
-		{
-			// 模型
-			if (			// 其他扩展
-			require_once_multi(array ($currModulePath . Config::get('@.MODEL_FOLDER') . "/{$file}",			// 模块模型目录
-			APP_MODEL . $file,			// 项目模型目录
-			PATH_EX_MODEL . "/{$file}"), 			// 框架模型扩展目录
-			false))
-			{
-				return;
-			}
-		}
-		$file2 = '/' . getClassFirst($class) . "/{$file}";
-		if (		// 其他扩展
-		require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
-		$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . $file,		// 模块类库扩展
-		APP_LIB_DRIVER . $file2,		// 项目类库驱动工厂类
-		APP_LIB_EX . $file,		// 项目类库扩展目录
-		PATH_EX_DRIVER . $file2,		// 框架扩展驱动工厂类
-		PATH_EX_LIB . $file), 		// 框架扩展类库目录
+		// 类库核心
+		require_once PATH_CORE_DRIVER . "{$class}/{$file}";
+		return;
+	}
+	$currModulePath = APP_MODULE . Dispatch::module() . '/';
+	if (substr($class, - 7) === 'Control')
+	{
+		// 控制器
+		if (			// 其他扩展
+		require_once_multi(array ($currModulePath . Config::get('@.CONTROL_FOLDER') . "/{$file}",			// 模块模型目录
+		APP_CONTROL . $file,			// 项目控制器目录
+		PATH_EX_CONTROL . "/{$file}"), 			// 框架控制器扩展目录
 		false))
 		{
 			return;
 		}
-		else
+	}
+	if (substr($class, - 5) === 'Model')
+	{
+		// 模型
+		if (			// 其他扩展
+		require_once_multi(array ($currModulePath . Config::get('@.MODEL_FOLDER') . "/{$file}",			// 模块模型目录
+		APP_MODEL . $file,			// 项目模型目录
+		PATH_EX_MODEL . "/{$file}"), 			// 框架模型扩展目录
+		false))
 		{
-			// 找不到类文件
+			return;
 		}
+	}
+	$file2 = '/' . getClassFirst($class) . "/{$file}";
+	if (		// 其他扩展
+	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
+	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . $file,		// 模块类库扩展
+	APP_LIB_DRIVER . $file2,		// 项目类库驱动工厂类
+	APP_LIB_EX . $file,		// 项目类库扩展目录
+	PATH_EX_DRIVER . $file2,		// 框架扩展驱动工厂类
+	PATH_EX_LIB . $file), 		// 框架扩展类库目录
+	false))
+	{
+		return;
 	}
 }
