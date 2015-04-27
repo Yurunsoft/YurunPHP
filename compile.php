@@ -23,6 +23,9 @@ $result .= includeFile(PATH_CORE_DRIVER . 'Config/Config.class.php');
 $result .= includeFile(PATH_CORE_DRIVER . "Cache/CacheBase.class.php");
 $result .= includeFile(PATH_CORE_DRIVER . 'Cache/CacheFile.class.php');
 $result .= includeFile(PATH_CORE_DRIVER . 'Cache/Cache.class.php');
+$result .= includeFile(PATH_CORE_DRIVER . 'Log/LogBase.class.php');
+$result .= includeFile(PATH_CORE_DRIVER . 'Log/LogFile.class.php');
+$result .= includeFile(PATH_CORE_DRIVER . 'Log/Log.class.php');
 $result .= includeFile(PATH_CORE_DRIVER . "Db/DbBase.class.php");
 $result .= includeFile(PATH_CORE_DRIVER . 'Db/DbMysql.class.php');
 $result .= includeFile(PATH_CORE_DRIVER . 'Db/Db.class.php');
@@ -37,7 +40,8 @@ $fc = substr($fc, 5);
 $fc = "<?php define('IS_COMPILED',true);{$fc}";
 // 写出文件
 file_put_contents('Yurun-min.php', str_replace('// {compile}', $result, $fc));
-
+header('Content-type: text/html; charset=utf-8');
+echo '生成成功！';
 /**
  * 将PHP文件读入并去除空格和注释
  *

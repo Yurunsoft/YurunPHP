@@ -77,101 +77,6 @@ defined('APP_MODULE') or define('APP_MODULE', APP_PATH . $GLOBALS['cfg']['MODULE
 defined('APP_PLUGIN') or define('APP_PLUGIN', APP_PATH . $GLOBALS['cfg']['PLUGIN_FOLDER'] . '/');
 // 项目语言目录
 defined('APP_LANG') or define('APP_LANG', APP_PATH . $GLOBALS['cfg']['LANG_FOLDER'] . '/');
-/**
- * 输出错误提示
- * @param mixed $err
- */
-function printError($err)
-{
-	if(is_array($err))
-	{// 错误数组
-		$error=$err;
-		ob_start();
-		debug_print_backtrace();
-		$error['trace']=ob_get_clean();
-	}
-	else 
-	{// 错误对象
-		$error = array();
-		$error['message']=$err->getMessage();
-		$error['file']=$err->getFile();
-		$error['line']=$err->getLine();
-		$error['trace']=$err->getTraceAsString();
-	}
-	// 最后执行的sql语句
-	if(isset($GLOBALS['debug']['lastsql']))
-	{
-		$error['lastsql']=$GLOBALS['debug']['lastsql'];
-		unset($GLOBALS['debug']['lastsql']);
-	}
-	ob_end_clean();
-	header('HTTP/1.1 500 Internal Server Error');
-	header('Status:500 Internal Server Error');
-	if(IS_DEBUG)
-	{
-		include Config::get('@.ERROR_DEBUG_TEMPLATE');
-	}
-	else 
-	{
-		$url=Config::get('@.ERROR_URL');
-		if(empty($url))
-		{
-			include Config::get('@.ERROR_RELEASE_TEMPLATE');
-		}
-		else 
-		{
-			header("Location:{$url}");
-		}
-	}
-	exit(str_repeat(' ', 1024));
-}
-register_shutdown_function(function(){
-	if ($e = error_get_last())
-	{
-		switch($e['type']){
-			case E_ERROR:
-			case E_PARSE:
-			case E_CORE_ERROR:
-			case E_COMPILE_ERROR:
-			case E_USER_ERROR:
-				Log::add("错误:{$e['message']} 文件:{$e['file']} 行数:{$e['line']}");
-				Log::save();
-			 	ob_end_clean();
-			 	printError($e);
-				break;
-		}
-	}
-	Log::save();
-});
-set_error_handler(function($errno, $errstr, $errfile, $errline){
-	switch ($errno)
-	{
-		case E_ERROR:
-		case E_PARSE:
-		case E_CORE_ERROR:
-		case E_COMPILE_ERROR:
-		case E_USER_ERROR:
-			ob_end_clean();
-			$error = array();
-			$error['message']=$errstr;
-			$error['file']=$errfile;
-			$error['line']=$errline;
-			if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
-			{
-				Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
-			}
-			printError($error);
-			break;
-	}
-});
-set_exception_handler(function($exception){
-	if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
-	{
-		Log::add('错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
-	}
-	ob_end_clean();
-	printError($exception);
-});
 // 引用框架配置中规定的必须文件
 if (defined('IS_COMPILED'))
 {
@@ -184,6 +89,101 @@ else if (defined('COMPILE'))
 }
 else
 {
+	/**
+	 * 输出错误提示
+	 * @param mixed $err
+	 */
+	function printError($err)
+	{
+		if(is_array($err))
+		{// 错误数组
+			$error=$err;
+			ob_start();
+			debug_print_backtrace();
+			$error['trace']=ob_get_clean();
+		}
+		else
+		{// 错误对象
+			$error = array();
+			$error['message']=$err->getMessage();
+			$error['file']=$err->getFile();
+			$error['line']=$err->getLine();
+			$error['trace']=$err->getTraceAsString();
+		}
+		// 最后执行的sql语句
+		if(isset($GLOBALS['debug']['lastsql']))
+		{
+			$error['lastsql']=$GLOBALS['debug']['lastsql'];
+			unset($GLOBALS['debug']['lastsql']);
+		}
+		ob_end_clean();
+		header('HTTP/1.1 500 Internal Server Error');
+		header('Status:500 Internal Server Error');
+		if(IS_DEBUG)
+		{
+			include Config::get('@.ERROR_DEBUG_TEMPLATE');
+		}
+		else
+		{
+			$url=Config::get('@.ERROR_URL');
+			if(empty($url))
+			{
+				include Config::get('@.ERROR_RELEASE_TEMPLATE');
+			}
+			else
+			{
+				header("Location:{$url}");
+			}
+		}
+		exit(str_repeat(' ', 1024));
+	}
+	register_shutdown_function(function(){
+		if ($e = error_get_last())
+		{
+			switch($e['type']){
+				case E_ERROR:
+				case E_PARSE:
+				case E_CORE_ERROR:
+				case E_COMPILE_ERROR:
+				case E_USER_ERROR:
+					Log::add("错误:{$e['message']} 文件:{$e['file']} 行数:{$e['line']}");
+					Log::save();
+					ob_end_clean();
+					printError($e);
+					break;
+			}
+		}
+		Log::save();
+	});
+	set_error_handler(function($errno, $errstr, $errfile, $errline){
+		switch ($errno)
+		{
+			case E_ERROR:
+			case E_PARSE:
+			case E_CORE_ERROR:
+			case E_COMPILE_ERROR:
+			case E_USER_ERROR:
+				ob_end_clean();
+				$error = array();
+				$error['message']=$errstr;
+				$error['file']=$errfile;
+				$error['line']=$errline;
+				if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
+				{
+					Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
+				}
+				printError($error);
+				break;
+		}
+	});
+	set_exception_handler(function($exception){
+		if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
+		{
+			Log::add('错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
+		}
+		ob_end_clean();
+		printError($exception);
+	});
 	// 引用框架配置中规定的必须文件
 	// 框架公用函数集
 	foreach ($GLOBALS['cfg']['CORE_FUNCTIONS'] as $value)
