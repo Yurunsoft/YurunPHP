@@ -598,15 +598,26 @@ abstract class DbBase
 	public function parseJoin($join)
 	{
 		$result='';
-		foreach($join as $item)
+		$isTable=false;
+		foreach($join as $key=>$item)
 		{
-			if(is_string($item))
+			if($isTable)
+			{
+				$result.=' on '.$this->parseCondition($item);
+				$isTable=false;
+			}
+			else if(is_string($item))
 			{
 				$result.=" {$item}";
 			}
-			else
+			else if(isset($item['type'],$item['table'],$item['on']))
 			{
 				$result.=" {$item['type']} join ".$this->parseField($item['table']).' on '.$this->parseCondition($item['on']);
+			}
+			else
+			{
+				$result.=' join '.$this->parseField($item);
+				$isTable=true;
 			}
 		}
 		return $result;
