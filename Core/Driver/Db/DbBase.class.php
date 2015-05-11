@@ -353,7 +353,11 @@ abstract class DbBase
 		$fields = array ();
 		foreach ($field as $key => $value)
 		{
-			if (is_numeric($key))
+			if(is_array($value))
+			{
+				$fields[]=$this->parseConstValue($value);
+			}
+			else if (is_numeric($key))
 			{
 				// 无键名，无别名
 				$fields[] = $this->parseNameAlias($value);
@@ -374,7 +378,14 @@ abstract class DbBase
 			return $fields;
 		}
 	}
-	
+	/**
+	 * 解析静态值
+	 * @param array $data
+	 */
+	public function parseConstValue($data)
+	{
+		return implode(',',$data);
+	}
 	/**
 	 * 解析条件
 	 *
