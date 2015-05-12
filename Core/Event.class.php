@@ -29,16 +29,24 @@ class Event
 	/**
 	 * 注册事件
 	 *
-	 * @param string $event        	
-	 * @param mixed $callback        	
+	 * @param string $event
+	 * @param mixed $callback
+	 * @param bool $first 是否优先执行，以靠后设置的为准
 	 */
-	public static function register($event, $callback)
+	public static function register($event, $callback, $first=false)
 	{
 		if (! isset(self::$events[$event]))
 		{
 			self::$events[$event] = array ();
 		}
-		self::$events[$event][] = $callback;
+		if($first)
+		{
+			array_unshift(self::$events[$event],$callback);
+		}
+		else 
+		{
+			self::$events[$event][] = $callback;
+		}
 	}
 	
 	/**
