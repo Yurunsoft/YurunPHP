@@ -509,7 +509,14 @@ class Dispatch
 				return true;
 			}
 		}
-		return isset($GLOBALS['DENY_CONTROLS']);
+		if($GLOBALS['ALLOW_CONTROLS'])
+		{
+			return isset($GLOBALS['DENY_CONTROLS']);
+		}
+		else 
+		{
+			return true;
+		}
 	}
 	/**
 	 * 获取模块名
