@@ -13,7 +13,7 @@ class View extends ArrayData
 	protected $control;
 	protected $pathStack=array();
 	// 用于include的临时theme变量
-	protected $includeTheme;
+	protected $themeStack=array();
 	function __construct($theme = null,$control=null)
 	{
 		if (is_string($theme))
@@ -37,11 +37,8 @@ class View extends ArrayData
 	{
 		if(empty($theme))
 		{
-			$this->includeTheme=$this->theme;
-		}
-		else
-		{
-			$this->includeTheme=$theme;
+			$theme=array_pop($this->themeStack);
+			array_push($this->themeStack,$theme);
 		}
 		if (is_file($template))
 		{
@@ -210,7 +207,16 @@ class View extends ArrayData
 	{
 		// 设置内容类型和编码
 		header("Content-type: {$this->contentType}; charset=utf-8");
+		if(empty($theme))
+		{
+			array_push($this->themeStack,$this->theme);
+		}
+		else
+		{
+			array_push($this->themeStack,$theme);
+		}
 		$this->showTemplate($template,$theme);
+		array_pop($this->themeStack);
 	}
 	
 	public function getHtml($template = null, $theme = null)
@@ -226,7 +232,7 @@ class View extends ArrayData
 	
 	public function _R_include($template = null, $theme = null)
 	{
-		$this->showTemplate($template,empty($theme)?$this->includeTheme:$theme);
+		$this->showTemplate($template,$theme);
 	}
 	
 	
