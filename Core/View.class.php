@@ -12,6 +12,8 @@ class View extends ArrayData
 	// 对应的控制器
 	protected $control;
 	protected $pathStack=array();
+	// 用于include的临时theme变量
+	protected $includeTheme;
 	function __construct($theme = null,$control=null)
 	{
 		if (is_string($theme))
@@ -33,6 +35,14 @@ class View extends ArrayData
 	 */
 	public function getTemplateFile($template = null, $theme = null)
 	{
+		if(empty($theme))
+		{
+			$this->includeTheme=$this->theme;
+		}
+		else
+		{
+			$this->includeTheme=$theme;
+		}
 		if (is_file($template))
 		{
 			// 是文件就不用解析了
@@ -84,7 +94,6 @@ class View extends ArrayData
 				else 
 				{
 					$arr=explode('/',$template);
-// 					$template='';
 					switch(count($arr))
 					{
 						case 1:
@@ -217,7 +226,7 @@ class View extends ArrayData
 	
 	public function _R_include($template = null, $theme = null)
 	{
-		$this->showTemplate($template,$theme);
+		$this->showTemplate($template,empty($theme)?$this->includeTheme:$theme);
 	}
 	
 	
