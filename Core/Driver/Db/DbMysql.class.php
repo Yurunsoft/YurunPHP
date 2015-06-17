@@ -21,7 +21,7 @@ class DbMysql extends DbBase
 		{
 			$this->config = $config;
 		}
-		if ($this->conn === null)
+		if (empty($this->conn))
 		{
 			// 连接信息
 			$server = (isset($config['host']) ? $config['host'] : 'localhost') . ':' . (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306');
@@ -54,7 +54,6 @@ class DbMysql extends DbBase
 			}
 			else
 			{
-				$this->conn = null;
 				$this->connect = false;
 				return false;
 			}
@@ -279,10 +278,21 @@ class DbMysql extends DbBase
 	 */
 	public function getError()
 	{
-		$error = mysql_error();
-		if ($error !== '')
+		if($this->connect)
 		{
-			$error .= PHP_EOL . '错误代码:' . mysql_errno() . " SQL语句:{$this->lastSql}";
+			$error = iconv('GBK', 'UTF-8', mysql_error($this->conn));
+			if ($error !== '')
+			{
+				$error .= '错误代码：' . mysql_errno($this->conn) . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			}
+		}
+		else
+		{
+			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error());
+			if ($error !== '')
+			{
+				$error .= '错误代码：' . mysql_errno() . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			}
 		}
 		return $error;
 	}

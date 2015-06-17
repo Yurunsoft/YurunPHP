@@ -52,6 +52,10 @@ class Model extends ArrayData
 		if(!empty($dbConfig))
 		{
 			$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
+			if($this->db!==false && !$this->db->isConnect())
+			{
+				throw new Exception($this->db->getError());
+			}
 		}
 		// 表前缀
 		$this->prefix=Config::get('@.DB.prefix');
