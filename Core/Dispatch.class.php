@@ -242,7 +242,7 @@ class Dispatch
 					$protocol=Request::getProtocol();
 				}
 			}
-			$url="{$protocol}://{$domain}/";
+			$url="{$protocol}{$domain}/";
 			if(!$result['hidefile'])
 			{
 				if($result['filename']==='')
