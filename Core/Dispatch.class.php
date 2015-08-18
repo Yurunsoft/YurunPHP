@@ -293,9 +293,16 @@ class Dispatch
 				if(stripos($result['rule'],'{#query#}')!==false)
 				{
 					$query=http_build_query($param);
-					if($query!=='' && stripos($result['rule'],'&')===false)
+					if($query!=='')
 					{
-						$query="&{$query}";
+						if(stripos($result['rule'],'?')===false)
+						{
+							$query="?{$query}";
+						}
+						else
+						{
+							$query="&{$query}";
+						}
 					}
 					$result['rule'] = str_replace('{#query#}', $query, $result['rule']);
 				}
@@ -324,9 +331,15 @@ class Dispatch
 	{
 		$result=array('result'=>false);
 		static $outRules=array('filename','hidefile','hideaction','hidecontrol','hidemodule');
-		while(count($rule)>0)
+		$continue=true;
+		while($continue)
 		{
-			$rules=Config::get('@.URL_RULE.'.implode('.',$rule));
+			if(count($rule)==0)
+			{
+				$continue = false;
+			}
+			$strRule = implode('.',$rule);
+			$rules=Config::get('@.URL_RULE'.($strRule==''?'':".{$strRule}"));
 			array_pop($rule);
 			if(is_array($rules))
 			{

@@ -1,12 +1,12 @@
 <?php
 /**
- * MySQL数据库驱动类
+ * 微软Mssql数据库驱动类
  * @author Yurun <admin@yurunsoft.com>
  */
-class DbMysql extends DbBase
+class DbMssql extends DbBase
 {
 	// 参数标识
-	protected $param_flag = array ('`','`');
+	protected $param_flag = array ('[',']');
 	private $fp;
 	/**
 	 * 连接数据库
@@ -24,31 +24,11 @@ class DbMysql extends DbBase
 		if (empty($this->conn))
 		{
 			// 连接信息
-			$server = (isset($config['host']) ? $config['host'] : 'localhost') . ':' . (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306');
-			$username = isset($config['username']) ? $config['username'] : 'root';
-			$password = isset($config['password']) ? $config['password'] : '';
-			$flags = ((isset($config['flags']) && is_numeric($config['flags'])) ? $config['flags'] : 0);
+			$server = (isset($config['server']) ? $config['server'] : '.');
 			// 连接
-			if (isset($config['pc_connect']) && $config['pc_connect'])
-			{
-				$this->conn = mysql_pconnect($server, $username, $password, $flags);
-			}
-			else
-			{
-				$this->conn = mysql_connect($server, $username, $password, ((isset($config['newlink']) && is_bool($config['newlink'])) ? $config['newlink'] : 1), $flags);
-			}
+			$this->conn = sqlsrv_pconnect($server, $config);
 			if ($this->conn !== false)
 			{
-				// 设置编码
-				if (isset($config['charset']))
-				{
-					$this->execute("set names {$config['charset']}");
-				}
-				// 选择数据库
-				if (isset($config['dbname']))
-				{
-					$this->selectDb($config['dbname']);
-				}
 				$this->connect = true;
 				return true;
 			}
@@ -69,7 +49,7 @@ class DbMysql extends DbBase
 	 */
 	public function disConnect()
 	{
-		if ($this->free() && mysql_close($this->conn))
+		if ($this->free() && sqlsrv_close($this->conn))
 		{
 			$this->conn = null;
 			$this->connect = false;
@@ -89,7 +69,7 @@ class DbMysql extends DbBase
 	 */
 	public function selectDb($dbName)
 	{
-		return mysql_select_db($dbName);
+		return false;
 	}
 	
 	/**
@@ -99,7 +79,7 @@ class DbMysql extends DbBase
 	{
 		if ($this->result !== null && ! is_bool($this->result))
 		{
-			mysql_free_result($this->result);
+			sqlsrv_free_stmt($this->result);
 			$this->result = null;
 			return true;
 		}
@@ -124,7 +104,7 @@ class DbMysql extends DbBase
 			}
 			else
 			{
-				$result = mysql_fetch_array($this->result);
+				$result = sqlsrv_fetch_array($this->result);
 				if ($result !== false)
 				{
 					return $result;
@@ -157,7 +137,7 @@ class DbMysql extends DbBase
 			else
 			{
 				$result = array ();
-				while ($t = mysql_fetch_array($this->result))
+				while ($t = sqlsrv_fetch_array($this->result))
 				{
 					$result[] = $t;
 				}
@@ -186,7 +166,7 @@ class DbMysql extends DbBase
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
 		// 执行SQL语句
-		$this->result = mysql_query($sql, $this->conn);
+		$this->result = sqlsrv_query($this->conn, $sql);
 		if($this->result===false)
 		{
 			// 用于调试
@@ -210,11 +190,11 @@ class DbMysql extends DbBase
 		unset($p[0]);
 		if (count($p) === 1 && is_array($p[0]))
 		{
-			return $this->queryA("call $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryA("exec $procName " . implode(',', $this->filterValue($p[0])));
 		}
 		else
 		{
-			return $this->queryA("call $procName(" . $this->filterValue($p) . ')');
+			return $this->queryA("exec $procName " . $this->filterValue($p));
 		}
 	}
 	
@@ -248,7 +228,7 @@ class DbMysql extends DbBase
 	 */
 	public function foundRows()
 	{
-		return mysql_num_rows($this->result);
+		return sqlsrv_num_rows($this->result);
 	}
 	
 	/**
@@ -259,7 +239,7 @@ class DbMysql extends DbBase
 	 */
 	public function rowCount()
 	{
-		return mysql_affected_rows($this->conn);
+		return sqlsrv_rows_affected($this->result);
 	}
 	
 	/**
@@ -270,7 +250,7 @@ class DbMysql extends DbBase
 	 */
 	public function lastInsertID()
 	{
-		return mysql_insert_id($this->conn);
+		return $this->queryValue('SELECT SCOPE_IDENTITY()');
 	}
 	
 	/**
@@ -278,21 +258,11 @@ class DbMysql extends DbBase
 	 */
 	public function getError()
 	{
-		if($this->connect)
+		$errors = sqlsrv_errors();
+		$error = array_shift($errors);
+		if ($error !== null)
 		{
-			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error($this->conn));
-			if ($error !== '')
-			{
-				$error .= '错误代码：' . mysql_errno($this->conn) . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
-			}
-		}
-		else
-		{
-			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error());
-			if ($error !== '')
-			{
-				$error .= '错误代码：' . mysql_errno() . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
-			}
+			$error .= "{$error['message']} 错误代码：{$error['code']}({$error['SQLSTATE']})" . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
 		}
 		return $error;
 	}
@@ -306,11 +276,11 @@ class DbMysql extends DbBase
 	{
 		if (empty($dbName))
 		{ // 当前表
-			$sql = 'show tables';
+			$sql = 'select * from sys.tables';
 		}
 		else
 		{ // 其他表
-			$sql = 'show tables from ' . $this->parseField($dbName);
+			$sql = 'select * from ' . $this->parseField($dbName) . '.sys.tables';
 		}
 		// 查询
 		$result = $this->queryA($sql);
@@ -339,7 +309,9 @@ class DbMysql extends DbBase
 	public function getFields($table)
 	{
 		// 查询
-		$result = $this->queryA('show columns from ' . $this->parseField($table));
+		$result = $this->queryA('select sys.syscolumns.*,sys.types.name as xtype_name ,(case when sys.index_columns.object_id is null then 0 else 1 end) as is_pk from sys.syscolumns
+join sys.types on xtype=system_type_id 
+left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid and sys.index_columns.object_id=id where id=object_id(\'' . $this->parseField($table) . '\')');
 		if ($result === false)
 		{ // 失败
 			return false;
@@ -350,7 +322,7 @@ class DbMysql extends DbBase
 			// 处理数据
 			foreach ($result as $value)
 			{
-				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => strtolower($value['Null']) === 'yes','default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
+				$r[] = array ('name' => $value['name'],'type' => $value['xtype_name'],'null' => strtolower($value['isnullable']) === 'yes','default' => $value['autoval'],'key' => $value['is_pk'],'autoinc' => $value['colstat']);
 			}
 			// 返回结果
 			return $r;
@@ -361,21 +333,21 @@ class DbMysql extends DbBase
 	 */
 	public function begin()
 	{
-		$this->execute('begin');
+		return sqlsrv_begin_transaction($this->conn);
 	}
 	/**
 	 * 回滚事务
 	 */
 	public function rollback()
 	{
-		$this->execute('rollback');
+		return sqlsrv_rollback($this->conn);
 	}
 	/**
 	 * 提交事务
 	 */
 	public function commit()
 	{
-		$this->execute('commit');
+		return sqlsrv_commit($this->conn);
 	}
 	/**
 	 * 解析sql文件，支持返回sql数组，或者使用回调函数
@@ -402,7 +374,7 @@ class DbMysql extends DbBase
 				$line=trim($line);
 				if (strlen($line)>=1)
 				{
-					if ($line[0]==='#' || ($line[0]==='-' && $line[1]==='-'))
+					if ($line[0]==='-' && $line[1]==='-')
 					{
 						continue;
 					}
@@ -431,4 +403,5 @@ class DbMysql extends DbBase
 			}
 		}
 	}
+	
 }

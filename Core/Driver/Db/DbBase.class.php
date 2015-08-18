@@ -720,6 +720,29 @@ abstract class DbBase
 		}
 	}
 	/**
+	 * 导入sql文件，成功返回true，失败返回false
+	 * @param string $file
+	 * @return bool
+	 */
+	public function importSql($file)
+	{
+		$_this=$this;
+		$this->parseMultiSql($file,function($sql)use($_this){
+			if(!$_this->execute($sql))
+			{
+				return false;
+			}
+		});
+		return true;
+	}
+	/**
+	 * 解析sql文件，支持返回sql数组，或者使用回调函数
+	 * @param string $file
+	 * @param callback $callback
+	 * @return mixed
+	 */
+	abstract public function parseMultiSql($file,$callback=null);
+	/**
 	 * 查询一条记录
 	 */
 	abstract public function query($sql);
