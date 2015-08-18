@@ -26,7 +26,7 @@ class DbMssql extends DbBase
 			// 连接信息
 			$server = (isset($config['server']) ? $config['server'] : '.');
 			// 连接
-			$this->conn = sqlsrv_pconnect($server, $config);
+			$this->conn = sqlsrv_connect($server, $config['info']);
 			if ($this->conn !== false)
 			{
 				$this->connect = true;
@@ -262,9 +262,10 @@ class DbMssql extends DbBase
 		$error = array_shift($errors);
 		if ($error !== null)
 		{
-			$error .= "{$error['message']} 错误代码：{$error['code']}({$error['SQLSTATE']})" . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			$result = iconv('GBK', 'UTF-8//IGNORE', $error['message']);
+			$result .= " 错误代码：{$error['code']}({$error['SQLSTATE']})" . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
 		}
-		return $error;
+		return $result;
 	}
 	
 	/**
