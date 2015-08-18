@@ -262,7 +262,14 @@ class DbMssql extends DbBase
 		$error = array_shift($errors);
 		if ($error !== null)
 		{
-			$result = $error['message'];
+			if($this->isConnect())
+			{
+				$result = iconv('GBK', 'UTF-8//IGNORE', $error['message']);;
+			}
+			else
+			{
+				$result = $error['message'];
+			}
 			$result .= " 错误代码：{$error['code']}({$error['SQLSTATE']})" . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
 		}
 		return $result;
