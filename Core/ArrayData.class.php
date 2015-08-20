@@ -3,7 +3,7 @@
  * 数组数据基类
  * @author Yurun <admin@yurunsoft.com>
  */
-class ArrayData
+class ArrayData implements ArrayAccess
 {
 	// 数据
 	protected $data = array ();
@@ -64,7 +64,7 @@ class ArrayData
 	 * @param mixed $default        	
 	 * @return mixed
 	 */
-	public function get($name = null, $default = false)
+	public function &get($name = null, $default = false)
 	{
 		if (empty($name))
 		{
@@ -178,5 +178,52 @@ class ArrayData
 	public function exists($name)
 	{
 		return isset($this->data[$name]);
+	}
+	
+	public function &__get ($key)
+	{
+		return $this->get($key);
+	}
+	
+	public function __set($key,$value)
+	{
+		$this->set($key,$value);
+	}
+	
+	public function __isset ($key)
+	{
+		return $this->get($key,null)!==null;
+	}
+	
+	public function __unset($key)
+	{
+		$this->remove($key);
+	}
+	
+	public function offsetSet($offset,$value)
+	{
+		if (is_null($offset))
+		{
+			$this->data[] = $value;
+		}
+		else
+		{
+			$this->setVal($offset,$value);
+		}
+	}
+	
+	public function offsetExists($offset)
+	{
+		return $this->get($offset,null)!==null;
+	}
+	
+	public function offsetUnset($offset)
+	{
+		$this->remove($offset);
+	}
+	
+	public function offsetGet($offset)
+	{
+		return $this->get($offset);
 	}
 }
