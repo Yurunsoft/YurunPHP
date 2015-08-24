@@ -14,6 +14,8 @@ class View extends ArrayData
 	protected $pathStack=array();
 	// 用于include的临时theme变量
 	protected $themeStack=array();
+	// 模版引擎对象
+	protected $engine;
 	function __construct($theme = null,$control=null)
 	{
 		if (is_string($theme))
@@ -23,6 +25,11 @@ class View extends ArrayData
 		if(is_object($control))
 		{
 			$this->control=$control;
+		}
+		if (Config::get('@.TEMPLATE_ENGINE_ON'))
+		{
+			$class = Config::get('@.TEMPLATE_ENGINE');
+			$this->engine = new $class;
 		}
 	}
 	
@@ -250,14 +257,13 @@ class View extends ArrayData
 	{
 		if (Config::get('@.TEMPLATE_ENGINE_ON'))
 		{
+			$cacheFileName = md5($file);
 			// 启用模版引擎
-			$cacheFile = Cache::getObj('file')->getFileName($file);
+			$cacheFile = Cache::getObj('File')->getFileName($cacheFileName);
 			// 判断模版缓存是否存在
-			if (! Cache::cacheExists($file))
-			{
-				// 没有模版缓存，解析模版并写入缓存
-				Cache::set($file, $this->parseTemplate($file), array ('expire_on' => false));
-			}
+			$t=$this->parseTemplate($file);
+			// 没有模版缓存，解析模版并写入缓存
+			Cache::set($cacheFileName, $t, array ('raw'=>true));
 			// 执行
 			return $cacheFile;
 		}
@@ -274,8 +280,7 @@ class View extends ArrayData
 	 */
 	public function parseTemplate($file)
 	{
-		$content = file_get_content($file);
-		return $content;
+		return $this->engine->parse($file);
 	}
 	
 	/**

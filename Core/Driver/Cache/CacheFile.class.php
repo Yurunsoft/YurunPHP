@@ -49,12 +49,19 @@ class CacheFile extends CacheBase
 			// 写锁
 			if (flock($fp, LOCK_EX))
 			{
-				// 防止泄露数据
-				fwrite($fp, '<?php exit;?>');
-				// 写入有效期
-				fwrite($fp, sprintf('%012d', isset($config['expire']) ? $config['expire'] : 0));
-				// 写入序列化后的值
-				fwrite($fp, serialize($value));
+				if(isset($config['raw']) && $config['raw'])
+				{
+					fwrite($fp, $value);
+				}
+				else 
+				{
+					// 防止泄露数据
+					fwrite($fp, '<?php exit;?>');
+					// 写入有效期
+					fwrite($fp, sprintf('%012d', isset($config['expire']) ? $config['expire'] : 0));
+					// 写入序列化后的值
+					fwrite($fp, serialize($value));
+				}
 				// 解锁
 				flock($fp, LOCK_UN);
 				// 关闭文件
@@ -107,7 +114,7 @@ class CacheFile extends CacheBase
 				// 获取缓存有效时间
 				$expire = (int)substr($data, 13, 12);
 				// 缓存文件最后修改时间和有效时间判定
-				if ($this->isExpired1(filemtime($fileName), $expire))
+				if ((!isset($config) || !$config['raw']) && $this->isExpired1(filemtime($fileName), $expire))
 				{
 					// 过期删除
 					unlink($fileName);
