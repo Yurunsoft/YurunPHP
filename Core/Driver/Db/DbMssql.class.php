@@ -8,6 +8,8 @@ class DbMssql extends DbBase
 	// 参数标识
 	protected $param_flag = array ('[',']');
 	private $fp;
+	// 查询返回的结果集
+	public $results;
 	/**
 	 * 连接数据库
 	 */
@@ -105,12 +107,13 @@ class DbMssql extends DbBase
 			else
 			{
 				$result = sqlsrv_fetch_array($this->result);
-				if ($result !== false)
+				if ($result === false)
 				{
-					return $result;
+					return false;
 				}
 				else
 				{
+					$this->parseResult($result);
 					return $result;
 				}
 			}
@@ -136,12 +139,19 @@ class DbMssql extends DbBase
 			}
 			else
 			{
-				$result = array ();
-				while ($t = sqlsrv_fetch_array($this->result))
+				$this->results = array();
+				do 
 				{
-					$result[] = $t;
+					$result = array ();
+					while ($t = sqlsrv_fetch_array($this->result))
+					{
+						$result[] = $t;
+					}
+					$this->parseResult($result);
+					$this->results[]=$result;
 				}
-				return $result;
+				while(sqlsrv_next_result($this->result));
+				return $this->results[0];
 			}
 		}
 		else
@@ -155,18 +165,12 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function execute($sql)
+	public function execute($sql,&$params=array())
 	{
-		// 解决执行存储过程后再执行语句就出错
-		if (substr($this->lastSql, 0, 5) == 'call ')
-		{
-			$this->disconnect();
-			$this->connect();
-		}
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
 		// 执行SQL语句
-		$this->result = sqlsrv_query($this->conn, $sql);
+		$this->result = sqlsrv_query($this->conn, $sql, $params);
 		if($this->result===false)
 		{
 			// 用于调试
@@ -175,7 +179,6 @@ class DbMssql extends DbBase
 		}
 		return $this->result !== false ? true : false;
 	}
-	
 	/**
 	 * 执行存储过程
 	 *
@@ -184,18 +187,81 @@ class DbMssql extends DbBase
 	 *        	string procName 存储过程名称
 	 * @return array
 	 */
-	public function execProc($procName)
+	public function execProc($procName,$params=array())
 	{
-		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		return $this->execProcRef($procName,$params);
+	}
+	/**
+	 * 执行存储过程
+	 *
+	 * @access public
+	 * @param
+	 *        	string procName 存储过程名称
+	 * @return array
+	 */
+	public function execProcRef($procName,&$params=array())
+	{
+		$config = Config::get("YBProc.{$procName}");
+		if($config)
 		{
-			return $this->queryA("exec $procName " . implode(',', $this->filterValue($p[0])));
+			$params2 = array();
+			$return = 0;
+			$params2[] = array(&$return,SQLSRV_PARAM_OUT);
+			if(isset($config['params']))
+			{
+				$s = count($config['params']);
+				for($i=0;$i<$s;++$i)
+				{
+					if(is_array($params[$i]))
+					{
+						$value = &$params[$i][0];
+					}
+					else
+					{
+						$value = &$params[$i];
+					}
+					$params2[] = array(&$value,$this->parseDirection(isset($params[$i][1])?$params[$i][1]:$config['params'][$i]['direction']),$this->parsePhpType($config['params'][$i]),$this->parseSqlType($config['params'][$i]));
+				}
+			}
 		}
 		else
 		{
-			return $this->queryA("exec $procName " . $this->filterValue($p));
+			$params2 = array();
+			$return = 0;
+			$params2[] = array(&$return,SQLSRV_PARAM_OUT);
+			$s = count($params);
+			for($i=0;$i<$s;++$i)
+			{
+				if(is_array($params[$i]))
+				{
+					$value = &$params[$i][0];
+				}
+				else
+				{
+					$value = &$params[$i];
+				}
+				$params2[] = array(&$value,$this->parseDirection($params[$i]['direction']),$this->parsePhpType($params[$i]),$this->parseSqlType($params[$i]));
+			}
 		}
+		// sql语句
+		$p = substr(str_repeat('?,',count($params)),0,-1);
+		$sql = "{?=call {$procName}({$p})}";
+		// 执行查询
+		$this->execute($sql, $params2);
+		// 取出结果
+		$this->results = array();
+		do 
+		{
+			$result = array ();
+			while ($t = sqlsrv_fetch_array($this->result))
+			{
+				$result[] = $t;
+			}
+			$this->parseResult($result);
+			$this->results[]=$result;
+		}
+		while(sqlsrv_next_result($this->result));
+		return $return;
 	}
 	
 	/**
@@ -411,5 +477,191 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 			}
 		}
 	}
-	
+	public function parseResult(&$data)
+	{
+		$oldKeys = array_keys($data);
+		$keys = array();
+		foreach($oldKeys as $key)
+		{
+			if(is_numeric($str))
+			{
+				$keys [] = $key;
+			}
+			else
+			{
+				$keys [] = iconv('GB2312', 'UTF-8//IGNORE', $key);
+			}
+			if(is_array($data[$key]))
+			{
+				$this->parseResult($data[$key]);
+			}
+		}
+		if(!empty($keys))
+		{
+			$data = array_combine($keys,$data);
+		}
+	}
+	public function parseDirection($direction)
+	{
+		switch($direction)
+		{
+			case 'out':
+				return SQLSRV_PARAM_OUT;
+			case 'inout':
+				return SQLSRV_PARAM_INOUT;
+			default:
+				return SQLSRV_PARAM_IN;
+		}
+	}
+	public function parseSqlType($config)
+	{
+		switch($config['sql_type'])
+		{
+			case 'bigint':
+				return SQLSRV_SQLTYPE_BIGINT;
+			case 'binary':
+				return SQLSRV_SQLTYPE_BINARY;
+			case 'bit':
+				return SQLSRV_SQLTYPE_BIT;
+			case 'char':
+				return SQLSRV_SQLTYPE_CHAR($config['length']);
+			case 'date':
+				return SQLSRV_SQLTYPE_DATE;
+			case 'datetime':
+				return SQLSRV_SQLTYPE_DATETIME;
+			case 'datetime2':
+				return SQLSRV_SQLTYPE_DATETIME2;
+			case 'datetimeoffset':
+				return SQLSRV_SQLTYPE_DATETIMEOFFSET;
+			case 'decimal':
+				return SQLSRV_SQLTYPE_DECIMAL($config['precision'],$config['scale']);
+			case 'float':
+				return SQLSRV_SQLTYPE_FLOAT;
+			case 'image':
+				return SQLSRV_SQLTYPE_IMAGE;
+			case 'int':
+				return SQLSRV_SQLTYPE_INT;
+			case 'money':
+				return SQLSRV_SQLTYPE_MONEY;
+			case 'nchar':
+				return SQLSRV_SQLTYPE_NCHAR($config['length']);
+			case 'numeric':
+				return SQLSRV_SQLTYPE_NUMERIC($config['precision'],$config['scale']);
+			case 'nvarchar':
+				return SQLSRV_SQLTYPE_NVARCHAR($config['length']);
+			case 'ntext':
+				return SQLSRV_SQLTYPE_NTEXT;
+			case 'real':
+				return SQLSRV_SQLTYPE_REAL;
+			case 'smalldatetime':
+				return SQLSRV_SQLTYPE_SMALLDATETIME;
+			case 'smallint':
+				return SQLSRV_SQLTYPE_SMALLINT;
+			case 'smallmoney':
+				return SQLSRV_SQLTYPE_SMALLMONEY;
+			case 'text':
+				return SQLSRV_SQLTYPE_TEXT;
+			case 'time':
+				return SQLSRV_SQLTYPE_TIME;
+			case 'timestamp':
+				return SQLSRV_SQLTYPE_TIMESTAMP;
+			case 'tinyint':
+				return SQLSRV_SQLTYPE_TINYINT;
+			case 'uniqueidentifier':
+				return SQLSRV_SQLTYPE_UNIQUEIDENTIFIER;
+			case 'UDT':
+				return SQLSRV_SQLTYPE_UDT;
+			case 'varbinary':
+				return SQLSRV_SQLTYPE_VARBINARY($config['length']);
+			case 'varchar':
+				return SQLSRV_SQLTYPE_VARCHAR($config['length']);
+			case 'xml':
+				return SQLSRV_SQLTYPE_XML;
+			default:
+				return null;
+		}
+	}
+	public function parsePhpType($config)
+	{
+		switch($config['php_type'])
+		{
+			case 'int':
+				return SQLSRV_PHPTYPE_INT;
+			case 'datetime':
+				return SQLSRV_PHPTYPE_DATETIME;
+			case 'float':
+				return SQLSRV_PHPTYPE_FLOAT;
+			case 'stream':
+				return SQLSRV_PHPTYPE_STREAM('UTF-8');
+			default:
+				return SQLSRV_PHPTYPE_STRING('UTF-8');
+		}
+	}
+	/**
+	 * 解析查询规则
+	 *
+	 * @param array $option
+	 * @return string
+	 */
+	public function parseSelectOption($option)
+	{
+		if(isset($option['limit']))
+		{
+			$limit = $option['limit'];
+			unset($option['limit']);
+			$order = $option['order'];
+			unset($option['order']);
+		}
+		$sql = parent::parseSelectOption($option);
+		if(isset($limit))
+		{
+			$order = $this->parseOrder($order);
+			$this->parseLimit($limit,$start,$end);
+			$sql = <<<EOF
+SELECT
+	*
+FROM
+	(
+		SELECT
+			TOP {$end} *, ROW_NUMBER () OVER ({$order}) AS RowNumber
+		FROM
+			(
+				{$sql}
+			) AS TmpPage1
+	) TmpPage
+WHERE
+	RowNumber > {$start}
+AND RowNumber <= {$end}
+{$order}
+EOF
+			;
+		}
+		return $sql;
+	}
+	/**
+	 * 解析limit
+	 *
+	 * @param mixed $limit
+	 * @return string
+	 */
+	public function parseLimit($limit,&$start=0,&$end=0)
+	{
+		if (! is_array($limit))
+		{
+			$limit = explode(',', $limit);
+		}
+		if (is_numeric($limit[0]))
+		{
+			if (isset($limit[1]) && is_numeric($limit[1]))
+			{
+				$start = $limit[0];
+				$end = $start + $limit[1];
+			}
+			else
+			{
+				$start = 0;
+				$end = $limit[0];
+			}
+		}
+	}
 }

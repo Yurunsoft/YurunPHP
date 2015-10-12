@@ -71,13 +71,7 @@ class Dispatch
 			self::$action = Config::get('@.ACTION_DEFAULT');
 		}
 	}
-	/**
-	 * 调度
-	 *
-	 * @param string $rule        	
-	 * @throws Exception
-	 */
-	public static function exec($rule = null)
+	public static function switchMCA($rule)
 	{
 		if (! empty($rule))
 		{
@@ -98,6 +92,16 @@ class Dispatch
 					break;
 			}
 		}
+	}
+	/**
+	 * 调度
+	 *
+	 * @param string $rule        	
+	 * @throws Exception
+	 */
+	public static function exec($rule = null, $pageNotFound = true)
+	{
+		self::switchMCA($rule);
 		$class = self::$control . 'Control';
 		if (Config::get('@.MODULE_ON'))
 		{
@@ -114,17 +118,16 @@ class Dispatch
 			{
 				$yurunControl->$action();
 			}
-			else
+			else if($pageNotFound)
 			{
 				Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
 			}
 		}
-		else
+		else if($pageNotFound)
 		{
 			// 控制器不存在
 			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
 		}
-		exit();
 	}
 	/**
 	 * 生成URL
@@ -150,7 +153,7 @@ class Dispatch
 			// url规则查询参数处理
 			if(!empty($urlInfo['query']))
 			{
-				parse_str($url['query'], $tmpParam);
+				parse_str($urlInfo['query'], $tmpParam);
 				$param=array_merge($tmpParam,$param);
 			}
 			// 模块名、控制器名和动作名

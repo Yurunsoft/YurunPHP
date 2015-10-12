@@ -32,7 +32,7 @@ class View extends ArrayData
 			$this->engine = new $class;
 		}
 	}
-	
+
 	/**
 	 * 获取模版文件名，可能返回文本或文本数组
 	 *
@@ -121,7 +121,6 @@ class View extends ArrayData
 							$action=implode('/',array_slice($arr,3));
 							break;
 					}
-					
 				}
 			}
 			if(empty($template) || isset($arr))
@@ -242,7 +241,6 @@ class View extends ArrayData
 		$this->showTemplate($template,$theme);
 	}
 	
-	
 	private function showTemplate($template = null, $theme = null)
 	{
 		// 解析出模版文件名
@@ -260,10 +258,13 @@ class View extends ArrayData
 			$cacheFileName = md5($file);
 			// 启用模版引擎
 			$cacheFile = Cache::getObj('File')->getFileName($cacheFileName);
-			// 判断模版缓存是否存在
-			$t=$this->parseTemplate($file);
-			// 没有模版缓存，解析模版并写入缓存
-			Cache::set($cacheFileName, $t, array ('raw'=>true));
+			if($this->cacheIsExpired($cacheFile))
+			{
+				// 判断模版缓存是否存在
+				$t=$this->parseTemplate($file);
+				// 没有模版缓存，解析模版并写入缓存
+				Cache::set($cacheFileName, $t, array ('raw'=>true));
+			}
 			// 执行
 			return $cacheFile;
 		}
@@ -272,7 +273,17 @@ class View extends ArrayData
 			return $file;
 		}
 	}
-	
+	private function cacheIsExpired($file)
+	{
+		if(Config::get('@.TEMPLATE_CACHE_ON') && is_file($file))
+		{
+			return filemtime($file) + Config::get('@.TEMPLATE_CACHE_EXPIRE') < $_SERVER['REQUEST_TIME'];
+		}
+		else 
+		{
+			return true;
+		}
+	}
 	/**
 	 * 解析模版，返回解析后内容
 	 *

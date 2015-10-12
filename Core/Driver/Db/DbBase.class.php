@@ -24,6 +24,8 @@ abstract class DbBase
 	protected $connect = false;
 	// 最后执行的SQL语句
 	protected $lastSql = '';
+	// 是否启用参数标识
+	public $isUseParamFlag = true;
 	public function __construct($config = array())
 	{
 		$this->config = $config;
@@ -54,12 +56,19 @@ abstract class DbBase
 		{
 			$param = explode(',', $param);
 		}
-		$result = array ();
-		foreach ($param as $value)
+		if($this->isUseParamFlag)
 		{
-			$result[] = "{$this->param_flag[0]}{$value}{$this->param_flag[1]}";
+			$result = array ();
+			foreach ($param as $value)
+			{
+				$result[] = "{$this->param_flag[0]}{$value}{$this->param_flag[1]}";
+			}
+			return implode(',', $result);
 		}
-		return implode(',', $result);
+		else
+		{
+			return implode(',', $param);
+		}
 	}
 	
 	/**

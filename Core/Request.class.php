@@ -90,7 +90,7 @@ class Request
 		}
 		else
 		{
-			$dir=dirname(dirname($_SERVER['SCRIPT_NAME']));
+			$dir=dirname($_SERVER['SCRIPT_NAME']);
 			if($dir==='\\')
 			{
 				$dir='';

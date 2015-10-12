@@ -226,4 +226,8 @@ class ArrayData implements ArrayAccess
 	{
 		return $this->get($offset);
 	}
+	public function &getRawData() 
+	{
+		return $this->data;
+	}
 }
