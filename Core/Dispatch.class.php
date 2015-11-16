@@ -219,7 +219,7 @@ class Dispatch
 				$domain = Config::get('@.DOMAIN');
 				if(empty($domain))
 				{
-					$domain=$_SERVER['HTTP_HOST'].str_replace('\\','/',dirname($_SERVER['SCRIPT_NAME']));
+					$domain=$_SERVER['HTTP_HOST'].strtr(dirname($_SERVER['SCRIPT_NAME']), '\\','/');
 				}
 			}
 			// 子域名
@@ -398,7 +398,7 @@ class Dispatch
 					$tarr=explode(':', $val);
 					if(count($tarr)>1)
 					{
-						if (strlen($tarr[1]) >= 2 && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
+						if (isset($tarr[1][1]) && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
 						{
 							$k=$tarr[0];
 							// 正则

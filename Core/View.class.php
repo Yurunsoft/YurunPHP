@@ -45,7 +45,7 @@ class View extends ArrayData
 		if(empty($theme))
 		{
 			$theme=array_pop($this->themeStack);
-			array_push($this->themeStack,$theme);
+			$this->themeStack[] = $theme;
 		}
 		if (is_file($template))
 		{
@@ -126,7 +126,7 @@ class View extends ArrayData
 			if(empty($template) || isset($arr))
 			{
 				$path=array_pop($this->pathStack);
-				array_push($this->pathStack,$path);
+				$this->pathStack[] = $path;
 				if($template[0]!=='/' && $path!==null)
 				{
 					$template="{$path}{$template}";
@@ -215,12 +215,9 @@ class View extends ArrayData
 		header("Content-type: {$this->contentType}; charset=utf-8");
 		if(empty($theme))
 		{
-			array_push($this->themeStack,$this->theme);
+			$theme = $this->theme;
 		}
-		else
-		{
-			array_push($this->themeStack,$theme);
-		}
+		$this->themeStack[] = $theme;
 		$this->showTemplate($template,$theme);
 		array_pop($this->themeStack);
 	}
@@ -245,7 +242,9 @@ class View extends ArrayData
 	{
 		// 解析出模版文件名
 		$file = $this->getTemplateFile($template, $theme);
-		array_push($this->pathStack,dirname($file).'/');
+		$this->pathStack[] = dirname($file).'/';
+		// 将view层数据转为变量，方便模版中直接调用
+		extract($this->data);
 		// 返回模版引擎处理后的文件名
 		include $this->templateEngineParse($file);
 		array_pop($this->pathStack);

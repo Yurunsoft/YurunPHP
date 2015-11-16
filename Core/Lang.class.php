@@ -103,4 +103,3 @@ class Lang
 		return $list;
 	}
 }
-Lang::init();

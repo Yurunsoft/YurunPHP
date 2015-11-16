@@ -241,8 +241,12 @@ Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
 date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 注册autoload方法，自动加载核心类
 spl_autoload_register('yurunAutoload');
-// 插件初始化
+// 语言包支持
+Lang::init();
+// 插件扩展初始化
 Event::init();
+// 框架初始化完成事件
+Event::trigger('YURUN_FRAMEWORK_LOAD_COMPLETE');
 // 调度解析
 Dispatch::resolve();
 // 调度

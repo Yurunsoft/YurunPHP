@@ -155,8 +155,9 @@ abstract class Config extends Driver
 		$arrLen = count($names);
 		if ($arrLen === 1)
 		{
+// 			var_dump(self::$instance['Config']);exit;
 			// 删除配置分组
-			unset($configs[$name]);
+			unset(self::$instance['Config'][$name]);
 			return true;
 		}
 		else

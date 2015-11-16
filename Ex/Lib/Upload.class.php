@@ -58,7 +58,22 @@ class Upload
 	 */
 	public function __construct($savePath=null,$subPath=null,$fileRule=null,$allowExts=null,$maxSize=2048)
 	{
-		$this->savePath=empty($savePath)?(defined('PATH_UPLOAD')?PATH_UPLOAD:''):$savePath;
+		if(empty($savePath))
+		{
+			$path = Config::get('@.UPLOAD.SAVEPATH');
+			if($path===false)
+			{
+				$this->savePath = defined('PATH_UPLOAD')?PATH_UPLOAD:'';
+			}
+			else
+			{
+				$this->savePath = $path;
+			}
+		}
+		else
+		{
+			$this->savePath = $savePath;
+		}
 		$this->subPath=$subPath===null?Config::get('@.UPLOAD.SUBPATH'):$subPath;
 		$this->fileRule=$fileRule===null?Config::get('@.UPLOAD.FILERULE'):$fileRule;
 		$this->maxSize=$maxSize===null?Config::get('@.UPLOAD.MAXSIZE'):$maxSize;

@@ -210,7 +210,7 @@ class DbMysql extends DbBase
 		unset($p[0]);
 		if (count($p) === 1 && is_array($p[0]))
 		{
-			return $this->queryA("call $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryA("call $procName(" . $this->filterValue($p[0]) . ')');
 		}
 		else
 		{
@@ -232,11 +232,11 @@ class DbMysql extends DbBase
 		unset($p[0]);
 		if (count($p) === 1 && is_array($p[0]))
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryValue("select $procName(" . $this->filterValue($p[0]) . ')');
 		}
 		else
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p)) . ')');
+			return $this->queryValue("select $procName(" . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -400,7 +400,7 @@ class DbMysql extends DbBase
 			while ($line = fgets($this->fp, 40960))
 			{
 				$line=trim($line);
-				if (strlen($line)>=1)
+				if (isset($line[1]))
 				{
 					if ($line[0]==='#' || ($line[0]==='-' && $line[1]==='-'))
 					{
@@ -408,9 +408,9 @@ class DbMysql extends DbBase
 					}
 				}
 				$sql.="{$line}\r\n";
-				if (strlen($line)>0)
+				if (isset($line[0]))
 				{
-					if ($line[strlen($line)-1]===';')
+					if (substr($line,0,-1)===';')
 					{
 						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
 						if(empty($callback))

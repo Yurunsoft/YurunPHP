@@ -78,7 +78,7 @@ class ArrayData implements ArrayAccess
 		{
 			return $default;
 		}
-		$result = $this->data;
+		$result = &$this->data;
 		foreach ($name as $value)
 		{
 			if (is_array($result))
@@ -86,7 +86,7 @@ class ArrayData implements ArrayAccess
 				// 数组
 				if (isset($result[$value]))
 				{
-					$result = $result[$value];
+					$result = &$result[$value];
 				}
 				else
 				{
@@ -98,7 +98,7 @@ class ArrayData implements ArrayAccess
 				// 对象
 				if (property_exists($result, $value))
 				{
-					$result = $result->$value;
+					$result = &$result->$value;
 				}
 				else
 				{

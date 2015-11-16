@@ -257,10 +257,13 @@ class DbMssql extends DbBase
 			{
 				$result[] = $t;
 			}
-			$this->parseResult($result);
-			$this->results[]=$result;
+			if($t!==false)
+			{
+				$this->parseResult($result);
+				$this->results[]=$result;
+			}
 		}
-		while(sqlsrv_next_result($this->result));
+		while(sqlsrv_next_result($this->result)===true);
 		return $return;
 	}
 	
@@ -278,11 +281,11 @@ class DbMssql extends DbBase
 		unset($p[0]);
 		if (count($p) === 1 && is_array($p[0]))
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryValue("select {$funName}(" . $this->filterValue($p[0]) . ')');
 		}
 		else
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p)) . ')');
+			return $this->queryValue("select {$funName}(" . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -446,7 +449,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 			while ($line = fgets($this->fp, 40960))
 			{
 				$line=trim($line);
-				if (strlen($line)>=1)
+				if (isset($line[0]))
 				{
 					if ($line[0]==='-' && $line[1]==='-')
 					{
@@ -454,9 +457,9 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 					}
 				}
 				$sql.="{$line}\r\n";
-				if (strlen($line)>0)
+				if (isset($line[0]))
 				{
-					if ($line[strlen($line)-1]===';')
+					if (substr($line,0,-1)===';')
 					{
 						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
 						if(empty($callback))

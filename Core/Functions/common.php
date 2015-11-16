@@ -48,7 +48,7 @@ function getClassFirst($str)
 }
 function enumFiles($path, $event)
 {
-	if (substr(str_replace('\\', '/', $path), '-1', 1) !== '/')
+	if (substr(strtr($path, '\\', '/'), '-1', 1) !== '/')
 	{
 		$path .= '/';
 	}
