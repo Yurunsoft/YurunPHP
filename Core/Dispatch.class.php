@@ -102,32 +102,52 @@ class Dispatch
 	public static function exec($rule = null, $pageNotFound = true)
 	{
 		self::switchMCA($rule);
-		$class = self::$control . 'Control';
 		if (Config::get('@.MODULE_ON'))
 		{
 			// 载入模块配置
 			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
 		}
+		if(self::call()===false && $pageNotFound)
+		{
+			// 页面不存在
+			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+		}
+	}
+	/**
+	 * 调用
+	 * @return boolean
+	 */
+	public static function call()
+	{
+		$class = self::$control . 'Control';
 		// 控制器是否存在
 		if (self::checkControl(self::$module,self::$control) && class_exists($class))
 		{
 			// 实例化控制器
 			$yurunControl = new $class();
 			$action = self::$action;
-			if (is_callable(array($yurunControl, $action)))
+			if (method_exists($yurunControl, $action))
 			{
 				$yurunControl->$action();
 			}
-			else if($pageNotFound)
+			else
 			{
-				Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+				$action = "_R_{$action}";
+				if (method_exists($yurunControl, $action))
+				{
+					$yurunControl->$action();
+				}
+				else
+				{
+					return false;
+				}
 			}
 		}
-		else if($pageNotFound)
+		else
 		{
-			// 控制器不存在
-			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+			return false;
 		}
+		return true;
 	}
 	/**
 	 * 生成URL
