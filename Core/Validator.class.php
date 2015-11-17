@@ -268,7 +268,7 @@ class Validator
 	 */
 	public static function length($val, $min, $max=null)
 	{
-		return isset($val[$min-1]) && ($max===null || !isset($val[$max]))
+		return isset($val[$min-1]) && ($max===null || !isset($val[$max]));
 	}
 	
 	/**
