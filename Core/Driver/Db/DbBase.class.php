@@ -61,7 +61,7 @@ abstract class DbBase
 			$result = array ();
 			foreach ($param as $value)
 			{
-				$result[] = "{$this->param_flag[0]}{$value}{$this->param_flag[1]}";
+				$result[] = $this->param_flag[0].$value.$this->param_flag[1];
 			}
 			return implode(',', $result);
 		}

@@ -129,7 +129,7 @@ class View extends ArrayData
 				$this->pathStack[] = $path;
 				if($template[0]!=='/' && $path!==null)
 				{
-					$template="{$path}{$template}";
+					$template=$path.$template;
 				}
 				else 
 				{

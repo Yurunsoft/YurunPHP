@@ -86,7 +86,7 @@ class Request
 		}
 		if($path==='' || $path[0]==='/')
 		{
-			return self::getProtocol()."{$domain}{$path}";
+			return self::getProtocol().$domain.$path;
 		}
 		else
 		{
