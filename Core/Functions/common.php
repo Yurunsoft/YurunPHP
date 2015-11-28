@@ -180,10 +180,11 @@ function multimerge()
 {
 	$arrs = func_get_args ();
 	$merged = array ();
-	while ( $arrs )
+	$s = count($arrs);
+	for($i=0;$i<$s;++$i)
 	{
-		$array = array_shift ( $arrs );
-		if (! $array)
+		$array = $arrs[$i];
+		if (!is_array($array))
 		{
 			continue;
 		}
@@ -191,7 +192,7 @@ function multimerge()
 		{
 			if (is_string ( $key ))
 			{
-				if (is_array ( $value ) && array_key_exists ( $key, $merged ) && is_array ( $merged [$key] ))
+				if (is_array ( $value ) && isset($merged[$key]) && is_array ( $merged [$key] ))
 				{
 					$merged [$key] = multimerge ( $merged [$key], $value );
 				}
