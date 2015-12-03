@@ -119,7 +119,7 @@ class Page
 	 */
 	public function setRule($rule)
 	{
-		if($rule===null)
+		if(null===$rule)
 		{
 			$rule='';
 			if (Config::get('@.MODULE_ON'))
@@ -146,7 +146,7 @@ class Page
 	 */
 	public function setParam($param)
 	{
-		if($param===null)
+		if(null===$param)
 		{
 			$this->param=$_GET;
 		}

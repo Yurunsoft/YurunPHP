@@ -40,7 +40,7 @@ class CacheFile extends CacheBase
 	{
 		// 打开或创建缓存文件
 		$fp = fopen($this->getFileName($alias), 'w');
-		if ($fp === false)
+		if (false === $fp)
 		{
 			return false;
 		}
@@ -94,7 +94,7 @@ class CacheFile extends CacheBase
 		}
 		// 打开或创建缓存文件
 		$fp = fopen($fileName, 'r');
-		if ($fp === false)
+		if (false === $fp)
 		{
 			return $default;
 		}
@@ -177,7 +177,7 @@ class CacheFile extends CacheBase
 	{
 		$n = dirname($alias);
 		$path = $this->path;
-		if ($n !== '.')
+		if ('.' !== $n)
 		{
 			$path .= "{$n}/";
 		}

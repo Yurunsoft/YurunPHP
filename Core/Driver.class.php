@@ -81,7 +81,7 @@ abstract class Driver
 	{
 		static $driver;
 		// 第一次获取当前驱动名
-		if ($driver === null)
+		if (null === $driver)
 		{
 			$driver = get_called_class();
 		}
@@ -98,7 +98,7 @@ abstract class Driver
 	{
 		static $driver;
 		// 第一次获取当前驱动名
-		if ($driver === null)
+		if (null === $driver)
 		{
 			$driver = get_called_class();
 		}

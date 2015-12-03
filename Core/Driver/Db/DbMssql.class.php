@@ -29,7 +29,7 @@ class DbMssql extends DbBase
 			$server = (isset($config['server']) ? $config['server'] : '.');
 			// 连接
 			$this->conn = sqlsrv_connect($server, $config['info']);
-			if ($this->conn !== false)
+			if (false !== $this->conn)
 			{
 				$this->connect = true;
 				return true;
@@ -79,7 +79,7 @@ class DbMssql extends DbBase
 	 */
 	public function free()
 	{
-		if ($this->result !== null && ! is_bool($this->result))
+		if (null !== $this->result && ! is_bool($this->result))
 		{
 			sqlsrv_free_stmt($this->result);
 			$this->result = null;
@@ -107,7 +107,7 @@ class DbMssql extends DbBase
 			else
 			{
 				$result = sqlsrv_fetch_array($this->result);
-				if ($result === false)
+				if (false === $result)
 				{
 					return false;
 				}
@@ -171,13 +171,13 @@ class DbMssql extends DbBase
 		$this->lastSql = $sql;
 		// 执行SQL语句
 		$this->result = sqlsrv_query($this->conn, $sql, $params);
-		if($this->result===false)
+		if(false===$this->result)
 		{
 			// 用于调试
 			$GLOBALS['debug']['lastsql']=$this->lastSql;
 			throw new Exception($this->getError());
 		}
-		return $this->result !== false ? true : false;
+		return false !== $this->result ? true : false;
 	}
 	/**
 	 * 执行存储过程
@@ -257,13 +257,13 @@ class DbMssql extends DbBase
 			{
 				$result[] = $t;
 			}
-			if($t!==false)
+			if(false!==$t)
 			{
 				$this->parseResult($result);
 				$this->results[]=$result;
 			}
 		}
-		while(sqlsrv_next_result($this->result)===true);
+		while(true===sqlsrv_next_result($this->result));
 		return $return;
 	}
 	
@@ -278,10 +278,9 @@ class DbMssql extends DbBase
 	public function execFunction($funName)
 	{
 		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryValue("select {$funName}(" . $this->filterValue($p[0]) . ')');
+			return $this->queryValue("select {$funName}(" . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
@@ -329,7 +328,7 @@ class DbMssql extends DbBase
 	{
 		$errors = sqlsrv_errors();
 		$error = array_shift($errors);
-		if ($error !== null)
+		if (null !== $error)
 		{
 			if($this->isConnect())
 			{
@@ -361,7 +360,7 @@ class DbMssql extends DbBase
 		}
 		// 查询
 		$result = $this->queryA($sql);
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -389,7 +388,7 @@ class DbMssql extends DbBase
 		$result = $this->queryA('select sys.syscolumns.*,sys.types.name as xtype_name ,(case when sys.index_columns.object_id is null then 0 else 1 end) as is_pk from sys.syscolumns
 join sys.types on xtype=system_type_id 
 left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid and sys.index_columns.object_id=id where id=object_id(\'' . $this->parseField($table) . '\')');
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -399,7 +398,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 			// 处理数据
 			foreach ($result as $value)
 			{
-				$r[] = array ('name' => $value['name'],'type' => $value['xtype_name'],'null' => strtolower($value['isnullable']) === 'yes','default' => $value['autoval'],'key' => $value['is_pk'],'autoinc' => $value['colstat']);
+				$r[] = array ('name' => $value['name'],'type' => $value['xtype_name'],'null' => 'yes' === strtolower($value['isnullable']),'default' => $value['autoval'],'key' => $value['is_pk'],'autoinc' => $value['colstat']);
 			}
 			// 返回结果
 			return $r;
@@ -435,7 +434,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 	public function parseMultiSql($file,$callback=null)
 	{
 		$this->fp = fopen($file, 'r');
-		if($this->fp===false)
+		if(false===$this->fp)
 		{
 			return false;
 		}
@@ -451,7 +450,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 				$line=trim($line);
 				if (isset($line[0]))
 				{
-					if ($line[0]==='-' && $line[1]==='-')
+					if ('-'===$line[0] && '-'===$line[1])
 					{
 						continue;
 					}
@@ -459,7 +458,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 				$sql.="{$line}\r\n";
 				if (isset($line[0]))
 				{
-					if (substr($line,0,-1)===';')
+					if (';' === substr($line,0,-1))
 					{
 						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
 						if(empty($callback))

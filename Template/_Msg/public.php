@@ -12,7 +12,7 @@
 function redirect()
 {
 <?php
-if ($url === null)
+if (null === $url)
 {
 	?>
 	history.go(-1);
@@ -39,7 +39,7 @@ setTimeout('redirect()',1000);
 				</div>
 				<div style="height: 130px; font-size: 10pt; background: #ffffff">
 					<br><br><?php echo $msg;?><br><br><a
-									href="<?php if($url===null) echo $url;else echo 'javascript:redirect()';?>">如果你的浏览器没反应，请点击这里...</a><br>
+									href="<?php if(null===$url) echo $url;else echo 'javascript:redirect()';?>">如果你的浏览器没反应，请点击这里...</a><br>
 				
 				</div>
 			</div>

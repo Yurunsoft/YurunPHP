@@ -176,7 +176,7 @@ abstract class DbBase
 	public function update($data, $option, $return = self::RETURN_ISOK)
 	{
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
-		if ($where !== '')
+		if ('' !== $where)
 		{
 			$where = " where {$where}";
 		}
@@ -204,7 +204,7 @@ abstract class DbBase
 	public function delete($option, $return = self::RETURN_ISOK)
 	{
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
-		if ($where !== '')
+		if ('' !== $where)
 		{
 			$where = " where {$where}";
 		}
@@ -240,7 +240,7 @@ abstract class DbBase
 			$result=$this->queryA($sql);
 			if(!empty($option['number']))
 			{
-				$result=autoNumber($result, $option['number']);
+				autoNumber($result, $option['number']);
 			}
 			return $result;
 		}
@@ -265,7 +265,7 @@ abstract class DbBase
 	public function parseSelectOption($option)
 	{
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
-		if ($where !== '')
+		if ('' !== $where)
 		{
 			$where = " where {$where}";
 		}
@@ -378,7 +378,7 @@ abstract class DbBase
 			}
 		}
 		$fields = implode(',', $fields);
-		if ($fields === '')
+		if ('' === $fields)
 		{
 			return '*';
 		}
@@ -417,11 +417,11 @@ abstract class DbBase
 				}
 				else
 				{
-					if ($result !== '')
+					if ('' !== $result)
 					{ // 不是第一个条件，默认加上 and
 						$result .= ' ' . $this->getOperator('and') . ' ';
 					}
-					if ($key === '_exp')
+					if ('_exp' === $key)
 					{ // sql表达式，直接加上
 						$result .= $value;
 					}
@@ -540,7 +540,7 @@ abstract class DbBase
 		{
 			$result .= $this->parseField($key) . " $value,";
 		}
-		if ($result === '')
+		if ('' === $result)
 		{
 			return '';
 		}
@@ -559,7 +559,7 @@ abstract class DbBase
 	public function parseHaving($having)
 	{
 		$result = $this->parseCondition($having);
-		if ($result === '')
+		if ('' === $result)
 		{
 			return $result;
 		}
@@ -600,7 +600,7 @@ abstract class DbBase
 				$result .= $this->parseField($key) . " {$value},";
 			}
 		}
-		if ($result === '*,' || $result==='')
+		if ('*,' === $result || ''===$result)
 		{
 			return '';
 		}
@@ -686,13 +686,13 @@ abstract class DbBase
 	 */
 	private function parseNameAlias($name, $alias = '')
 	{
-		if ($name === '*')
+		if ('*' === $name)
 		{
 			return $name;
 		}
 		else
 		{
-			if (strpos($name, '(') !== false && strpos($name, ')') !== false)
+			if (false !== strpos($name, '(') && false !== strpos($name, ')'))
 			{
 				// 字段带函数
 				$result = $name;
@@ -704,11 +704,11 @@ abstract class DbBase
 				$arr = explode('.', $name);
 				foreach ($arr as $value)
 				{
-					if ($value === '')
+					if ('' === $value)
 					{ // 处理出现名称中出现.的情况
 						$last .= '.';
 					}
-					else if($value === '*')
+					else if('*' === $value)
 					{
 						$result .= $last.'*.';
 						$last = '';
@@ -721,7 +721,7 @@ abstract class DbBase
 				}
 				$result = substr($result, 0, - 1);
 			}
-			if ($alias !== '')
+			if ('' !== $alias)
 			{
 				$result = "{$result} as " . $this->parseArgs($alias);
 			}

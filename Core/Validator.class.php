@@ -98,11 +98,11 @@ class Validator
 	 */
 	public function validate($all = false, $data = null, $rules = null)
 	{
-		if ($data === null)
+		if (null === $data)
 		{
 			$data = $this->data;
 		}
-		if ($rules === null)
+		if (null === $rules)
 		{
 			$rules = $this->rule;
 		}
@@ -159,7 +159,7 @@ class Validator
 					$args = array_merge(array ($type), $v);
 				}
 				// 规则验证类型为是否存在
-				if ($type === 'required')
+				if ('required' === $type)
 				{
 					$result = $this->required($rule['name'], $data);
 				}
@@ -211,7 +211,7 @@ class Validator
 	 */
 	public function required($name, $data = null)
 	{
-		if ($data === null)
+		if (null === $data)
 		{
 			return isset($this->data[$name]);
 		}
@@ -268,7 +268,7 @@ class Validator
 	 */
 	public static function length($val, $min, $max=null)
 	{
-		return isset($val[$min-1]) && ($max===null || !isset($val[$max]));
+		return isset($val[$min-1]) && (null===$max || !isset($val[$max]));
 	}
 	
 	/**
@@ -297,7 +297,7 @@ class Validator
 	 */
 	public static function empty_str($str)
 	{
-		return $str === '';
+		return '' === $str;
 	}
 	
 	/**
@@ -308,7 +308,7 @@ class Validator
 	 */
 	public static function not_empty_str($str)
 	{
-		return $str !== '';
+		return '' !== $str;
 	}
 	
 	/**
@@ -322,7 +322,7 @@ class Validator
 	public static function email($email)
 	{
 		$atIndex = strrpos($email, '@');
-		if ($atIndex === false)
+		if (false === $atIndex)
 		{
 			return false;
 		}
@@ -348,7 +348,7 @@ class Validator
 					// 超出域部分长度
 					return false;
 				}
-				else if ($local[0] === '.' || $local[$localLen - 1] === '.')
+				else if ('.' === $local[0] || '.' === $local[$localLen - 1])
 				{
 					// 本地部分开始或结尾'.'
 					return false;
@@ -391,7 +391,7 @@ class Validator
 	 */
 	public static function mobile($str)
 	{
-		return is_numeric($str) && $str[0] > 0 && strlen($str) === 11;
+		return is_numeric($str) && $str[0] > 0 && 11 === strlen($str);
 	}
 	
 	/**
@@ -408,7 +408,7 @@ class Validator
 		'/^(\d{3,4}-)?(\d{3,4}){1}(-\d{3,4})?$/');
 		foreach ($rule as $t)
 		{
-			if (preg_match($t, $str) === 1)
+			if (1 === preg_match($t, $str))
 			{
 				return true;
 			}
@@ -437,7 +437,7 @@ class Validator
 	 */
 	public static function postcode($str)
 	{
-		return is_numeric($str) && $str[0] > 0 && strlen($str) === 6;
+		return is_numeric($str) && $str[0] > 0 && 6 === strlen($str);
 	}
 	
 	/**
@@ -676,7 +676,7 @@ class Validator
 		 */
 		$idcard_verify_number = function () use(&$id_card)
 		{
-			if (strlen($id_card) !== 17)
+			if (17 !== strlen($id_card))
 			{
 				return false;
 			}
@@ -704,7 +704,7 @@ class Validator
 		 */
 		$idcard_checksum18 = function () use(&$id_card, $idcard_verify_number)
 		{
-			if (strlen($id_card) !== 18)
+			if (18 !== strlen($id_card))
 			{
 				return false;
 			}
@@ -729,14 +729,14 @@ class Validator
 		 */
 		$idcard_15to18 = function () use(&$id_card, $idcard_verify_number)
 		{
-			if (strlen($id_card) !== 15)
+			if (15 !== strlen($id_card))
 			{
 				return false;
 			}
 			else
 			{
 				// 如果身份证顺序码是996 997 998 999，这些是为百岁以上老人的特殊编码
-				if (array_search(substr($id_card, 12, 3), array ('996','997','998','999')) !== false)
+				if (false !== array_search(substr($id_card, 12, 3), array ('996','997','998','999')))
 				{
 					$id_card = substr($id_card, 0, 6) . '18' . substr($id_card, 6, 9);
 				}
@@ -748,11 +748,12 @@ class Validator
 			$id_card = $id_card . $idcard_verify_number();
 			return $id_card;
 		};
-		if (strlen($id_card) === 18)
+		$len = strlen($id_card);
+		if (18 === $len)
 		{
 			return $idcard_checksum18();
 		}
-		else if ((strlen($id_card) === 15))
+		else if (15 === $len)
 		{
 			$id_card = $idcard_15to18();
 			return $idcard_checksum18();

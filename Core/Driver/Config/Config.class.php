@@ -53,7 +53,7 @@ abstract class Config extends Driver
 					call_user_func_array(array ('Config','create'), $val);
 				}
 			}
-			if ($obj !== false && $name !== '@')
+			if (false !== $obj && '@' !== $name)
 			{
 				if($merge)
 				{
@@ -152,10 +152,8 @@ abstract class Config extends Driver
 	public static function remove($name)
 	{
 		$names = explode('.', $name);
-		$arrLen = count($names);
-		if ($arrLen === 1)
+		if (1 === count($names))
 		{
-// 			var_dump(self::$instance['Config']);exit;
 			// 删除配置分组
 			unset(self::$instance['Config'][$name]);
 			return true;

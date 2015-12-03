@@ -12,7 +12,7 @@ abstract class Cache extends Driver
 	public static function init()
 	{
 		parent::init();
-		if (self::$pageCacheName === null)
+		if (null === self::$pageCacheName)
 		{
 			self::$pageCacheName = urlencode("{$_SERVER['HTTP_HOST']}#{$_SERVER['REQUEST_URI']}") . serialize($_REQUEST);
 		}
@@ -29,12 +29,12 @@ abstract class Cache extends Driver
 	 */
 	public static function create($type = 'file', $name = null, $data = array())
 	{
-		if ($name === null)
+		if (null === $name)
 		{
 			// 当别名留空，默认使用首字母大写的缓存类型名称
 			$name = ucfirst($type);
 		}
-		return ! self::exists($name) && parent::create($type, $name, $data) !== false;
+		return ! self::exists($name) && false !== parent::create($type, $name, $data);
 	}
 	
 	/**

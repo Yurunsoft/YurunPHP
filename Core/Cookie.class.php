@@ -36,7 +36,7 @@ class Cookie
 	 */
 	public static function set($name, $value, $expire = 0, $path = '', $domain = '', $secure = '')
 	{
-		return setcookie($name, $value, is_numeric($expire) ? $expire : self::$expire, $path == '' ? self::$path : $path, $domain == '' ? self::$domain : $domain, $secure == '' ? self::$secure : $secure);
+		return setcookie($name, $value, is_numeric($expire) ? $expire : self::$expire, '' == $path ? self::$path : $path, '' == $domain ? self::$domain : $domain, '' == $secure ? self::$secure : $secure);
 	}
 	
 	/**

@@ -268,7 +268,7 @@ function yurunAutoload($class)
 		return;
 	}
 	$currModulePath = APP_MODULE . Dispatch::module() . '/';
-	if (substr($class, - 7) === 'Control')
+	if ('Control' === substr($class, - 7))
 	{
 		// 控制器
 		if (			// 其他扩展
@@ -280,7 +280,7 @@ function yurunAutoload($class)
 			return;
 		}
 	}
-	if (substr($class, - 5) === 'Model')
+	if ('Model' === substr($class, - 5))
 	{
 		// 模型
 		if (			// 其他扩展

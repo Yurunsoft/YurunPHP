@@ -48,14 +48,14 @@ function getClassFirst($str)
 }
 function enumFiles($path, $event)
 {
-	if (substr(strtr($path, '\\', '/'), '-1', 1) !== '/')
+	if ('/' !== substr(strtr($path, '\\', '/'), '-1', 1))
 	{
 		$path .= '/';
 	}
 	$dir = dir($path);
-	while (($file = $dir->read()) !== false)
+	while (false !== ($file = $dir->read()))
 	{
-		if ($file !== '.' && $file !== '..')
+		if ('.' !== $file && '..' !== $file)
 		{
 			$fileName = $path . $file;
 			if (is_dir($fileName))
@@ -113,12 +113,12 @@ function randomNums($min, $max, $num, $re = false)
 	{
 		// 取随机数
 		$t = mt_rand($min, $max);
-		if (! $re && in_array($t, $arr))
+		if (! $re && isset($arr[$t]))
 		{
 			// 数字重复
 			continue;
 		}
-		$arr[] = $t;
+		$arr[$t] = 1;
 		++ $i;
 	}
 	while ($i < $num);
@@ -150,14 +150,13 @@ function getImages($str)
  * @param name $name
  * @return array
  */
-function autoNumber($arr,$name)
+function autoNumber(&$arr,$name)
 {
 	$s=count($arr);
 	for($i=0;$i<$s;++$i)
 	{
 		$arr[$i][$name]=$i+1;
 	}
-	return $arr;
 }
 /**
  * 将数组每个成员都设置为引用

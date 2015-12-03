@@ -57,33 +57,33 @@ class View extends ArrayData
 			if(is_string($template))
 			{
 				// 主题名
-				if (stripos($template, '@theme') !== false)
+				if (false !== stripos($template, '@theme'))
 				{
 					$template = str_replace('@theme', $this->getThemeName($theme), $template);
 				}
 				// 模块名
-				if (stripos($template, '@module') !== false)
+				if (false !== stripos($template, '@module'))
 				{
 					$template = str_replace('@module', Dispatch::module(), $template);
 				}
 				// 控制器名
-				if (stripos($template, '@control') !== false)
+				if (false !== stripos($template, '@control'))
 				{
 					$template = str_replace('@control', Dispatch::control(), $template);
 				}
 				// 动作名
-				if (stripos($template, '@action') !== false)
+				if (false !== stripos($template, '@action'))
 				{
 					$template = str_replace('@action', Dispatch::action(), $template);
 				}
 				
 				// 项目模版目录
-				if (stripos($template, '@app/') !== false)
+				if (false !== stripos($template, '@app/'))
 				{
 					$template = str_replace('@app/', APP_TEMPLATE, $template);
 				}
 				// 模块模版目录
-				else if (stripos($template, '@m/') !== false)
+				else if (false !== stripos($template, '@m/'))
 				{
 					if(Config::get('@.MODULE_ON'))
 					{
@@ -127,7 +127,7 @@ class View extends ArrayData
 			{
 				$path=array_pop($this->pathStack);
 				$this->pathStack[] = $path;
-				if($template[0]!=='/' && $path!==null)
+				if('/'!==$template[0] && null!==$path)
 				{
 					$template=$path.$template;
 				}

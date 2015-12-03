@@ -192,7 +192,7 @@ class ArrayData implements ArrayAccess
 	
 	public function __isset ($key)
 	{
-		return $this->get($key,null)!==null;
+		return null!==$this->get($key,null);
 	}
 	
 	public function __unset($key)
@@ -214,7 +214,7 @@ class ArrayData implements ArrayAccess
 	
 	public function offsetExists($offset)
 	{
-		return $this->get($offset,null)!==null;
+		return null!==$this->get($offset,null);
 	}
 	
 	public function offsetUnset($offset)
@@ -222,7 +222,7 @@ class ArrayData implements ArrayAccess
 		$this->remove($offset);
 	}
 	
-	public function offsetGet($offset)
+	public function &offsetGet($offset)
 	{
 		return $this->get($offset);
 	}

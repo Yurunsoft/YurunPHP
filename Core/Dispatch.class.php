@@ -107,7 +107,7 @@ class Dispatch
 			// 载入模块配置
 			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
 		}
-		if(self::call()===false && $pageNotFound)
+		if(false===self::call() && $pageNotFound)
 		{
 			// 页面不存在
 			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
@@ -219,7 +219,7 @@ class Dispatch
 				$param[Config::get('@.ACTION_NAME')]=$action;
 			}
 			// 根据是否有模块取不同的配置
-			if ($module === '')
+			if ('' === $module)
 			{
 				$cfgName = array($control,$action);
 			}
@@ -248,7 +248,7 @@ class Dispatch
 				$domain="{$subDomain}.{$domain}";
 			}
 			// 去除域名后尾的/
-			if(substr($domain,-1,1)==='/')
+			if('/'===substr($domain,-1,1))
 			{
 				$domain=substr($domain,0,-1);
 			}
@@ -268,7 +268,7 @@ class Dispatch
 			$url="{$protocol}{$domain}/";
 			if(!$result['hidefile'])
 			{
-				if($result['filename']==='')
+				if(''===$result['filename'])
 				{
 					$url.=basename($_SERVER['SCRIPT_NAME']);
 				}
@@ -277,7 +277,7 @@ class Dispatch
 					$url.=$result['filename'];
 				}
 			}
-			if ($module === '')
+			if ('' === $module)
 			{
 				$param = array_merge(array (Config::get('@.CONTROL_NAME') => $control,Config::get('@.ACTION_NAME') => $action), $param);
 			}
@@ -308,17 +308,17 @@ class Dispatch
 						$result['rule'] = str_replace($r[0][$i], urlencode($param[$r[1][$i]]), $result['rule']);
 						unset($param[$r[1][$i]]);
 					}
-					else if($r[1][$i]!=='#query#')
+					else if('#query#'!==$r[1][$i])
 					{
 						$result['rule'] = str_replace($r[0][$i], '', $result['rule']);
 					}
 				}
-				if(stripos($result['rule'],'{#query#}')!==false)
+				if(false!==stripos($result['rule'],'{#query#}'))
 				{
 					$query=http_build_query($param);
-					if($query!=='')
+					if(''!==$query)
 					{
-						if(stripos($result['rule'],'?')===false)
+						if(false===stripos($result['rule'],'?'))
 						{
 							$query="?{$query}";
 						}
@@ -357,12 +357,12 @@ class Dispatch
 		$continue=true;
 		while($continue)
 		{
-			if(count($rule)==0)
+			if(0 == count($rule))
 			{
 				$continue = false;
 			}
 			$strRule = implode('.',$rule);
-			$rules=Config::get('@.URL_RULE'.($strRule==''?'':".{$strRule}"));
+			$rules=Config::get('@.URL_RULE'.(''==$strRule?'':".{$strRule}"));
 			array_pop($rule);
 			if(is_array($rules))
 			{
@@ -403,13 +403,13 @@ class Dispatch
 			}
 			foreach ($rules as $key => $value)
 			{
-				if(is_array($value) || in_array(substr($key,1),$outRules)!==false)
+				if(is_array($value) || false!==in_array(substr($key,1),$outRules))
 				{
 					continue;
 				}
 				$result['result']=true;
 				$arr = preg_split('/\s/', $value);
-				if (count($arr) === 1 && $arr[0] === '')
+				if (1 === count($arr) && '' === $arr[0])
 				{
 					break;
 				}
@@ -418,7 +418,7 @@ class Dispatch
 					$tarr=explode(':', $val);
 					if(count($tarr)>1)
 					{
-						if (isset($tarr[1][1]) && $tarr[1][0] === '\\' && $tarr[1][1] === 'R')
+						if (isset($tarr[1][1]) && '\\' === $tarr[1][0] && 'R' === $tarr[1][1])
 						{
 							$k=$tarr[0];
 							// 正则
@@ -430,7 +430,7 @@ class Dispatch
 						}
 						else
 						{
-							if(array_key_exists($tarr[0],$param))
+							if(isset($param[$tarr[0]]))
 							{
 								$tarr[0]=$param[$tarr[0]];
 								// Filter类
@@ -499,7 +499,7 @@ class Dispatch
 		if(isset($GLOBALS['DENY_CONTROLS']))
 		{
 			if(isset($GLOBALS['DENY_CONTROLS'][$module])
-					&& in_array($control,$GLOBALS['DENY_CONTROLS'][$module])!==false)
+					&& false!==in_array($control,$GLOBALS['DENY_CONTROLS'][$module]))
 			{
 				return false;
 			}
@@ -508,7 +508,7 @@ class Dispatch
 		if(isset($GLOBALS['ALLOW_CONTROLS']))
 		{
 			if(isset($GLOBALS['ALLOW_CONTROLS'][$module]) 
-					&& in_array($control,$GLOBALS['ALLOW_CONTROLS'][$module])!==false)
+					&& false!==in_array($control,$GLOBALS['ALLOW_CONTROLS'][$module]))
 			{
 				return true;
 			}
@@ -516,7 +516,7 @@ class Dispatch
 		// 判断控制器是否不允许访问
 		if(isset($GLOBALS['DENY_CONTROLS']))
 		{
-			if(in_array($control,$GLOBALS['DENY_CONTROLS'])!==false)
+			if(false!==in_array($control,$GLOBALS['DENY_CONTROLS']))
 			{
 				return false;
 			}
@@ -524,7 +524,7 @@ class Dispatch
 		// 判断控制器是否允许访问
 		if(isset($GLOBALS['ALLOW_CONTROLS']))
 		{
-			if(in_array($control,$GLOBALS['ALLOW_CONTROLS'])!==false)
+			if(false!==in_array($control,$GLOBALS['ALLOW_CONTROLS']))
 			{
 				return true;
 			}
@@ -532,7 +532,7 @@ class Dispatch
 		// 判断模块下全部控制器是否不允许访问
 		if(isset($GLOBALS['DENY_CONTROLS'][$module]))
 		{
-			if(in_array('*',$GLOBALS['DENY_CONTROLS'][$module])!==false)
+			if(false!==in_array('*',$GLOBALS['DENY_CONTROLS'][$module]))
 			{
 				return false;
 			}
@@ -540,7 +540,7 @@ class Dispatch
 		// 判断模块下全部控制器是否允许访问
 		if(isset($GLOBALS['ALLOW_CONTROLS'][$module]))
 		{
-			if(in_array('*',$GLOBALS['ALLOW_CONTROLS'][$module])!==false)
+			if(false!==in_array('*',$GLOBALS['ALLOW_CONTROLS'][$module]))
 			{
 				return true;
 			}

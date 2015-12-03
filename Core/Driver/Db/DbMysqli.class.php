@@ -249,7 +249,7 @@ class DbMysqli extends DbBase
 	public function getError()
 	{
 		$error = mysql_error();
-		if ($error !== '')
+		if ('' !== $error)
 		{
 			$error .= PHP_EOL . '错误代码:' . mysql_errno();
 		}
@@ -309,7 +309,7 @@ class DbMysqli extends DbBase
 			// 处理数据
 			foreach ($result as $value)
 			{
-				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => strtolower($value['Null']) === 'yes','default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
+				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => 'yes' === strtolower($value['Null']),'default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
 			}
 			// 返回结果
 			return $r;

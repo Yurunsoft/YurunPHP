@@ -61,7 +61,7 @@ class Upload
 		if(empty($savePath))
 		{
 			$path = Config::get('@.UPLOAD.SAVEPATH');
-			if($path===false)
+			if(false===$path)
 			{
 				$this->savePath = defined('PATH_UPLOAD')?PATH_UPLOAD:'';
 			}
@@ -74,9 +74,9 @@ class Upload
 		{
 			$this->savePath = $savePath;
 		}
-		$this->subPath=$subPath===null?Config::get('@.UPLOAD.SUBPATH'):$subPath;
-		$this->fileRule=$fileRule===null?Config::get('@.UPLOAD.FILERULE'):$fileRule;
-		$this->maxSize=$maxSize===null?Config::get('@.UPLOAD.MAXSIZE'):$maxSize;
+		$this->subPath=null===$subPath?Config::get('@.UPLOAD.SUBPATH'):$subPath;
+		$this->fileRule=null===$fileRule?Config::get('@.UPLOAD.FILERULE'):$fileRule;
+		$this->maxSize=null===$maxSize?Config::get('@.UPLOAD.MAXSIZE'):$maxSize;
 		if(is_array($allowExts))
 		{
 			$this->allowExts=$allowExts;
@@ -117,7 +117,7 @@ class Upload
 	 */
 	public function up($name=null)
 	{
-		if($name===null)
+		if(null===$name)
 		{
 			$files=$this->parseFiles($_FILES);
 		}
@@ -160,7 +160,7 @@ class Upload
 	{
 		$result=$item;
 		$result['error_msg']=$this->getErrorMsg($item['error']);
-		if($item['error']===UPLOAD_ERR_OK)
+		if(UPLOAD_ERR_OK===$item['error'])
 		{
 			// 各种检查
 			if(!is_uploaded_file($item['tmp_name']))
@@ -251,7 +251,7 @@ class Upload
 	private function getUploadPath($item)
 	{
 		$path=$this->savePath;
-		if(substr($this->savePath,-1)!=='/')
+		if('/'!==substr($this->savePath,-1))
 		{
 			$path.='/';
 		}
@@ -371,11 +371,11 @@ class Upload
 	}
 	private function parseRuleParam(&$value,$key,$item)
 	{
-		if($value==='$this')
+		if('$this'===$value)
 		{
 			$value=$this;
 		}
-		else if($value==='__ITEM__')
+		else if('__ITEM__'===$value)
 		{
 			$value=$item;
 		}

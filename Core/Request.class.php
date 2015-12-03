@@ -12,7 +12,7 @@ class Request
 	 */
 	public static function isHttps()
 	{
-		return isset($_SERVER['HTTPS']) && strtolower($_SERVER['HTTPS']) !== 'off';
+		return isset($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']);
 	}
 	/**
 	 * 获取当前协议，http://或https://
@@ -32,7 +32,7 @@ class Request
 	 */
 	public static function method($compare = null)
 	{
-		if ($compare === null)
+		if (null === $compare)
 		{
 			// 返回请求方式
 			return $_SERVER['REQUEST_METHOD'];
@@ -40,7 +40,7 @@ class Request
 		else
 		{
 			// 判断
-			return strcasecmp($_SERVER['REQUEST_METHOD'], $compare) === 0;
+			return 0 === strcasecmp($_SERVER['REQUEST_METHOD'], $compare);
 		}
 	}
 	/**
@@ -54,7 +54,7 @@ class Request
 		// 获取来路
 		$referer = self::server('HTTP_REFERER');
 		// 判断是否有来路
-		if ($referer === false)
+		if (false === $referer)
 		{
 			if ($emptyDomain)
 			{
@@ -80,18 +80,18 @@ class Request
 	public static function getHome($path = '')
 	{
 		$domain=Config::get('@.DOMAIN');
-		if($domain===false)
+		if(false===$domain)
 		{
 			$domain=$_SERVER['HTTP_HOST'];
 		}
-		if($path==='' || $path[0]==='/')
+		if(''===$path || '/'===$path[0])
 		{
 			return self::getProtocol().$domain.$path;
 		}
 		else
 		{
 			$dir=dirname($_SERVER['SCRIPT_NAME']);
-			if($dir==='\\')
+			if('\\'===$dir)
 			{
 				$dir='';
 			}
@@ -114,20 +114,20 @@ class Request
 		switch (strtolower($arrName))
 		{
 			case 'get' :
-				$data = $_GET;
+				$data = &$_GET;
 				break;
 			case 'post' :
-				$data = $_POST;
+				$data = &$_POST;
 				break;
 			case 'cookie' :
-				$data = $_COOKIE;
+				$data = &$_COOKIE;
 				break;
 			case 'server' :
-				$data = $_SERVER;
+				$data = &$_SERVER;
 				break;
 			case 'all' :
 			default :
-				$data = $_REQUEST;
+				$data = &$_REQUEST;
 				break;
 		}
 		return isset($data[$name]);
@@ -146,23 +146,23 @@ class Request
 		switch (strtolower($arrName))
 		{
 			case 'get' :
-				$data = $_GET;
+				$data = &$_GET;
 				break;
 			case 'post' :
-				$data = $_POST;
+				$data = &$_POST;
 				break;
 			case 'cookie' :
-				$data = $_COOKIE;
+				$data = &$_COOKIE;
 				break;
 			case 'server' :
-				$data = $_SERVER;
+				$data = &$_SERVER;
 				break;
 			case 'all' :
 			default :
-				$data = $_REQUEST;
+				$data = &$_REQUEST;
 				break;
 		}
-		if ($name === '')
+		if ('' === $name)
 		{
 			// 全部的值
 			$value = $data;
@@ -182,15 +182,16 @@ class Request
 			// 不过滤直接返回
 			return $value;
 		}
-		else
+		else if ($filter!==false)
 		{
-			if (! (is_string($filter) || is_array($filter)))
-			{
-				// 按照配置中的过滤
-				$filter = Config::get('@.DEFAULT_FILTER');
-			}
+			// 按照配置中的过滤
+			$filter = Config::get('@.DEFAULT_FILTER');
 			// 执行所有过滤操作
 			return execFilter($value, $filter);
+		}
+		else
+		{
+			return $value;
 		}
 	}
 	/**

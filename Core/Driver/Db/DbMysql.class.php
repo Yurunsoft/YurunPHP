@@ -37,7 +37,7 @@ class DbMysql extends DbBase
 			{
 				$this->conn = mysql_connect($server, $username, $password, ((isset($config['newlink']) && is_bool($config['newlink'])) ? $config['newlink'] : 1), $flags);
 			}
-			if ($this->conn !== false)
+			if (false !== $this->conn)
 			{
 				// 设置编码
 				if (isset($config['charset']))
@@ -97,7 +97,7 @@ class DbMysql extends DbBase
 	 */
 	public function free()
 	{
-		if ($this->result !== null && ! is_bool($this->result))
+		if (null !== $this->result && ! is_bool($this->result))
 		{
 			mysql_free_result($this->result);
 			$this->result = null;
@@ -125,7 +125,7 @@ class DbMysql extends DbBase
 			else
 			{
 				$result = mysql_fetch_array($this->result);
-				if ($result !== false)
+				if (false !== $result)
 				{
 					return $result;
 				}
@@ -178,7 +178,7 @@ class DbMysql extends DbBase
 	public function execute($sql)
 	{
 		// 解决执行存储过程后再执行语句就出错
-		if (substr($this->lastSql, 0, 5) == 'call ')
+		if ('call ' == substr($this->lastSql, 0, 5))
 		{
 			$this->disconnect();
 			$this->connect();
@@ -187,13 +187,13 @@ class DbMysql extends DbBase
 		$this->lastSql = $sql;
 		// 执行SQL语句
 		$this->result = mysql_query($sql, $this->conn);
-		if($this->result===false)
+		if(false===$this->result)
 		{
 			// 用于调试
 			$GLOBALS['debug']['lastsql']=$this->lastSql;
 			throw new Exception($this->getError());
 		}
-		return $this->result !== false ? true : false;
+		return false !== $this->result ? true : false;
 	}
 	
 	/**
@@ -207,10 +207,9 @@ class DbMysql extends DbBase
 	public function execProc($procName)
 	{
 		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryA("call $procName(" . $this->filterValue($p[0]) . ')');
+			return $this->queryA("call $procName(" . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
@@ -281,7 +280,7 @@ class DbMysql extends DbBase
 		if($this->connect)
 		{
 			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error($this->conn));
-			if ($error !== '')
+			if ('' !== $error)
 			{
 				$error .= '错误代码：' . mysql_errno($this->conn) . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
 			}
@@ -289,7 +288,7 @@ class DbMysql extends DbBase
 		else
 		{
 			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error());
-			if ($error !== '')
+			if ('' !== $error)
 			{
 				$error .= '错误代码：' . mysql_errno() . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
 			}
@@ -314,7 +313,7 @@ class DbMysql extends DbBase
 		}
 		// 查询
 		$result = $this->queryA($sql);
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -340,7 +339,7 @@ class DbMysql extends DbBase
 	{
 		// 查询
 		$result = $this->queryA('show columns from ' . $this->parseField($table));
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -350,7 +349,7 @@ class DbMysql extends DbBase
 			// 处理数据
 			foreach ($result as $value)
 			{
-				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => strtolower($value['Null']) === 'yes','default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
+				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => 'yes' === strtolower($value['Null']),'default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
 			}
 			// 返回结果
 			return $r;
@@ -386,7 +385,7 @@ class DbMysql extends DbBase
 	public function parseMultiSql($file,$callback=null)
 	{
 		$this->fp = fopen($file, 'r');
-		if($this->fp===false)
+		if(false===$this->fp)
 		{
 			return false;
 		}
@@ -402,7 +401,7 @@ class DbMysql extends DbBase
 				$line=trim($line);
 				if (isset($line[1]))
 				{
-					if ($line[0]==='#' || ($line[0]==='-' && $line[1]==='-'))
+					if ('#'===$line[0] || ('-'===$line[0] && '-'===$line[1]))
 					{
 						continue;
 					}
@@ -410,7 +409,7 @@ class DbMysql extends DbBase
 				$sql.="{$line}\r\n";
 				if (isset($line[0]))
 				{
-					if (substr($line,0,-1)===';')
+					if (';'===substr($line,0,-1))
 					{
 						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
 						if(empty($callback))

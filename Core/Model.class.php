@@ -52,7 +52,7 @@ class Model extends ArrayData
 		if(!empty($dbConfig))
 		{
 			$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
-			if($this->db!==false && !$this->db->isConnect())
+			if(false!==$this->db && !$this->db->isConnect())
 			{
 				throw new Exception($this->db->getError());
 			}
@@ -300,7 +300,7 @@ class Model extends ArrayData
 					$this->options[$name] = array_unique($this->options[$name]);
 					break;
 				default:
-					if(count($arguments)===1)
+					if(1===count($arguments))
 					{
 						if(isset($this->options[$name]))
 						{
@@ -352,7 +352,7 @@ class Model extends ArrayData
 	public function add($data = null, $return = DbBase::RETURN_ISOK)
 	{
 		$option=$this->getOption();
-		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data === null ? $this->data : $data, $return);
+		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), null === $data ? $this->data : $data, $return);
 	}
 	
 	/**
@@ -365,7 +365,7 @@ class Model extends ArrayData
 	 */
 	public function edit($data = null, $return = DbBase::RETURN_ISOK)
 	{
-		return $this->db->update($data === null ? $this->data : $data, $this->getOption(), $return);
+		return $this->db->update(null === $data ? $this->data : $data, $this->getOption(), $return);
 	}
 	
 	/**
@@ -519,7 +519,7 @@ class Model extends ArrayData
 				if (! is_array($config['limit']))
 				{
 					$config['limit'] = explode(',', $config['limit']);
-					if (count($config) === 1)
+					if (1 === count($config))
 					{
 						$config['limit'][0] = 1;
 					}
@@ -573,7 +573,7 @@ class Model extends ArrayData
 	 */
 	public function table($table = null)
 	{
-		if ($table !== null)
+		if (null !== $table)
 		{
 			$this->table=$table;
 		}
@@ -588,7 +588,7 @@ class Model extends ArrayData
 	 */
 	public function prefix($prefix = null)
 	{
-		if ($prefix !== null)
+		if (null !== $prefix)
 		{
 			$this->prefix = $prefix;
 		}
@@ -602,7 +602,7 @@ class Model extends ArrayData
 	 */
 	public function tableName($table=null)
 	{
-		if($table===null)
+		if(null === $table)
 		{
 			return $this->prefix.$this->table;
 		}
@@ -621,13 +621,13 @@ class Model extends ArrayData
 	 */
 	public function parseFieldsMap($data = null, $type = Model::TO_DB)
 	{
-		if ($data === null)
+		if (null === $data)
 		{
 			$data = $this->data;
 		}
 		foreach ($this->fieldsMap as $key => $value)
 		{
-			if ($type === Model::TO_DB)
+			if (Model::TO_DB === $type)
 			{
 				if (isset($data[$key]))
 				{
@@ -658,7 +658,7 @@ class Model extends ArrayData
 	public function inc($field, $num = null, $return = DbBase::RETURN_ISOK)
 	{
 		$data = array ();
-		if ($num === null)
+		if (null === $num)
 		{ // 参数都在field
 			if (is_array($field))
 			{ // 数组参数，多个
@@ -693,7 +693,7 @@ class Model extends ArrayData
 	public function dec($field, $num = null, $return = DbBase::RETURN_ISOK)
 	{
 		$data = array ();
-		if ($num === null)
+		if (null === $num)
 		{ // 参数都在field
 			if (is_array($field))
 			{ // 数组参数，多个
@@ -777,7 +777,7 @@ class Model extends ArrayData
 			// 获取数据
 			$d = Request::getAll($value['from'], $value['name']);
 			// 判断获取是否成功
-			if ($d === false)
+			if (false === $d)
 			{
 				// 判断是否有默认值
 				if(array_key_exists('default',$value))
@@ -802,7 +802,7 @@ class Model extends ArrayData
 		$v = new Validator();
 		// 保存验证结果
 		$result = $v->validate($all, $this->data, $rule);
-		if ($result === array ())
+		if (array () === $result)
 		{ // 验证通过
 		  // 字段映射
 			$this->data = $this->parseFieldsMap($this->data);
@@ -848,9 +848,9 @@ class Model extends ArrayData
 	public function switchTable($table=null)
 	{
 		static $tTable;
-		if($table===null)
+		if(null===$table)
 		{
-			if($tTable!==null)
+			if(null!==$tTable)
 			{
 				$this->table=$tTable;
 				$tTable=null;

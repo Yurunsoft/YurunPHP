@@ -32,7 +32,7 @@ class Lang
 	public static function get($name)
 	{
 		$args = func_get_args();
-		if ($args !== array ())
+		if (!empty($args))
 		{
 			unset($args[0]);
 		}
@@ -90,7 +90,7 @@ class Lang
 		// 获取模块名
 		$m = Dispatch::module();
 		// 是否开启模块
-		if ($m !== '')
+		if ('' !== $m)
 		{
 			// 模块语言包
 			$file = APP_MODULE . "{$m}/" . Config::get('@.LANG_FOLDER') . "/{$lang}.lang.php";

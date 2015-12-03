@@ -17,7 +17,7 @@ class LogFile extends LogBase
 	{
 		parent::__construct();
 		// 日志设置
-		if ($config === null)
+		if (null === $config)
 		{
 			$this->path = Config::get('@.LOG_PATH');
 			$this->ext = Config::get('@.LOG_EXT');
@@ -52,7 +52,7 @@ class LogFile extends LogBase
 		{
 			$content.="[{$item['time']}] {$item['content']}\r\n";
 		}
-		if($content!=='')
+		if(''!==$content)
 		{
 			return error_log($content,3,$fileURI);
 		}

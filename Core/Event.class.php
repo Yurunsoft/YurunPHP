@@ -62,7 +62,7 @@ class Event
 		{
 			foreach (self::$events[$event] as $item)
 			{
-				if(call_user_func_array($item,$params)===true)
+				if(true===call_user_func_array($item,$params))
 				{
 					return true;
 				}
@@ -84,7 +84,7 @@ class Event
 		{
 			foreach (self::$events[$event] as $item)
 			{
-				if(call_user_func_array($item,arrayRefer($params))===true)
+				if(true===call_user_func_array($item,arrayRefer($params)))
 				{
 					return true;
 				}
