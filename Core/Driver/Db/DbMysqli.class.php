@@ -1,13 +1,13 @@
 <?php
 /**
- * MySQL数据库驱动类
+ * MySQLi数据库驱动类
  * @author Yurun <admin@yurunsoft.com>
  */
 class DbMysqli extends DbBase
 {
 	// 参数标识
 	protected $param_flag = array ('`','`');
-	
+	private $fp;
 	/**
 	 * 连接数据库
 	 */
@@ -21,41 +21,33 @@ class DbMysqli extends DbBase
 		{
 			$this->config = $config;
 		}
-		if ($this->conn === null)
+		if (empty($this->conn))
 		{
 			// 连接信息
-			if(!isset($config['dbname']))
-			{
-				return false;
-			}
-			$dbname = $config['dbname'];
-			$host = isset($config['host']) ? $config['host'] : 'localhost';
-			$port = (isset($config['port']) && is_numeric($config['port'])) ? $config['port'] : 3306;
+// 			$server = (isset($config['host']) ? $config['host'] : 'localhost') . ':' . (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306');
+			$server = (isset($config['host']) ? $config['host'] : 'localhost');
 			$username = isset($config['username']) ? $config['username'] : 'root';
 			$password = isset($config['password']) ? $config['password'] : '';
 			$flags = ((isset($config['flags']) && is_numeric($config['flags'])) ? $config['flags'] : 0);
 			// 连接
-			if (isset($config['socket']))
-			{
-				$this->conn = new mysqli($host, $username, $password, $dbname, $port);
-			}
-			else
-			{
-				$this->conn = new mysqli($host, $username, $password, $dbname, $port, $config['socket']);
-			}
-			if ($this->conn !== false)
+			$this->conn = mysqli_connect($server, $username, $password, $config['dbname'], (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306'));
+			if (false !== $this->conn)
 			{
 				// 设置编码
 				if (isset($config['charset']))
 				{
-					$this->conn->set_charset($config['charset']);
+					$this->execute("set names {$config['charset']}");
 				}
+				// 选择数据库
+// 				if (isset($config['dbname']))
+// 				{
+// 					$this->selectDb($config['dbname']);
+// 				}
 				$this->connect = true;
 				return true;
 			}
 			else
 			{
-				$this->conn = null;
 				$this->connect = false;
 				return false;
 			}
@@ -71,7 +63,7 @@ class DbMysqli extends DbBase
 	 */
 	public function disConnect()
 	{
-		if ($this->conn->close())
+		if ($this->free() && mysqli_close($this->conn))
 		{
 			$this->conn = null;
 			$this->connect = false;
@@ -91,7 +83,7 @@ class DbMysqli extends DbBase
 	 */
 	public function selectDb($dbName)
 	{
-		return $this->conn->select_db($dbName);
+		return mysqli_select_db($dbName);
 	}
 	
 	/**
@@ -99,8 +91,16 @@ class DbMysqli extends DbBase
 	 */
 	public function free()
 	{
-		$this->conn->free_result();
-		return true;
+		if (null !== $this->result && ! is_bool($this->result))
+		{
+			mysqli_free_result($this->result);
+			$this->result = null;
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	/**
@@ -108,11 +108,26 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function query($sql,$data=null)
+	public function query($sql)
 	{
-		if ($this->execute($sql,$data))
+		if ($this->execute($sql))
 		{
-			return $this->conn->fetch_array();
+			if (is_bool($this->result))
+			{
+				return $this->result;
+			}
+			else
+			{
+				$result = mysqli_fetch_array($this->result);
+				if (false !== $result)
+				{
+					return $result;
+				}
+				else
+				{
+					return $result;
+				}
+			}
 		}
 		else
 		{
@@ -125,17 +140,23 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function queryA($sql,$data=null)
+	public function queryA($sql)
 	{
-		if ($this->execute($sql,$data))
+		if ($this->execute($sql))
 		{
-			$result = array ();
-			$arr=$this->conn->fetch_array();
-			while ($t = $arr)
+			if (is_bool($this->result))
 			{
-				$result[] = $t;
+				return $this->result;
 			}
-			return $result;
+			else
+			{
+				$result = array ();
+				while ($t = mysqli_fetch_array($this->result))
+				{
+					$result[] = $t;
+				}
+				return $result;
+			}
 		}
 		else
 		{
@@ -148,22 +169,25 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function execute($sql,$data=null)
+	public function execute($sql)
 	{
+		// 解决执行存储过程后再执行语句就出错
+		if ('call ' == substr($this->lastSql, 0, 5))
+		{
+			$this->disconnect();
+			$this->connect();
+		}
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
-		if($data===null)
+		// 执行SQL语句
+		$this->result = mysqli_query($this->conn,$sql);
+		if(false===$this->result)
 		{
-			// 执行SQL语句
-			$this->result = $this->conn->query($sql, $this->conn);
-			return $this->result !== false;
+			// 用于调试
+			$GLOBALS['debug']['lastsql']=$this->lastSql;
+			throw new Exception($this->getError());
 		}
-		else 
-		{
-			$this->conn->prepare($sql);
-			
-		}
-		
+		return false !== $this->result ? true : false;
 	}
 	
 	/**
@@ -177,14 +201,13 @@ class DbMysqli extends DbBase
 	public function execProc($procName)
 	{
 		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryA("call $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryA("call $procName(" . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
-			return $this->queryA("call $procName(" . implode(',', $this->filterValue($p)) . ')');
+			return $this->queryA("call $procName(" . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -202,11 +225,11 @@ class DbMysqli extends DbBase
 		unset($p[0]);
 		if (count($p) === 1 && is_array($p[0]))
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p[0])) . ')');
+			return $this->queryValue("select $procName(" . $this->filterValue($p[0]) . ')');
 		}
 		else
 		{
-			return $this->queryValue("select $procName(" . implode(',', $this->filterValue($p)) . ')');
+			return $this->queryValue("select $procName(" . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -218,7 +241,7 @@ class DbMysqli extends DbBase
 	 */
 	public function foundRows()
 	{
-		return $this->queryValue('select found_rows()');
+		return mysqli_num_rows($this->result);
 	}
 	
 	/**
@@ -229,7 +252,7 @@ class DbMysqli extends DbBase
 	 */
 	public function rowCount()
 	{
-		return $this->queryValue('select row_count()');
+		return mysqli_affected_rows($this->conn);
 	}
 	
 	/**
@@ -240,7 +263,7 @@ class DbMysqli extends DbBase
 	 */
 	public function lastInsertID()
 	{
-		return $this->queryValue('select LAST_INSERT_ID()');
+		return mysqli_insert_id($this->conn);
 	}
 	
 	/**
@@ -248,10 +271,21 @@ class DbMysqli extends DbBase
 	 */
 	public function getError()
 	{
-		$error = mysql_error();
-		if ('' !== $error)
+		if($this->connect)
 		{
-			$error .= PHP_EOL . '错误代码:' . mysql_errno();
+			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_error($this->conn));
+			if ('' !== $error)
+			{
+				$error .= '错误代码：' . mysqli_errno($this->conn) . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			}
+		}
+		else
+		{
+			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_error());
+			if ('' !== $error)
+			{
+				$error .= '错误代码：' . mysqli_errno() . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			}
 		}
 		return $error;
 	}
@@ -269,11 +303,11 @@ class DbMysqli extends DbBase
 		}
 		else
 		{ // 其他表
-			$sql = 'show tables from' . $this->parseField($dbName);
+			$sql = 'show tables from ' . $this->parseField($dbName);
 		}
 		// 查询
 		$result = $this->queryA($sql);
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -299,7 +333,7 @@ class DbMysqli extends DbBase
 	{
 		// 查询
 		$result = $this->queryA('show columns from ' . $this->parseField($table));
-		if ($result === false)
+		if (false === $result)
 		{ // 失败
 			return false;
 		}
@@ -313,6 +347,81 @@ class DbMysqli extends DbBase
 			}
 			// 返回结果
 			return $r;
+		}
+	}
+	/**
+	 * 开始事务
+	 */
+	public function begin()
+	{
+		$this->execute('begin');
+	}
+	/**
+	 * 回滚事务
+	 */
+	public function rollback()
+	{
+		$this->execute('rollback');
+	}
+	/**
+	 * 提交事务
+	 */
+	public function commit()
+	{
+		$this->execute('commit');
+	}
+	/**
+	 * 解析sql文件，支持返回sql数组，或者使用回调函数
+	 * @param string $file
+	 * @param callback $callback
+	 * @return mixed
+	 */
+	public function parseMultiSql($file,$callback=null)
+	{
+		$this->fp = fopen($file, 'r');
+		if(false===$this->fp)
+		{
+			return false;
+		}
+		else 
+		{
+			if(empty($callback))
+			{
+				$result=array();
+			}
+			$sql='';
+			while ($line = fgets($this->fp, 40960))
+			{
+				$line=trim($line);
+				if (isset($line[1]))
+				{
+					if ('#'===$line[0] || ('-'===$line[0] && '-'===$line[1]))
+					{
+						continue;
+					}
+				}
+				$sql.="{$line}\r\n";
+				if (isset($line[0]))
+				{
+					if (';'===substr($line,0,-1))
+					{
+						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
+						if(empty($callback))
+						{
+							$result[]=$sql;
+						}
+						else 
+						{
+							call_user_func($callback,$sql);
+						}
+						$sql='';
+					}
+				}
+			}
+			if(empty($callback))
+			{
+				return $result;
+			}
 		}
 	}
 }
