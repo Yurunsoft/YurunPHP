@@ -56,36 +56,15 @@ class Event
 	 * @param boolean $once        	
 	 * @return mixed
 	 */
-	public static function trigger($event, $params=array())
+	public static function trigger($event, &$params=array())
 	{
 		if (isset(self::$events[$event]))
 		{
 			foreach (self::$events[$event] as $item)
 			{
-				if(true===call_user_func_array($item,$params))
+				if(true === call_user_func($item,&$params))
 				{
-					return true;
-				}
-			}
-			return false;
-		}
-		return true;
-	}
-	/**
-	 * 触发事件(监听事件)
-	 * 引用传参方式
-	 * @param name $event        	
-	 * @param boolean $once        	
-	 * @return mixed
-	 */
-	public static function triggerReference($event, &$params=array())
-	{
-		if (isset(self::$events[$event]))
-		{
-			foreach (self::$events[$event] as $item)
-			{
-				if(true===call_user_func_array($item,arrayRefer($params)))
-				{
+					// 事件返回true时不继续执行其余事件
 					return true;
 				}
 			}

@@ -161,7 +161,7 @@ class Dispatch
 	{
 		// 插件
 		$args=array('rule'=>$rule, 'param'=>$param, 'subDomain'=>$subDomain, 'result'=>'');
-		Event::triggerReference('YP_URL_CREATE',$args);
+		Event::trigger('YP_URL_CREATE',$args);
 		if (!empty($args['result']))
 		{
 			return $args['result'];

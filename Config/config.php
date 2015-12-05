@@ -84,5 +84,8 @@ return array (
 		'URL_HIDE_DEFAULT_MODULE'	=>	true,		// 隐藏URL中默认模块
 		'URL_HIDE_DEFAULT_CONTROL'	=>	true,		// 隐藏URL中默认控制器
 		'URL_HIDE_DEFAULT_ACTION'	=>	true,		// 隐藏URL中默认动作
-		'URL_PROTOCOL'				=>	''			// URL的协议，留空则取当前协议。可取值http://和https://
+		'URL_PROTOCOL'				=>	'',			// URL的协议，留空则取当前协议。可取值http://和https://
+		
+		// 控制器returnData方法默认返回数据格式类型
+		'CONTROL_RETURN_TYPE'		=>	'json'
 );

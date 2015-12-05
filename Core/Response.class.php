@@ -285,8 +285,9 @@ setTimeout('redirect()',1000);
 				'avi' => 'video/x-msvideo',
 				'movie' => 'video/x-sgi-movie',
 				'ice' => 'x-conference/x-cooltalk',
+				'json' => 'application/json',
 		);
-		header('Content-type: '.$mimes[$ext].';charset=utf-8');
+		header("Content-type: {$mimes[$ext]};charset=utf-8");
 	}
 	/**
 	 * 设置下载文件的文件名

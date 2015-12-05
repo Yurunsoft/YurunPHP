@@ -517,7 +517,7 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 	}
 	public function parseSqlType($config)
 	{
-		switch($config['sql_type'])
+		switch(strtolower($config['sql_type']))
 		{
 			case 'bigint':
 				return SQLSRV_SQLTYPE_BIGINT;
