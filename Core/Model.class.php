@@ -120,6 +120,25 @@ class Model extends ArrayData
 	}
 	
 	/**
+	 * 根据字段查询记录
+	 *
+	 * @return mixed
+	 */
+	public function selectBy($field,$value)
+	{
+		return $this->where(array($field=>$value))->select();
+	}
+	/**
+	 * 根据字段获取一条记录
+	 *
+	 * @return mixed
+	 */
+	public function getBy($field,$value)
+	{
+		return $this->where(array($field=>$value))->select(true);
+	}
+	
+	/**
 	 * 随机获取记录，不依靠主键，效率略低。$num=1时效率比random高。
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
@@ -206,10 +225,25 @@ class Model extends ArrayData
 	 */
 	public function __call($name, $arguments)
 	{
+		if(isset($arguments[0]))
+		{
+			// getBy字段支持：
+			$arr = explode('getBy',$name);
+			if(''===$arr[0] && isset($arr[1]))
+			{
+				return $this->getBy($arr[1], $arguments[0]);
+			}
+			// selectBy字段支持：
+			$arr = explode('selectBy',$name);
+			if(''===$arr[0] && isset($arr[1]))
+			{
+				return $this->selectBy($arr[1], $arguments[0]);
+			}
+		}
 		// 全部转为小写，照顾所有大小写习惯的用户
 		$name = strtolower($name);
 		// 方法名是否存在于预定义的连贯操作方法名中
-		if (in_array($name, $this->methods) && count($arguments) > 0)
+		if (in_array($name, $this->methods) && isset($arguments[0]))
 		{
 			switch($name)
 			{
