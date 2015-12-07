@@ -77,6 +77,7 @@ class Upload
 		$this->subPath=null===$subPath?Config::get('@.UPLOAD.SUBPATH'):$subPath;
 		$this->fileRule=null===$fileRule?Config::get('@.UPLOAD.FILERULE'):$fileRule;
 		$this->maxSize=null===$maxSize?Config::get('@.UPLOAD.MAXSIZE'):$maxSize;
+		$this->allowOverWrite = Config::get('@.UPLOAD.ALLOW_OVER_WRITE',false);
 		if(is_array($allowExts))
 		{
 			$this->allowExts=$allowExts;
