@@ -245,118 +245,120 @@ class Model extends ArrayData
 		// 方法名是否存在于预定义的连贯操作方法名中
 		if (in_array($name, $this->methods) && isset($arguments[0]))
 		{
-			switch($name)
+			if('join' === $name)
 			{
-				case 'join':
-					// 为空则创建空数组
-					if(!isset($this->options[$name]))
+				// 为空则创建空数组
+				if(!isset($this->options[$name]))
+				{
+					$this->options[$name]=array();
+				}
+				// 判断是否批量join
+				if(is_array($arguments[0]))
+				{
+					$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
+				}
+				else
+				{
+					if(count($arguments)>1)
 					{
-						$this->options[$name]=array();
+						// 参数形式
+						$this->options[$name][]=array('type'=>$arguments[0],'table'=>$arguments[1],'on'=>$arguments[2]);
 					}
-					// 判断是否批量join
-					if(is_array($arguments[0]))
+					else
+					{
+						// sql形式
+						$this->options[$name][]=$arguments[0];
+					}
+				}
+			}
+			else if('limit' === $name)
+			{
+				switch(count($arguments))
+				{
+					case 1:
+						$this->options['limit']=$arguments[0];
+						break;
+					case 2:
+						$this->options['limit']=$arguments;
+						break;
+				}
+			}
+			else if('where' === $name)
+			{
+				if(isset($this->options[$name]))
+				{
+					if(is_string($arguments[0]))
+					{
+						if(isset($this->options[$name]['_exp']))
+						{
+							$this->options[$name]['_exp'].=" and {$arguments[0]}";
+						}
+						else
+						{
+							$this->options[$name]['_exp']=$arguments[0];
+						}
+					}
+					else
 					{
 						$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
 					}
+				}
+				else
+				{
+					if(is_array($arguments[0]))
+					{
+						$this->options[$name] = ($arguments[0]);
+					}
 					else
 					{
-						if(count($arguments)>1)
-						{
-							// 参数形式
-							$this->options[$name][]=array('type'=>$arguments[0],'table'=>$arguments[1],'on'=>$arguments[2]);
-						}
-						else
-						{
-							// sql形式
-							$this->options[$name][]=$arguments[0];
-						}
+						$this->options[$name] = array('_exp'=>$arguments[0]);
 					}
-					break;
-				case 'limit':
-					switch(count($arguments))
-					{
-						case 1:
-							$this->options['limit']=$arguments[0];
-							break;
-						case 2:
-							$this->options['limit']=$arguments;
-							break;
-					}
-					break;
-				case 'where':
+				}
+			}
+			else if('field' === $name)
+			{
+				if(!isset($this->options[$name]))
+				{
+					$this->options[$name]=array();
+				}
+				if(count($arguments)>1)
+				{
+					$this->options[$name] = array_merge($this->options[$name],$arguments);
+				}
+				else if(is_array($arguments[0]))
+				{
+					$this->options[$name] = array_merge($this->options[$name],$arguments[0]);
+				}
+				else
+				{
+					$this->options[$name] = array_merge($this->options[$name],explode(',',$arguments[0]));
+				}
+				$this->options[$name] = array_unique($this->options[$name]);
+			}
+			else
+			{
+				if(1===count($arguments))
+				{
 					if(isset($this->options[$name]))
 					{
-						if(is_string($arguments[0]))
-						{
-							if(isset($this->options[$name]['_exp']))
-							{
-								$this->options[$name]['_exp'].=" and {$arguments[0]}";
-							}
-							else
-							{
-								$this->options[$name]['_exp']=$arguments[0];
-							}
-						}
-						else
-						{
-							$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
-						}
+						$this->options[$name]+=$arguments[0];
 					}
 					else
 					{
-						if(is_array($arguments[0]))
-						{
-							$this->options[$name] = ($arguments[0]);
-						}
-						else
-						{
-							$this->options[$name] = array('_exp'=>$arguments[0]);
-						}
+						$this->options[$name] = $arguments[0];
 					}
-					break;
-				case 'field':
-					if(!isset($this->options[$name]))
+				}
+				else
+				{
+					if(isset($this->options[$name]))
 					{
-						$this->options[$name]=array();
+						$this->options[$name]+=$arguments;
 					}
-					if(count($arguments)>1)
+					else
 					{
-						$this->options[$name] = array_merge($this->options[$name],$arguments);
+						$this->options[$name] = $arguments;
 					}
-					else if(is_array($arguments[0]))
-					{
-						$this->options[$name] = array_merge($this->options[$name],$arguments[0]);
-					}
-					else 
-					{
-						$this->options[$name] = array_merge($this->options[$name],explode(',',$arguments[0]));
-					}
-					$this->options[$name] = array_unique($this->options[$name]);
-					break;
-				default:
-					if(1===count($arguments))
-					{
-						if(isset($this->options[$name]))
-						{
-							$this->options[$name]+=$arguments[0];
-						}
-						else
-						{
-							$this->options[$name] = $arguments[0];
-						}
-					}
-					else 
-					{
-						if(isset($this->options[$name]))
-						{
-							$this->options[$name]+=$arguments;
-						}
-						else
-						{
-							$this->options[$name] = $arguments;
-						}
-					}
-					break;
+				}
 			}
 			return $this;
 		}

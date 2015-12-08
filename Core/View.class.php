@@ -98,28 +98,31 @@ class View extends ArrayData
 				else 
 				{
 					$arr=explode('/',$template);
-					switch(count($arr))
+					$s = count($arr);
+					if(1 === $s)
 					{
-						case 1:
-							// 动作
-							list($action) = $arr;
-							break;
-						case 2:
-							// 控制器/动作
-							list($control,$action) = $arr;
-							break;
-						case 3:
-							// 模块/控制器/动作
-							list($module,$control,$action) = $arr;
-							break;
-						case 4:
-							// 主题/模块/控制器/动作
-							list($themeName,$module,$control,$action) = $arr;
-							break;
-						default:
-							list($themeName,$module,$control) = $arr;
-							$action=implode('/',array_slice($arr,3));
-							break;
+						// 动作
+						list($action) = $arr;
+					}
+					else if(2 === $s)
+					{
+						// 控制器/动作
+						list($control,$action) = $arr;
+					}
+					else if(3 === $s)
+					{
+						// 模块/控制器/动作
+						list($module,$control,$action) = $arr;
+					}
+					else if(4 === $s)
+					{
+						// 主题/模块/控制器/动作
+						list($themeName,$module,$control,$action) = $arr;
+					}
+					else
+					{
+						list($themeName,$module,$control) = $arr;
+						$action=implode('/',array_slice($arr,3));
 					}
 				}
 			}
@@ -182,12 +185,12 @@ class View extends ArrayData
 		if (Config::get('@.THEME_ON'))
 		{
 			// 参数传入的主题
-			if (is_string($theme) && ! empty($theme))
+			if (is_string($theme) && '' !== $theme)
 			{
 				return $theme;
 			}
 			// 类设定的主题
-			else if (is_string($this->theme) && ! empty($this->theme))
+			else if (is_string($this->theme) && '' !== $this->theme)
 			{
 				return $this->theme;
 			}

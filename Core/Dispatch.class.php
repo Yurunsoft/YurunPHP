@@ -76,20 +76,21 @@ class Dispatch
 		if (! empty($rule))
 		{
 			$arr = explode('/', $rule, 3);
-			switch (count($arr))
+			$s = count($arr);
+			if(1 === $s)
 			{
-				case 1 :
-					self::$action = $arr[0];
-					break;
-				case 2 :
-					self::$control = ucfirst($arr[0]);
-					self::$action = $arr[1];
-					break;
-				case 3 :
-					self::$module = ucfirst($arr[0]);
-					self::$control = ucfirst($arr[1]);
-					self::$action = $arr[2];
-					break;
+				self::$action = $arr[0];
+			}
+			else if(2 === $s)
+			{
+				self::$control = ucfirst($arr[0]);
+				self::$action = $arr[1];
+			}
+			else if(3 === $s)
+			{
+				self::$module = ucfirst($arr[0]);
+				self::$control = ucfirst($arr[1]);
+				self::$action = $arr[2];
 			}
 		}
 	}
@@ -186,23 +187,24 @@ class Dispatch
 			else
 			{
 				$arr = explode('/', $urlInfo['path'], 3);
-				switch (count($arr))
+				$s = count($arr);
+				if(1 === $s)
 				{
-					case 1 :
-						$module = self::$module;
-						$control = self::$control;
-						$action = $arr[0];
-						break;
-					case 2 :
-						$module = self::$module;
-						$control = ucfirst($arr[0]);
-						$action = $arr[1];
-						break;
-					case 3 :
-						$module = ucfirst($arr[0]);
-						$control = ucfirst($arr[1]);
-						$action = $arr[2];
-						break;
+					$module = self::$module;
+					$control = self::$control;
+					$action = $arr[0];
+				}
+				else if(2 === $s)
+				{
+					$module = self::$module;
+					$control = ucfirst($arr[0]);
+					$action = $arr[1];
+				}
+				else if(3 === $s)
+				{
+					$module = ucfirst($arr[0]);
+					$control = ucfirst($arr[1]);
+					$action = $arr[2];
 				}
 			}
 			// 提供给URL规则使用的参数

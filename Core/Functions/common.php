@@ -11,7 +11,8 @@
  */
 function require_once_multi($files, $all = true)
 {
-	if (is_array($files))
+	$type = gettype($files);
+	if('array' === $type)
 	{
 		foreach ($files as $value)
 		{
@@ -26,7 +27,7 @@ function require_once_multi($files, $all = true)
 		}
 		return false;
 	}
-	else if (is_string($files))
+	else if('string' === $type)
 	{
 		require_once $files;
 		return true;

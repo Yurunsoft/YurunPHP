@@ -23,18 +23,20 @@ class Control
 		{
 			$returnType = Config::get('@.CONTROL_RETURN_TYPE');
 		}
-		switch(strtolower($returnType))
+		$returnType = strtolower($returnType);
+		if('json' === $returnType)
 		{
-			case 'json':
-				Response::setMime('json');
-				exit(json_encode($data,$option));
-				break;
-			case 'xml':
-				Response::setMime('xml');
-				exit(wddx_serialize_value($data));
-				break;
-			default:
-				Event::trigger($event,$data);
+			Response::setMime('json');
+			exit(json_encode($data,$option));
+		}
+		else if('xml' === $returnType)
+		{
+			Response::setMime('xml');
+			exit(wddx_serialize_value($data));
+		}
+		else
+		{
+			Event::trigger($event,$data);
 		}
 	}
 }

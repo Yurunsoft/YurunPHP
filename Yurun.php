@@ -187,40 +187,30 @@ function printError($err)
 register_shutdown_function(function(){
 	if ($e = error_get_last())
 	{
-		switch($e['type']){
-			case E_ERROR:
-			case E_PARSE:
-			case E_CORE_ERROR:
-			case E_COMPILE_ERROR:
-			case E_USER_ERROR:
-				Log::add("错误:{$e['message']} 文件:{$e['file']} 行数:{$e['line']}");
-				Log::save();
-				ob_end_clean();
-				printError($e);
-				break;
+		if(E_ERROR === $e['type'] || E_PARSE === $e['type'] || E_CORE_ERROR === $e['type'] || E_COMPILE_ERROR === $e['type'] || E_USER_ERROR === $e['type'])
+		{
+			Log::add("错误:{$e['message']} 文件:{$e['file']} 行数:{$e['line']}");
+			Log::save();
+			ob_end_clean();
+			printError($e);
 		}
 	}
 	Log::save();
 });
 set_error_handler(function($errno, $errstr, $errfile, $errline){
-	switch ($errno)
+	
+	if(E_ERROR === $errno || E_PARSE === $errno || E_CORE_ERROR === $errno || E_COMPILE_ERROR === $errno || E_USER_ERROR === $errno)
 	{
-		case E_ERROR:
-		case E_PARSE:
-		case E_CORE_ERROR:
-		case E_COMPILE_ERROR:
-		case E_USER_ERROR:
-			ob_end_clean();
-			$error = array();
-			$error['message']=$errstr;
-			$error['file']=$errfile;
-			$error['line']=$errline;
-			if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
-			{
-				Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
-			}
-			printError($error);
-			break;
+		ob_end_clean();
+		$error = array();
+		$error['message']=$errstr;
+		$error['file']=$errfile;
+		$error['line']=$errline;
+		if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
+		{
+			Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
+		}
+		printError($error);
 	}
 });
 set_exception_handler(function($exception){

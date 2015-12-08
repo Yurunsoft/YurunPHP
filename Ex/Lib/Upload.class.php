@@ -93,22 +93,21 @@ class Upload
 	 */
 	public function setExtMode($mode)
 	{
-		switch($mode)
+		if('image' === $mode || '$this' === $mode)
 		{
-			case 'image':
-			case 'img':
-				$this->allowExts=array('png','jpg','gif');
-				break;
-			case 'video':
-				$this->allowExts=array('mp4','avi','rmvb','rm','mpg','flv','mov','wmv','3gp','mkv');
-				break;
-			case 'music':
-			case 'audio':
-				$this->allowExts=array('mp3','wma','aiff','au','midi','aac','ape');
-				break;
-			default:
-				return false;
-				break;
+			$this->allowExts=array('png','jpg','gif');
+		}
+		else if('video' === $mode)
+		{
+			$this->allowExts=array('mp4','avi','rmvb','rm','mpg','flv','mov','wmv','3gp','mkv');
+		}
+		else if('music' === $mode || 'audio' === $mode)
+		{
+			$this->allowExts=array('mp3','wma','aiff','au','midi','aac','ape');
+		}
+		else
+		{
+			return false;
 		}
 		return true;
 	}
@@ -268,32 +267,37 @@ class Upload
 	}
 	private function getErrorMsg($error)
 	{
-		switch($error)
+		if(UPLOAD_ERR_OK === $error)
 		{
-			case UPLOAD_ERR_OK:
-				return '';
-				break;
-			case UPLOAD_ERR_INI_SIZE:
-				return Lang::get('UPLOAD_ERR_INI_SIZE');
-				break;
-			case UPLOAD_ERR_FORM_SIZE:
-				return Lang::get('UPLOAD_ERR_FORM_SIZE');
-				break;
-			case UPLOAD_ERR_PARTIAL:
-				return Lang::get('UPLOAD_ERR_PARTIAL');
-				break;
-			case UPLOAD_ERR_NO_FILE:
-				return Lang::get('UPLOAD_ERR_NO_FILE');
-				break;
-			case UPLOAD_ERR_NO_TMP_DIR:
-				return Lang::get('UPLOAD_ERR_NO_TMP_DIR');
-				break;
-			case UPLOAD_ERR_CANT_WRITE:
-				return Lang::get('UPLOAD_ERR_CANT_WRITE');
-				break;
-			default:
-				return Lang::get('UPLOAD_ERR_UNKNOWN');
-				break;
+			return '';
+		}
+		else if(UPLOAD_ERR_INI_SIZE === $error)
+		{
+			return Lang::get('UPLOAD_ERR_INI_SIZE');
+		}
+		else if(UPLOAD_ERR_FORM_SIZE === $error)
+		{
+			return Lang::get('UPLOAD_ERR_FORM_SIZE');
+		}
+		else if(UPLOAD_ERR_PARTIAL === $error)
+		{
+			return Lang::get('UPLOAD_ERR_PARTIAL');
+		}
+		else if(UPLOAD_ERR_NO_FILE === $error)
+		{
+			return Lang::get('UPLOAD_ERR_NO_FILE');
+		}
+		else if(UPLOAD_ERR_NO_TMP_DIR === $error)
+		{
+			return Lang::get('UPLOAD_ERR_NO_TMP_DIR');
+		}
+		else if(UPLOAD_ERR_CANT_WRITE === $error)
+		{
+			return Lang::get('UPLOAD_ERR_CANT_WRITE');
+		}
+		else
+		{
+			return Lang::get('UPLOAD_ERR_UNKNOWN');
 		}
 	}
 	/**

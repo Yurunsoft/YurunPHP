@@ -111,26 +111,27 @@ class Request
 	}
 	public static function exists($arrName, $name)
 	{
-		switch (strtolower($arrName))
+		$arrName = strtolower($arrName);
+		if('get' === $arrName)
 		{
-			case 'get' :
-				$data = &$_GET;
-				break;
-			case 'post' :
-				$data = &$_POST;
-				break;
-			case 'cookie' :
-				$data = &$_COOKIE;
-				break;
-			case 'server' :
-				$data = &$_SERVER;
-				break;
-			case 'all' :
-			default :
-				$data = &$_REQUEST;
-				break;
+			return isset($_GET[$name]);
 		}
-		return isset($data[$name]);
+		else if('post' === $arrName)
+		{
+			return isset($_POST[$name]);
+		}
+		else if('cookie' === $arrName)
+		{
+			return isset($_COOKIE[$name]);
+		}
+		else if('server' === $arrName)
+		{
+			return isset($_SERVER[$name]);
+		}
+		else 
+		{
+			return isset($_REQUEST[$name]);
+		}
 	}
 	/**
 	 * 获取超全局变量值
@@ -143,24 +144,26 @@ class Request
 	 */
 	public static function getAll($arrName, $name = '', $default = false, $filter = false)
 	{
-		switch (strtolower($arrName))
+		$arrName = strtolower($arrName);
+		if('get' === $arrName)
 		{
-			case 'get' :
-				$data = &$_GET;
-				break;
-			case 'post' :
-				$data = &$_POST;
-				break;
-			case 'cookie' :
-				$data = &$_COOKIE;
-				break;
-			case 'server' :
-				$data = &$_SERVER;
-				break;
-			case 'all' :
-			default :
-				$data = &$_REQUEST;
-				break;
+			$data = &$_GET;
+		}
+		else if('post' === $arrName)
+		{
+			$data = &$_POST;
+		}
+		else if('cookie' === $arrName)
+		{
+			$data = &$_COOKIE;
+		}
+		else if('server' === $arrName)
+		{
+			$data = &$_SERVER;
+		}
+		else
+		{
+			$data = &$_REQUEST;
 		}
 		if ('' === $name)
 		{
@@ -182,7 +185,7 @@ class Request
 			// 不过滤直接返回
 			return $value;
 		}
-		else if ($filter!==false)
+		else if (false!==$filter)
 		{
 			// 按照配置中的过滤
 			$filter = Config::get('@.DEFAULT_FILTER');

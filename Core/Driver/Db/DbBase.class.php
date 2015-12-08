@@ -103,19 +103,20 @@ abstract class DbBase
 	 */
 	public function filterValue($value)
 	{
-		if (is_string($value))
+		$type = gettype($value);
+		if('string' === $type)
 		{
 			return '\'' . $this->filterString($value) . '\'';
 		}
-		else if (is_array($value))
+		else if('array' === $type)
 		{
 			return implode(',', array_map(array ($this,'filterValue'), $value));
 		}
-		else if (is_bool($value))
+		else if('boolean' === $type)
 		{
 			return $value ? '1' : '0';
 		}
-		else if (is_null($value))
+		else if('NULL' === $type)
 		{
 			return 'null';
 		}
@@ -150,17 +151,17 @@ abstract class DbBase
 	{
 		$sql = 'insert into ' . $this->parseField($table) . '(' . $this->parseField(array_keys($data)) . ') values(' . $this->filterValue($data) . ')';
 		$result = $this->execute($sql);
-		switch ($return)
+		if(self::RETURN_ROWS === $return)
 		{
-			case self::RETURN_ROWS :
-				return $this->rowCount();
-				break;
-			case self::RETURN_INSERT_ID :
-				return $this->lastInsertId();
-				break;
-			default :
-				return $result;
-				break;
+			return $this->rowCount();
+		}
+		else if(self::RETURN_ROWS === $return)
+		{
+			return $this->lastInsertId();
+		}
+		else
+		{
+			return $result;
 		}
 	}
 	
@@ -182,14 +183,13 @@ abstract class DbBase
 		}
 		$sql = 'update ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $this->parseUpdateSet($data) . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : array ()) . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
-		switch ($return)
+		if(self::RETURN_ROWS === $return)
 		{
-			case self::RETURN_ROWS :
-				return $this->rowCount();
-				break;
-			default :
-				return $result;
-				break;
+			return $this->rowCount();
+		}
+		else
+		{
+			return $result;
 		}
 	}
 	
@@ -210,14 +210,13 @@ abstract class DbBase
 		}
 		$sql = 'delete from ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : '') . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
-		switch ($return)
+		if(self::RETURN_ROWS === $return)
 		{
-			case self::RETURN_ROWS :
-				return $this->rowCount();
-				break;
-			default :
-				return $result;
-				break;
+			return $this->rowCount();
+		}
+		else
+		{
+			return $result;
 		}
 	}
 	
@@ -437,47 +436,46 @@ abstract class DbBase
 							// 条件解析
 							if ($s > 0)
 							{
-								switch ($value[0])
+								if('between' === $value[0])
 								{
-									case 'between' :
-										if ($s >= 3)
+									if ($s >= 3)
+									{
+										$result .= $this->parseField($key) . ' between ' . $this->filterValue($value[1]) . ' and ' . $this->filterValue($value[2]);
+									}
+								}
+								else if('in' === $value[0] || 'not in' === $value[0])
+								{
+									if ($s === 2)
+									{
+										if(!is_array($value[1]))
 										{
-											$result .= $this->parseField($key) . ' between ' . $this->filterValue($value[1]) . ' and ' . $this->filterValue($value[2]);
+											$value[1]=explode(',',$value[1]);
 										}
-										break;
-									case 'in' :
-									case 'not in' :
-										if ($s === 2)
+										$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]) . '(' . $this->filterValue($value[1]) . ')';
+									}
+									else if ($s > 2)
+									{
+										$o = array_shift($value);
+										$result .= $this->parseField($key) . ' ' . $this->getOperator($o) . '(' . $this->filterValue($value) . ')';
+									}
+								}
+								else 
+								{
+									if ($s > 0)
+									{
+										$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]);
+										if ($s > 1)
 										{
-											if(!is_array($value[1]))
+											$result .= ' ' . $this->filterValue($value[1]);
+											if ($s > 2)
 											{
-												$value[1]=explode(',',$value[1]);
-											}
-											$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]) . '(' . $this->filterValue($value[1]) . ')';
-										}
-										else if ($s > 2)
-										{
-											$o = array_shift($value);
-											$result .= $this->parseField($key) . ' ' . $this->getOperator($o) . '(' . $this->filterValue($value) . ')';
-										}
-										break;
-									default :
-										if ($s > 0)
-										{
-											$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]);
-											if ($s > 1)
-											{
-												$result .= ' ' . $this->filterValue($value[1]);
-												if ($s > 2)
+												for ($i = 2; $i < $s; ++ $i)
 												{
-													for ($i = 2; $i < $s; ++ $i)
-													{
-														$result .= ' ' . $value[$i];
-													}
+													$result .= ' ' . $value[$i];
 												}
 											}
 										}
-										break;
+									}
 								}
 							}
 						}
@@ -656,15 +654,20 @@ abstract class DbBase
 		{
 			foreach ($data as $key => $value)
 			{
-				if (is_numeric($key))
+				$type = gettype($key);
+				if('integer' === $type || 'double' === $type)
 				{
 					$sql .= $value;
 				}
-				else if (is_array($value) && isset($value['_exp']))
+				else if('array' === $type)
 				{
-					$sql .= "{$value['_exp']},";
+					if (isset($value['_exp']))
+					{
+						$sql .= "{$value['_exp']},";
+						break;
+					}
 				}
-				else
+				else 
 				{
 					$sql .= $this->parseField($key) . '=' . $this->filterValue($value) . ',';
 				}
@@ -704,8 +707,9 @@ abstract class DbBase
 				$arr = explode('.', $name);
 				foreach ($arr as $value)
 				{
-					if ('' === $value)
-					{ // 处理出现名称中出现.的情况
+					if('' === $value)
+					{
+						// 处理出现名称中出现.的情况
 						$last .= '.';
 					}
 					else if('*' === $value)
@@ -713,7 +717,7 @@ abstract class DbBase
 						$result .= $last.'*.';
 						$last = '';
 					}
-					else
+					else 
 					{
 						$result .= $this->parseArgs($last . $value) . '.';
 						$last = '';

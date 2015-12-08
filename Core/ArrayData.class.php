@@ -36,11 +36,12 @@ class ArrayData implements ArrayAccess
 	 */
 	public function setVal($name, $value = null)
 	{
-		if (is_string($name))
+		$type = gettype($name);
+		if('string' === $type)
 		{
 			$name = explode('.', $name);
 		}
-		else if (! is_array($name))
+		else if('array' !== $type)
 		{
 			return false;
 		}
@@ -70,18 +71,20 @@ class ArrayData implements ArrayAccess
 		{
 			return $this->data;
 		}
-		if (is_string($name))
+		$type = gettype($name);
+		if('string' === $type)
 		{
 			$name = explode('.', $name);
 		}
-		else if (! is_array($name))
+		else if('array' !== $type)
 		{
 			return $default;
 		}
 		$result = &$this->data;
 		foreach ($name as $value)
 		{
-			if (is_array($result))
+			$type = gettype($result);
+			if('array' === $type)
 			{
 				// 数组
 				if (isset($result[$value]))
@@ -93,7 +96,7 @@ class ArrayData implements ArrayAccess
 					return $default;
 				}
 			}
-			else if (is_object($result))
+			else if('object' === $type)
 			{
 				// 对象
 				if (property_exists($result, $value))
@@ -132,11 +135,12 @@ class ArrayData implements ArrayAccess
 		}
 		foreach($name as $val)
 		{
-			if (is_string($val))
+			$type = gettype($val);
+			if('string' === $type)
 			{
 				$val = explode('.', $val);
 			}
-			else if (!is_array($val))
+			else if('array' !== $type)
 			{
 				return false;
 			}

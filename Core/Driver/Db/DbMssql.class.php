@@ -505,98 +505,168 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 	}
 	public function parseDirection($direction)
 	{
-		switch($direction)
+		if('out' === $direction)
 		{
-			case 'out':
-				return SQLSRV_PARAM_OUT;
-			case 'inout':
-				return SQLSRV_PARAM_INOUT;
-			default:
-				return SQLSRV_PARAM_IN;
+			return SQLSRV_PARAM_OUT;
+		}
+		else if('inout' === $direction)
+		{
+			return SQLSRV_PARAM_INOUT;
+		}
+		else
+		{
+			return SQLSRV_PARAM_IN;
 		}
 	}
 	public function parseSqlType($config)
 	{
-		switch(strtolower($config['sql_type']))
+		$type = strtolower($config['sql_type']);
+		if ('bigint' === $type)
 		{
-			case 'bigint':
-				return SQLSRV_SQLTYPE_BIGINT;
-			case 'binary':
-				return SQLSRV_SQLTYPE_BINARY;
-			case 'bit':
-				return SQLSRV_SQLTYPE_BIT;
-			case 'char':
-				return SQLSRV_SQLTYPE_CHAR($config['length']);
-			case 'date':
-				return SQLSRV_SQLTYPE_DATE;
-			case 'datetime':
-				return SQLSRV_SQLTYPE_DATETIME;
-			case 'datetime2':
-				return SQLSRV_SQLTYPE_DATETIME2;
-			case 'datetimeoffset':
-				return SQLSRV_SQLTYPE_DATETIMEOFFSET;
-			case 'decimal':
-				return SQLSRV_SQLTYPE_DECIMAL($config['precision'],$config['scale']);
-			case 'float':
-				return SQLSRV_SQLTYPE_FLOAT;
-			case 'image':
-				return SQLSRV_SQLTYPE_IMAGE;
-			case 'int':
-				return SQLSRV_SQLTYPE_INT;
-			case 'money':
-				return SQLSRV_SQLTYPE_MONEY;
-			case 'nchar':
-				return SQLSRV_SQLTYPE_NCHAR($config['length']);
-			case 'numeric':
-				return SQLSRV_SQLTYPE_NUMERIC($config['precision'],$config['scale']);
-			case 'nvarchar':
-				return SQLSRV_SQLTYPE_NVARCHAR($config['length']);
-			case 'ntext':
-				return SQLSRV_SQLTYPE_NTEXT;
-			case 'real':
-				return SQLSRV_SQLTYPE_REAL;
-			case 'smalldatetime':
-				return SQLSRV_SQLTYPE_SMALLDATETIME;
-			case 'smallint':
-				return SQLSRV_SQLTYPE_SMALLINT;
-			case 'smallmoney':
-				return SQLSRV_SQLTYPE_SMALLMONEY;
-			case 'text':
-				return SQLSRV_SQLTYPE_TEXT;
-			case 'time':
-				return SQLSRV_SQLTYPE_TIME;
-			case 'timestamp':
-				return SQLSRV_SQLTYPE_TIMESTAMP;
-			case 'tinyint':
-				return SQLSRV_SQLTYPE_TINYINT;
-			case 'uniqueidentifier':
-				return SQLSRV_SQLTYPE_UNIQUEIDENTIFIER;
-			case 'UDT':
-				return SQLSRV_SQLTYPE_UDT;
-			case 'varbinary':
-				return SQLSRV_SQLTYPE_VARBINARY($config['length']);
-			case 'varchar':
-				return SQLSRV_SQLTYPE_VARCHAR($config['length']);
-			case 'xml':
-				return SQLSRV_SQLTYPE_XML;
-			default:
-				return null;
+			return SQLSRV_SQLTYPE_BIGINT;
+		}
+		else if ('binary' === $type)
+		{
+			return SQLSRV_SQLTYPE_BINARY;
+		}
+		else if ('bit' === $type)
+		{
+			return SQLSRV_SQLTYPE_BIT;
+		}
+		else if ('char' === $type)
+		{
+			return SQLSRV_SQLTYPE_CHAR ($config ['length']);
+		}
+		else if ('date' === $type)
+		{
+			return SQLSRV_SQLTYPE_DATE;
+		}
+		else if ('datetime' === $type)
+		{
+			return SQLSRV_SQLTYPE_DATETIME;
+		}
+		else if ('datetime2' === $type)
+		{
+			return SQLSRV_SQLTYPE_DATETIME2;
+		}
+		else if ('datetimeoffset' === $type)
+		{
+			return SQLSRV_SQLTYPE_DATETIMEOFFSET;
+		}
+		else if ('decimal' === $type)
+		{
+			return SQLSRV_SQLTYPE_DECIMAL ($config ['precision'], $config ['scale']);
+		}
+		else if ('float' === $type)
+		{
+			return SQLSRV_SQLTYPE_FLOAT;
+		}
+		else if ('image' === $type)
+		{
+			return SQLSRV_SQLTYPE_IMAGE;
+		}
+		else if ('int' === $type)
+		{
+			return SQLSRV_SQLTYPE_INT;
+		}
+		else if ('money' === $type)
+		{
+			return SQLSRV_SQLTYPE_MONEY;
+		}
+		else if ('nchar' === $type)
+		{
+			return SQLSRV_SQLTYPE_NCHAR ($config ['length']);
+		}
+		else if ('numeric' === $type)
+		{
+			return SQLSRV_SQLTYPE_NUMERIC ($config ['precision'], $config ['scale']);
+		}
+		else if ('nvarchar' === $type)
+		{
+			return SQLSRV_SQLTYPE_NVARCHAR ($config ['length']);
+		}
+		else if ('ntext' === $type)
+		{
+			return SQLSRV_SQLTYPE_NTEXT;
+		}
+		else if ('real' === $type)
+		{
+			return SQLSRV_SQLTYPE_REAL;
+		}
+		else if ('smalldatetime' === $type)
+		{
+			return SQLSRV_SQLTYPE_SMALLDATETIME;
+		}
+		else if ('smallint' === $type)
+		{
+			return SQLSRV_SQLTYPE_SMALLINT;
+		}
+		else if ('smallmoney' === $type)
+		{
+			return SQLSRV_SQLTYPE_SMALLMONEY;
+		}
+		else if ('text' === $type)
+		{
+			return SQLSRV_SQLTYPE_TEXT;
+		}
+		else if ('time' === $type)
+		{
+			return SQLSRV_SQLTYPE_TIME;
+		}
+		else if ('timestamp' === $type)
+		{
+			return SQLSRV_SQLTYPE_TIMESTAMP;
+		}
+		else if ('tinyint' === $type)
+		{
+			return SQLSRV_SQLTYPE_TINYINT;
+		}
+		else if ('uniqueidentifier' === $type)
+		{
+			return SQLSRV_SQLTYPE_UNIQUEIDENTIFIER;
+		}
+		else if ('UDT' === $type)
+		{
+			return SQLSRV_SQLTYPE_UDT;
+		}
+		else if ('varbinary' === $type)
+		{
+			return SQLSRV_SQLTYPE_VARBINARY ($config ['length']);
+		}
+		else if ('varchar' === $type)
+		{
+			return SQLSRV_SQLTYPE_VARCHAR ($config ['length']);
+		}
+		else if ('xml' === $type)
+		{
+			return SQLSRV_SQLTYPE_XML;
+		}
+		else
+		{
+			return null;
 		}
 	}
 	public function parsePhpType($config)
 	{
-		switch($config['php_type'])
+		if('int' === $config['php_type'])
 		{
-			case 'int':
-				return SQLSRV_PHPTYPE_INT;
-			case 'datetime':
-				return SQLSRV_PHPTYPE_DATETIME;
-			case 'float':
-				return SQLSRV_PHPTYPE_FLOAT;
-			case 'stream':
-				return SQLSRV_PHPTYPE_STREAM('UTF-8');
-			default:
-				return SQLSRV_PHPTYPE_STRING('UTF-8');
+			return SQLSRV_PHPTYPE_INT;
+		}
+		else if('datetime' === $config['php_type'])
+		{
+			return SQLSRV_PHPTYPE_DATETIME;
+		}
+		else if('float' === $config['php_type'])
+		{
+			return SQLSRV_PHPTYPE_FLOAT;
+		}
+		else if('stream' === $config['php_type'])
+		{
+			return SQLSRV_PHPTYPE_STREAM('UTF-8');
+		}
+		else
+		{
+			return SQLSRV_PHPTYPE_STRING('UTF-8');
 		}
 	}
 	/**
