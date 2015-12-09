@@ -151,11 +151,12 @@ function printError($err)
 	}
 	else
 	{// 错误对象
-		$error = array();
-		$error['message']=$err->getMessage();
-		$error['file']=$err->getFile();
-		$error['line']=$err->getLine();
-		$error['trace']=$err->getTraceAsString();
+		$error = array(
+			'message'	=>	$err->getMessage(),
+			'file'		=>	$err->getFile(),
+			'line'		=>	$err->getLine(),
+			'trace'		=>	$err->getTraceAsString()
+		);
 	}
 	// 最后执行的sql语句
 	if(isset($GLOBALS['debug']['lastsql']))
@@ -202,10 +203,11 @@ set_error_handler(function($errno, $errstr, $errfile, $errline){
 	if(E_ERROR === $errno || E_PARSE === $errno || E_CORE_ERROR === $errno || E_COMPILE_ERROR === $errno || E_USER_ERROR === $errno)
 	{
 		ob_end_clean();
-		$error = array();
-		$error['message']=$errstr;
-		$error['file']=$errfile;
-		$error['line']=$errline;
+		$error = array(
+			'message'	=>	$errstr,
+			'file'		=>	$errfile,
+			'line'		=>	$errline
+		);
 		if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
 		{
 			Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
