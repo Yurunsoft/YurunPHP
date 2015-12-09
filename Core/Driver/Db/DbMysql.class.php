@@ -114,7 +114,7 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function query($sql)
+	public function &query($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -125,8 +125,9 @@ class DbMysql extends DbBase
 			else
 			{
 				$result = mysql_fetch_array($this->result);
-				if (false !== $result)
+				if (false === $result)
 				{
+					$result = array();
 					return $result;
 				}
 				else
@@ -137,7 +138,8 @@ class DbMysql extends DbBase
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -146,7 +148,7 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function queryA($sql)
+	public function &queryA($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -166,7 +168,8 @@ class DbMysql extends DbBase
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -204,7 +207,7 @@ class DbMysql extends DbBase
 	 *        	string procName 存储过程名称
 	 * @return array
 	 */
-	public function execProc($procName)
+	public function &execProc($procName)
 	{
 		$p = func_get_args();
 		if (isset($p[1]) && is_array($p[1]))
@@ -301,7 +304,7 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $dbname        	
 	 */
-	public function getTables($dbName = null)
+	public function &getTables($dbName = null)
 	{
 		if (empty($dbName))
 		{ // 当前表
@@ -314,8 +317,10 @@ class DbMysql extends DbBase
 		// 查询
 		$result = $this->queryA($sql);
 		if (false === $result)
-		{ // 失败
-			return false;
+		{
+			// 失败
+			$r = false;
+			return $r;
 		}
 		else
 		{
@@ -335,12 +340,14 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $table        	
 	 */
-	public function getFields($table)
+	public function &getFields($table)
 	{
 		// 查询
 		$result = $this->queryA('show columns from ' . $this->parseField($table));
 		if (false === $result)
-		{ // 失败
+		{
+			// 失败
+			$r = false;
 			return false;
 		}
 		else
@@ -382,12 +389,13 @@ class DbMysql extends DbBase
 	 * @param callback $callback
 	 * @return mixed
 	 */
-	public function parseMultiSql($file,$callback=null)
+	public function &parseMultiSql($file,$callback=null)
 	{
 		$this->fp = fopen($file, 'r');
 		if(false===$this->fp)
 		{
-			return false;
+			$result = false;
+			return $result;
 		}
 		else 
 		{

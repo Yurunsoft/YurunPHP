@@ -5,9 +5,6 @@
  */
 abstract class DbBase
 {
-	const RETURN_ISOK = 0;
-	const RETURN_ROWS = 1;
-	const RETURN_INSERT_ID = 2;
 	// 连接
 	protected $conn;
 	// 结果集
@@ -147,15 +144,15 @@ abstract class DbBase
 	 * @param string $table        	
 	 * @param array $data        	
 	 */
-	public function insert($table, $data, $return = self::RETURN_ISOK)
+	public function insert($table, $data, $return = Db::RETURN_ISOK)
 	{
 		$sql = 'insert into ' . $this->parseField($table) . '(' . $this->parseField(array_keys($data)) . ') values(' . $this->filterValue($data) . ')';
 		$result = $this->execute($sql);
-		if(self::RETURN_ROWS === $return)
+		if(Db::RETURN_ROWS === $return)
 		{
 			return $this->rowCount();
 		}
-		else if(self::RETURN_ROWS === $return)
+		else if(Db::RETURN_ROWS === $return)
 		{
 			return $this->lastInsertId();
 		}
@@ -174,7 +171,7 @@ abstract class DbBase
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function update($data, $option, $return = self::RETURN_ISOK)
+	public function update($data, $option, $return = Db::RETURN_ISOK)
 	{
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
@@ -183,7 +180,7 @@ abstract class DbBase
 		}
 		$sql = 'update ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $this->parseUpdateSet($data) . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : array ()) . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
-		if(self::RETURN_ROWS === $return)
+		if(Db::RETURN_ROWS === $return)
 		{
 			return $this->rowCount();
 		}
@@ -201,7 +198,7 @@ abstract class DbBase
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function delete($option, $return = self::RETURN_ISOK)
+	public function delete($option, $return = Db::RETURN_ISOK)
 	{
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
@@ -210,7 +207,7 @@ abstract class DbBase
 		}
 		$sql = 'delete from ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : '') . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
-		if(self::RETURN_ROWS === $return)
+		if(Db::RETURN_ROWS === $return)
 		{
 			return $this->rowCount();
 		}
@@ -227,7 +224,7 @@ abstract class DbBase
 	 * @param boolean $first        	
 	 * @return array
 	 */
-	public function select($option, $first = false)
+	public function &select($option, $first = false)
 	{
 		$sql = $this->parseSelectOption($option);
 		if ($first)
@@ -754,16 +751,16 @@ abstract class DbBase
 	 * @param callback $callback
 	 * @return mixed
 	 */
-	abstract public function parseMultiSql($file,$callback=null);
+	abstract public function &parseMultiSql($file,$callback=null);
 	/**
 	 * 查询一条记录
 	 */
-	abstract public function query($sql);
+	abstract public function &query($sql);
 	
 	/**
 	 * 查询多条记录
 	 */
-	abstract public function queryA($sql);
+	abstract public function &queryA($sql);
 	
 	/**
 	 * 执行SQL语句
@@ -811,11 +808,11 @@ abstract class DbBase
 	 *
 	 * @param string $dbname        	
 	 */
-	abstract public function getTables($dbName = null);
+	abstract public function &getTables($dbName = null);
 	/**
 	 * 获取数据表中所有字段详细信息
 	 *
 	 * @param string $table        	
 	 */
-	abstract public function getFields($table);
+	abstract public function &getFields($table);
 }

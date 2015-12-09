@@ -96,7 +96,7 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function query($sql)
+	public function &query($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -109,7 +109,8 @@ class DbMssql extends DbBase
 				$result = sqlsrv_fetch_array($this->result);
 				if (false === $result)
 				{
-					return false;
+					$result = array();
+					return $result;
 				}
 				else
 				{
@@ -120,7 +121,8 @@ class DbMssql extends DbBase
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -129,7 +131,7 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function queryA($sql)
+	public function &queryA($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -156,7 +158,8 @@ class DbMssql extends DbBase
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -179,6 +182,7 @@ class DbMssql extends DbBase
 		}
 		return false !== $this->result ? true : false;
 	}
+	
 	/**
 	 * 执行存储过程
 	 *
@@ -348,7 +352,7 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $dbname        	
 	 */
-	public function getTables($dbName = null)
+	public function &getTables($dbName = null)
 	{
 		if (empty($dbName))
 		{ // 当前表
@@ -361,8 +365,10 @@ class DbMssql extends DbBase
 		// 查询
 		$result = $this->queryA($sql);
 		if (false === $result)
-		{ // 失败
-			return false;
+		{
+			// 失败
+			$result = false;
+			return $result;
 		}
 		else
 		{
@@ -382,15 +388,17 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $table        	
 	 */
-	public function getFields($table)
+	public function &getFields($table)
 	{
 		// 查询
 		$result = $this->queryA('select sys.syscolumns.*,sys.types.name as xtype_name ,(case when sys.index_columns.object_id is null then 0 else 1 end) as is_pk from sys.syscolumns
 join sys.types on xtype=system_type_id 
 left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid and sys.index_columns.object_id=id where id=object_id(\'' . $this->parseField($table) . '\')');
 		if (false === $result)
-		{ // 失败
-			return false;
+		{
+			// 失败
+			$result = false;
+			return $result;
 		}
 		else
 		{
@@ -431,12 +439,13 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 	 * @param callback $callback
 	 * @return mixed
 	 */
-	public function parseMultiSql($file,$callback=null)
+	public function &parseMultiSql($file,$callback=null)
 	{
 		$this->fp = fopen($file, 'r');
 		if(false===$this->fp)
 		{
-			return false;
+			$result = false;
+			return $result;
 		}
 		else 
 		{
@@ -684,12 +693,23 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 			$order = $option['order'];
 			unset($option['order']);
 		}
-		$sql = parent::parseSelectOption($option);
+		else
+		{
+			$order = $this->parseOrder(isset($option['order']) ? $option['order'] : array ());
+		}
 		if(isset($limit))
 		{
-			$order = $this->parseOrder($order);
 			$this->parseLimit($limit,$start,$end);
-			$sql = <<<EOF
+			if($start==0)
+			{
+				$fields = $this->parseField(isset($option['field']) ? $option['field'] : '*');
+				$fields = "top {$end} {$fields}";
+			}
+			else
+			{
+				$sql = parent::parseSelectOption($option);
+				return
+<<<EOF
 SELECT
 	*
 FROM
@@ -706,9 +726,26 @@ WHERE
 AND RowNumber <= {$end}
 {$order}
 EOF
-			;
+				;
+			}
 		}
-		return $sql;
+		else 
+		{
+			$fields = $this->parseField(isset($option['field']) ? $option['field'] : '*');
+		}
+		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
+		if ('' !== $where)
+		{
+			$where = " where {$where}";
+		}
+		return 'select ' . $this->parseDistinct(isset($option['distinct']) ? $option['distinct'] : '')
+		. $fields
+		. ' from '
+				. $this->parseField(isset($option['from']) ? $option['from'] : '')
+				. $this->parseJoin(isset($option['join']) ? $option['join'] : array())
+				. $where . $this->parseGroup(isset($option['group']) ? $option['group'] : array ())
+				. $this->parseHaving(isset($option['having']) ? $option['having'] : '')
+				. $order;
 	}
 	/**
 	 * 解析limit

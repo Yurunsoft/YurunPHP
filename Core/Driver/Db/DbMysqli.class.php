@@ -24,7 +24,6 @@ class DbMysqli extends DbBase
 		if (empty($this->conn))
 		{
 			// 连接信息
-// 			$server = (isset($config['host']) ? $config['host'] : 'localhost') . ':' . (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306');
 			$server = (isset($config['host']) ? $config['host'] : 'localhost');
 			$username = isset($config['username']) ? $config['username'] : 'root';
 			$password = isset($config['password']) ? $config['password'] : '';
@@ -39,10 +38,6 @@ class DbMysqli extends DbBase
 					$this->execute("set names {$config['charset']}");
 				}
 				// 选择数据库
-// 				if (isset($config['dbname']))
-// 				{
-// 					$this->selectDb($config['dbname']);
-// 				}
 				$this->connect = true;
 				return true;
 			}
@@ -108,7 +103,7 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function query($sql)
+	public function &query($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -121,6 +116,7 @@ class DbMysqli extends DbBase
 				$result = mysqli_fetch_array($this->result);
 				if (false !== $result)
 				{
+					$result = array();
 					return $result;
 				}
 				else
@@ -140,7 +136,7 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function queryA($sql)
+	public function &queryA($sql)
 	{
 		if ($this->execute($sql))
 		{
@@ -160,7 +156,8 @@ class DbMysqli extends DbBase
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -198,7 +195,7 @@ class DbMysqli extends DbBase
 	 *        	string procName 存储过程名称
 	 * @return array
 	 */
-	public function execProc($procName)
+	public function &execProc($procName)
 	{
 		$p = func_get_args();
 		if (isset($p[1]) && is_array($p[1]))
@@ -295,7 +292,7 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $dbname        	
 	 */
-	public function getTables($dbName = null)
+	public function &getTables($dbName = null)
 	{
 		if (empty($dbName))
 		{ // 当前表
@@ -308,8 +305,10 @@ class DbMysqli extends DbBase
 		// 查询
 		$result = $this->queryA($sql);
 		if (false === $result)
-		{ // 失败
-			return false;
+		{
+			// 失败
+			$result = false;
+			return $result;
 		}
 		else
 		{
@@ -329,13 +328,15 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $table        	
 	 */
-	public function getFields($table)
+	public function &getFields($table)
 	{
 		// 查询
 		$result = $this->queryA('show columns from ' . $this->parseField($table));
 		if (false === $result)
-		{ // 失败
-			return false;
+		{
+			// 失败
+			$result = false;
+			return $result;
 		}
 		else
 		{
@@ -376,12 +377,13 @@ class DbMysqli extends DbBase
 	 * @param callback $callback
 	 * @return mixed
 	 */
-	public function parseMultiSql($file,$callback=null)
+	public function &parseMultiSql($file,$callback=null)
 	{
 		$this->fp = fopen($file, 'r');
 		if(false===$this->fp)
 		{
-			return false;
+			$result = false;
+			return $result;
 		}
 		else 
 		{

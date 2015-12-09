@@ -69,7 +69,7 @@ class Model extends ArrayData
 	 * @param type $model        	
 	 * @return Model
 	 */
-	public static function obj($model='',$table=null)
+	public static function &obj($model='',$table=null)
 	{
 		$ref = new ReflectionClass(ucfirst($model) . 'Model');
 		$args = func_get_args();
@@ -104,7 +104,7 @@ class Model extends ArrayData
 	 *        	是否只获取一条记录
 	 * @return array
 	 */
-	public function select($first = false)
+	public function &select($first = false)
 	{
 		return $this->db->select($this->getOption(), $first);
 	}
@@ -124,7 +124,7 @@ class Model extends ArrayData
 	 *
 	 * @return mixed
 	 */
-	public function selectBy($field,$value)
+	public function &selectBy($field,$value)
 	{
 		return $this->where(array($field=>$value))->select();
 	}
@@ -133,7 +133,7 @@ class Model extends ArrayData
 	 *
 	 * @return mixed
 	 */
-	public function getBy($field,$value)
+	public function &getBy($field,$value)
 	{
 		return $this->where(array($field=>$value))->select(true);
 	}
@@ -143,7 +143,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function randomEx($num = 1)
+	public function &randomEx($num = 1)
 	{
 		$opt = $this->getOption();
 		$field = isset($opt['field']) ? $opt['field'] : '';
@@ -168,7 +168,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function random($num = 1)
+	public function &random($num = 1)
 	{
 		$opt = $this->getOption();
 		$field = isset($opt['field']) ? $opt['field'] : '';
@@ -385,7 +385,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function add($data = null, $return = DbBase::RETURN_ISOK)
+	public function add($data = null, $return = Db::RETURN_ISOK)
 	{
 		$option=$this->getOption();
 		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), null === $data ? $this->data : $data, $return);
@@ -399,7 +399,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function edit($data = null, $return = DbBase::RETURN_ISOK)
+	public function edit($data = null, $return = Db::RETURN_ISOK)
 	{
 		return $this->db->update(null === $data ? $this->data : $data, $this->getOption(), $return);
 	}
@@ -411,7 +411,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function delete($return = DbBase::RETURN_ISOK)
+	public function delete($return = Db::RETURN_ISOK)
 	{
 		return $this->db->delete($this->getOption(), $return);
 	}
@@ -442,97 +442,6 @@ class Model extends ArrayData
 	{
 		$this->options=$option;
 	}
-	/**
-	 * 使用存储过程添加记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function addByP()
-	{
-		return $this->quickPOF($this->fields_add, func_get_args(), 'Proc', 'add');
-	}
-	
-	/**
-	 * 使用Function添加记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function addByF()
-	{
-		return $this->quickPOF($this->fields_add, func_get_args(), 'Function', 'add');
-	}
-	
-	/**
-	 * 使用存储过程编辑记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function editByP()
-	{
-		return $this->quickPOF($this->fields_edit, func_get_args(), 'Proc', 'edit');
-	}
-	
-	/**
-	 * 使用Function编辑记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function editByF()
-	{
-		return $this->quickPOF($this->fields_edit, func_get_args(), 'Function', 'edit');
-	}
-	
-	/**
-	 * 使用存储过程删除记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function deleteByP()
-	{
-		return $this->quickPOF($this->fields_delete, func_get_args(), 'Proc', 'delete');
-	}
-	
-	/**
-	 * 使用Function删除记录
-	 *
-	 * @param array $data        	
-	 * @return mixed
-	 */
-	function deleteByF()
-	{
-		return $this->quickPOF($this->fields_delete, func_get_args(), 'Function', 'delete');
-	}
-	
-	/**
-	 * 存储过程和Function快捷操作
-	 *
-	 * @param array $fields        	
-	 * @param array $data        	
-	 * @param array $type        	
-	 * @param array $operation        	
-	 * @return mixed
-	 */
-	protected function quickPOF($fields, $data, $type, $operation)
-	{
-		$d = array ("{$operation}_{$this->table}");
-		foreach ($fields as $value)
-		{
-			if (isset($data[$value]))
-			{
-				$d[] = $data[$value];
-			}
-			else
-			{
-				$d[] = $this->get($value);
-			}
-		}
-		return call_user_func_array(array ($this->db,"exec{$type}"), $d);
-	}
 	
 	/**
 	 * 取一条记录
@@ -542,7 +451,7 @@ class Model extends ArrayData
 	 *        	是否是SQL语句
 	 * @return array
 	 */
-	function find($config = array(), $sqlMode = false)
+	function &find($config = array(), $sqlMode = false)
 	{
 		if ($sqlMode)
 		{
@@ -571,14 +480,11 @@ class Model extends ArrayData
 			}
 			$data = $this->db->select($config, true);
 		}
-		if (is_array($data))
+		if (!is_array($data))
 		{
-			return $data;
+			$data = array();
 		}
-		else
-		{
-			return array ();
-		}
+		return $data;
 	}
 	
 	/**
@@ -589,7 +495,7 @@ class Model extends ArrayData
 	 *        	是否是使用SQL语句
 	 * @return array
 	 */
-	function findA($config = array(), $sqlMode = false)
+	function &findA($config = array(), $sqlMode = false)
 	{
 		if ($sqlMode)
 		{
@@ -655,7 +561,7 @@ class Model extends ArrayData
 	 * @param int $type        	
 	 * @return array
 	 */
-	public function parseFieldsMap($data = null, $type = Model::TO_DB)
+	public function &parseFieldsMap($data = null, $type = Model::TO_DB)
 	{
 		if (null === $data)
 		{
@@ -691,7 +597,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function inc($field, $num = null, $return = DbBase::RETURN_ISOK)
+	public function inc($field, $num = null, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
 		if (null === $num)
@@ -726,7 +632,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function dec($field, $num = null, $return = DbBase::RETURN_ISOK)
+	public function dec($field, $num = null, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
 		if (null === $num)
@@ -870,7 +776,7 @@ class Model extends ArrayData
 	 * @param int $id
 	 * @return array
 	 */
-	public function getByPk($value)
+	public function &getByPk($value)
 	{
 		return $this->where(array($this->pk=>$value))
 					->limit(1)
