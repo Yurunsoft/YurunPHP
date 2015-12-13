@@ -284,6 +284,24 @@ function yurunAutoload($class)
 			return;
 		}
 	}
+	// 自定义分层支持
+	$layers = Config::get('@.CUSTOM_LAYER');
+	foreach($layers as $layer)
+	{
+		if ($layer === substr($class, - strlen($layer)))
+		{
+			// 模型
+			if (			// 其他扩展
+					require_once_multi(array ($currModulePath . $layer . "/{$file}",			// 模块模型目录
+					APP_MODEL . $file,			// 项目模型目录
+					PATH_EX_MODEL . "/{$file}"), 			// 框架模型扩展目录
+					false))
+			{
+				return;
+			}
+		}
+	}
+	unset($layers,$layer);
 	$file2 = '/' . getClassFirst($class) . "/{$file}";
 	if (		// 其他扩展
 	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
