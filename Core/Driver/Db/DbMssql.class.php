@@ -391,9 +391,46 @@ class DbMssql extends DbBase
 	public function &getFields($table)
 	{
 		// 查询
-		$result = $this->queryA('select sys.syscolumns.*,sys.types.name as xtype_name ,(case when sys.index_columns.object_id is null then 0 else 1 end) as is_pk from sys.syscolumns
-join sys.types on xtype=system_type_id 
-left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid and sys.index_columns.object_id=id where id=object_id(\'' . $this->parseField($table) . '\')');
+		$result = &$this->queryA(
+<<<SQL
+SELECT
+	cols.COLUMN_NAME AS name,
+	CASE
+WHEN CHARACTER_MAXIMUM_LENGTH IS NULL THEN
+	DATA_TYPE
+ELSE
+	(
+		DATA_TYPE + '(' + CAST (
+			CHARACTER_MAXIMUM_LENGTH AS VARCHAR (32)
+		) + ')'
+	)
+END AS type,
+ CASE
+WHEN IS_NULLABLE = 'YES' THEN
+	1
+ELSE
+	0
+END AS [null],
+ COLUMN_DEFAULT,
+ COLUMNPROPERTY(
+	OBJECT_ID(cols.TABLE_NAME),
+	cols.COLUMN_NAME,
+	'IsIdentity'
+) AS IsIdentity,
+ CASE
+WHEN kcu.COLUMN_NAME IS NULL THEN
+	0
+ELSE
+	1
+END AS [key]
+FROM
+	INFORMATION_SCHEMA.columns AS cols
+LEFT JOIN INFORMATION_SCHEMA.KEY_COLUMN_USAGE AS kcu ON kcu.TABLE_NAME = cols.TABLE_NAME
+AND kcu.COLUMN_NAME = cols.COLUMN_NAME
+WHERE
+	cols.TABLE_NAME = '{$table}'
+SQL
+);
 		if (false === $result)
 		{
 			// 失败
@@ -402,14 +439,9 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 		}
 		else
 		{
-			$r = array ();
-			// 处理数据
-			foreach ($result as $value)
-			{
-				$r[] = array ('name' => $value['name'],'type' => $value['xtype_name'],'null' => 'yes' === strtolower($value['isnullable']),'default' => $value['autoval'],'key' => $value['is_pk'],'autoinc' => $value['colstat']);
-			}
+			arrayColumnToKey($result,'name');
 			// 返回结果
-			return $r;
+			return $result;
 		}
 	}
 	/**
@@ -695,8 +727,9 @@ left join sys.index_columns on sys.index_columns.column_id=sys.syscolumns.colid 
 		}
 		else
 		{
-			$order = $this->parseOrder(isset($option['order']) ? $option['order'] : array ());
+			$order = $option['order'];
 		}
+		$order = $this->parseOrder(empty($order) ? array () : $order);
 		if(isset($limit))
 		{
 			$this->parseLimit($limit,$start,$end);

@@ -15,10 +15,6 @@ define('YURUN_VERSION', '2.0.1');
 header('X-Powered-By:YurunPHP ' . YURUN_VERSION);
 // 是否开启调试
 defined('IS_DEBUG') or define('IS_DEBUG', true);
-if (! IS_DEBUG)
-{
-	error_reporting(0);
-}
 // 框架根目录
 define('ROOT_PATH', dirname(__FILE__) . '/');
 // 框架核心目录

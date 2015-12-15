@@ -152,7 +152,7 @@ abstract class DbBase
 		{
 			return $this->rowCount();
 		}
-		else if(Db::RETURN_ROWS === $return)
+		else if(Db::RETURN_INSERT_ID === $return)
 		{
 			return $this->lastInsertId();
 		}
@@ -351,26 +351,49 @@ abstract class DbBase
 	 */
 	public function parseField($field)
 	{
-		if (! is_array($field))
+		if (!is_array($field))
 		{
-			$field = explode(',', $field);
-		}
-		$fields = array ();
-		foreach ($field as $key => $value)
-		{
-			if(is_array($value))
+			$field = $this->parseNameAlias($field);
+			if (empty($field))
 			{
-				$fields[]=$this->parseConstValue($value);
-			}
-			else if (is_numeric($key))
-			{
-				// 无键名，无别名
-				$fields[] = $this->parseNameAlias($value);
+				return '*';
 			}
 			else
 			{
+				return $field;
+			}
+		}
+		$fields = array ();
+		foreach ($field as $k => $value)
+		{
+			if(is_array($value))
+			{
+				foreach($value as $key=>$item)
+				{
+					if(is_array($item))
+					{
+						$fields[] = $this->parseConstValue($item);
+					}
+					else if (is_numeric($key))
+					{
+						// 无键名，无别名
+						$fields[] = $this->parseNameAlias($item);
+					}
+					else
+					{
+						// 有键名，有别名
+						$fields[] = $this->parseNameAlias($key, $item);
+					}
+				}
+			}
+			else if(!is_numeric($k))
+			{
 				// 有键名，有别名
-				$fields[] = $this->parseNameAlias($key, $value);
+				$fields[] = $this->parseNameAlias($k, $value);
+			}
+			else if(is_string($value))
+			{
+				$fields[] = $value;
 			}
 		}
 		$fields = implode(',', $fields);
@@ -394,22 +417,36 @@ abstract class DbBase
 	/**
 	 * 解析条件
 	 *
-	 * @param array $condition        	
+	 * @param array $condition
 	 * @return string
 	 */
 	public function parseCondition($condition)
 	{
-		if (is_array($condition))
-		{ // 数组条件
-			$result = '';
-			// 遍历条件数组
-			foreach ($condition as $key => $value)
+		$result = '';
+		// 遍历条件数组
+		foreach ($condition as $item)
+		{
+			if(is_string($item))
 			{
-				$key = strtolower($key);
+				if ('' !== $result)
+				{ // 不是第一个条件，默认加上 and
+					$result .= ' ' . $this->getOperator('and') . ' ';
+				}
+				$result .= $item;
+				continue;
+			}
+			foreach($item as $key => $value)
+			{
+				$skey = strtolower($key);
 				// 判断是否是逻辑运算符
-				if (in_array($key, $this->logicOperators))
-				{ // 当前键名是逻辑运算符
-					$result .= ' ' . $this->getOperator($key) . ' (' . $this->parseCondition($value) . ')';
+				if (in_array($skey, $this->logicOperators))
+				{
+					if('' !== $result)
+					{
+						// 当前键名是逻辑运算符
+						$result .= ' ' . $this->getOperator($skey);
+					}
+					$result .= ' (' . $this->parseCondition(array($value)) . ')';
 				}
 				else
 				{
@@ -417,59 +454,48 @@ abstract class DbBase
 					{ // 不是第一个条件，默认加上 and
 						$result .= ' ' . $this->getOperator('and') . ' ';
 					}
-					if ('_exp' === $key)
-					{ // sql表达式，直接加上
-						$result .= $value;
-					}
-					else if (is_array($value))
+					if (is_array($value))
 					{
-						if (isset($value['_exp']))
-						{ // 表达式，原样加上
-							$result .= $this->parseField($key) . ' ' . $value['_exp'];
-						}
-						else
+						$s = count($value);
+						// 条件解析
+						if ($s > 0)
 						{
-							$s = count($value);
-							// 条件解析
-							if ($s > 0)
+							if('between' === $value[0])
 							{
-								if('between' === $value[0])
+								if ($s >= 3)
 								{
-									if ($s >= 3)
-									{
-										$result .= $this->parseField($key) . ' between ' . $this->filterValue($value[1]) . ' and ' . $this->filterValue($value[2]);
-									}
+									$result .= $this->parseField($key) . ' between ' . $this->filterValue($value[1]) . ' and ' . $this->filterValue($value[2]);
 								}
-								else if('in' === $value[0] || 'not in' === $value[0])
+							}
+							else if('in' === $value[0] || 'not in' === $value[0])
+							{
+								if ($s === 2)
 								{
-									if ($s === 2)
+									if(!is_array($value[1]))
 									{
-										if(!is_array($value[1]))
-										{
-											$value[1]=explode(',',$value[1]);
-										}
-										$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]) . '(' . $this->filterValue($value[1]) . ')';
+										$value[1]=explode(',',$value[1]);
 									}
-									else if ($s > 2)
-									{
-										$o = array_shift($value);
-										$result .= $this->parseField($key) . ' ' . $this->getOperator($o) . '(' . $this->filterValue($value) . ')';
-									}
+									$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]) . '(' . $this->filterValue($value[1]) . ')';
 								}
-								else 
+								else if ($s > 2)
 								{
-									if ($s > 0)
+									$o = array_shift($value);
+									$result .= $this->parseField($key) . ' ' . $this->getOperator($o) . '(' . $this->filterValue($value) . ')';
+								}
+							}
+							else
+							{
+								if ($s > 0)
+								{
+									$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]);
+									if ($s > 1)
 									{
-										$result .= $this->parseField($key) . ' ' . $this->getOperator($value[0]);
-										if ($s > 1)
+										$result .= ' ' . $this->filterValue($value[1]);
+										if ($s > 2)
 										{
-											$result .= ' ' . $this->filterValue($value[1]);
-											if ($s > 2)
+											for ($i = 2; $i < $s; ++ $i)
 											{
-												for ($i = 2; $i < $s; ++ $i)
-												{
-													$result .= ' ' . $value[$i];
-												}
+												$result .= ' ' . $value[$i];
 											}
 										}
 									}
@@ -479,16 +505,12 @@ abstract class DbBase
 					}
 					else
 					{ // 直接等于
-						$result .= $this->parseField($key) . "=" . $this->filterValue($value);
+						$result .= $this->parseField($key) . '=' . $this->filterValue($value);
 					}
 				}
 			}
-			return $result;
 		}
-		else
-		{ // 文本条件直接返回
-			return $condition;
-		}
+		return $result;
 	}
 	
 	/**
@@ -553,7 +575,7 @@ abstract class DbBase
 	 */
 	public function parseHaving($having)
 	{
-		$result = $this->parseCondition($having);
+		$result = $this->parseCondition(array($having));
 		if ('' === $result)
 		{
 			return $result;
@@ -572,20 +594,17 @@ abstract class DbBase
 	 */
 	public function parseOrder($order)
 	{
-		if (! is_array($order))
+		if(empty($order))
 		{
-			$order = explode(',', $order);
+			return '';
+		}
+		if (is_string($order))
+		{
+			return " order by {$order}";
 		}
 		$result = '';
 		foreach ($order as $key => $value)
 		{
-			if(is_array($value))
-			{
-				if(isset($value['_exp']))
-				{
-					$result.="{$value['_exp']},";
-				}
-			}
 			if (is_numeric($key))
 			{
 				$result .= $this->parseField($value).',';
@@ -618,7 +637,7 @@ abstract class DbBase
 		{
 			if($isTable)
 			{
-				$result.=' on '.$this->parseCondition($item);
+				$result.=' on '.$this->parseCondition(array($item));
 				$isTable=false;
 			}
 			else if(is_string($item))
@@ -627,7 +646,7 @@ abstract class DbBase
 			}
 			else if(isset($item['type'],$item['table'],$item['on']))
 			{
-				$result.=" {$item['type']} join ".$this->parseField($item['table']).' on '.$this->parseCondition($item['on']);
+				$result.=" {$item['type']} join ".$this->parseField($item['table']).' on '.$this->parseCondition(array($item['on']));
 			}
 			else
 			{
@@ -651,20 +670,11 @@ abstract class DbBase
 		{
 			foreach ($data as $key => $value)
 			{
-				$type = gettype($key);
-				if('integer' === $type || 'double' === $type)
+				if (is_numeric($key))
 				{
-					$sql .= $value;
+					$sql .= $value . ',';
 				}
-				else if('array' === $type)
-				{
-					if (isset($value['_exp']))
-					{
-						$sql .= "{$value['_exp']},";
-						break;
-					}
-				}
-				else 
+				else
 				{
 					$sql .= $this->parseField($key) . '=' . $this->filterValue($value) . ',';
 				}
@@ -672,7 +682,7 @@ abstract class DbBase
 		}
 		else
 		{
-			$sql .= $data;
+			$sql .= $data . ',';
 		}
 		return substr($sql, 0, - 1);
 	}
@@ -744,6 +754,10 @@ abstract class DbBase
 			}
 		});
 		return true;
+	}
+	public function getType()
+	{
+		return substr(get_called_class(),2);
 	}
 	/**
 	 * 解析sql文件，支持返回sql数组，或者使用回调函数

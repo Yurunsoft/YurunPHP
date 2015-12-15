@@ -119,7 +119,7 @@ function randomNums($min, $max, $num, $re = false)
 			// 数字重复
 			continue;
 		}
-		$arr[$t] = 1;
+		$arr[$t] = $t;
 		++ $i;
 	}
 	while ($i < $num);
@@ -208,4 +208,22 @@ function multimerge()
 		}
 	}
 	return $merged;
+}
+/**
+ * 将二维数组第二纬某key变为一维的key
+ * @param unknown $array
+ * @param unknown $column
+ * @param string $keepOld
+ */
+function arrayColumnToKey(&$array,$column,$keepOld = false)
+{
+	$s = count($array);
+	for($i=0;$i<$s;++$i)
+	{
+		$array[$array[$i][$column]] = $array[$i];
+		if(!$keepOld)
+		{
+			unset($array[$i]);
+		}
+	}
 }

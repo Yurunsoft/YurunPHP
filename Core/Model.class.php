@@ -154,6 +154,10 @@ class Model extends ArrayData
 		// 随机出记录位置
 		$limits = randomNums(0, $sum - 1, $num);
 		$results = array ();
+		if('Mssql' === $this->db->getType() && !isset($opt['order']))
+		{
+			$opt['order'] = array($this->pk);
+		}
 		// 循环取出多条记录
 		foreach ($limits as $value)
 		{
@@ -171,49 +175,24 @@ class Model extends ArrayData
 	public function &random($num = 1)
 	{
 		$opt = $this->getOption();
-		$field = isset($opt['field']) ? $opt['field'] : '';
-		$opt['field'] = array('count(*)'=>'count',"max({$this->pk})"=>'max',"min({$this->pk})"=>'min');
-		$result = $this->db->select($opt,true);
-		$opt['field'] = $field;
-		$max_count=$result['max']-$result['count'];
-		if($max_count>0)
-		{
-			++$max_count;
-		}
+		$this->setOption($opt);
+		$result = $this->field(array('count(*)'=>'count',"max({$this->pk})"=>'max',"min({$this->pk})"=>'min'))->select(true);
+		$this->setOption($opt);
+		$max_count=$result['max']-$result['count']+$num;
 		// 随机出记录位置
 		$limits = randomNums($result['min'], $result['max'], $max_count);
-		if(isset($opt['where']))
+		$this->where(array($this->pk=>array('in',$limits)));
+		$this->limit($num);
+		$type = $this->db->getType();
+		if('Mysql' === substr($type,0,-1))
 		{
-			if(is_array($opt['where']))
-			{
-				$opt['where'][$this->pk]=array('in',$limits);
-			}
-			else
-			{
-				$opt['where']=array('_exp'=>$opt['where'],$this->pk=>array('in',$limits));
-			}
+			$this->order("field({$this->pk},".implode(',',$limits).")");
 		}
-		else
+		else if('Mssql' === $type)
 		{
-			$opt['where']=array($this->pk=>array('in',$limits));
+			$this->order("CHARINDEX('|' + LTRIM(RTRIM(STR({$this->pk}))) + '|', '|".implode('|',$limits)."|')");
 		}
-		$opt['limit'] = $num;
-		if(isset($opt['order']))
-		{
-			if(is_array($opt))
-			{
-				$opt['order'][]=array('_exp'=>"field({$this->pk},".implode(',',$limits).")");
-			}
-			else
-			{
-				$opt['order']=$opt['order'].",field({$this->pk},".implode(',',$limits).")";
-			}
-		}
-		else
-		{
-			$opt['order']="field({$this->pk},".implode(',',$limits).")";
-		}
-		$results = $this->db->select($opt);
+		$results = $this->select();
 		return $results;
 	}
 	/**
@@ -285,55 +264,19 @@ class Model extends ArrayData
 			}
 			else if('where' === $name)
 			{
-				if(isset($this->options[$name]))
+				if(!isset($this->options[$name]))
 				{
-					if(is_string($arguments[0]))
-					{
-						if(isset($this->options[$name]['_exp']))
-						{
-							$this->options[$name]['_exp'].=" and {$arguments[0]}";
-						}
-						else
-						{
-							$this->options[$name]['_exp']=$arguments[0];
-						}
-					}
-					else
-					{
-						$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
-					}
+					$this->options[$name] = array();
 				}
-				else
-				{
-					if(is_array($arguments[0]))
-					{
-						$this->options[$name] = ($arguments[0]);
-					}
-					else
-					{
-						$this->options[$name] = array('_exp'=>$arguments[0]);
-					}
-				}
+				$this->options[$name][]=$arguments[0];
 			}
 			else if('field' === $name)
 			{
 				if(!isset($this->options[$name]))
 				{
-					$this->options[$name]=array();
+					$this->options[$name] = array();
 				}
-				if(count($arguments)>1)
-				{
-					$this->options[$name] = array_merge($this->options[$name],$arguments);
-				}
-				else if(is_array($arguments[0]))
-				{
-					$this->options[$name] = array_merge($this->options[$name],$arguments[0]);
-				}
-				else
-				{
-					$this->options[$name] = array_merge($this->options[$name],explode(',',$arguments[0]));
-				}
-				$this->options[$name] = array_unique($this->options[$name]);
+				$this->options[$name][] = $arguments[0];
 			}
 			else
 			{
@@ -607,19 +550,19 @@ class Model extends ArrayData
 				foreach ($field as $key => $value)
 				{
 					$f = $this->db->parseField($key);
-					$data[$key] = array ('_exp' => "{$f}={$f}+{$value}");
+					$data[] = "{$f}={$f}+{$value}";
 				}
 			}
 			else
 			{ // 单个单数
 				$f = $this->db->parseField($field);
-				$data[$field] = array ('_exp' => "{$f}={$f}+1");
+				$data[] = "{$f}={$f}+1";
 			}
 		}
 		else
 		{ // $field为字段名,$num为增加的值
 			$f = $this->db->parseField($field);
-			$data[$field] = array ('_exp' => "{$f}={$f}+{$num}");
+			$data[] = "{$f}={$f}+{$num}";
 		}
 		return $this->db->update($data, $this->getOption(), $return);
 	}
@@ -642,19 +585,19 @@ class Model extends ArrayData
 				foreach ($field as $key => $value)
 				{
 					$f = $this->db->parseField($key);
-					$data[$key] = array ('_exp' => "{$f}={$f}-{$value}");
+					$data[$key] = "{$f}={$f}-{$value}";
 				}
 			}
 			else
 			{ // 单个单数
 				$f = $this->db->parseField($field);
-				$data[$field] = array ('_exp' => "{$f}={$f}-1");
+				$data[$field] = "{$f}={$f}-1";
 			}
 		}
 		else
 		{ // $field为字段名,$num为减少的值
 			$f = $this->db->parseField($field);
-			$data[$field] = array ('_exp' => "{$f}={$f}-{$num}");
+			$data[$field] = "{$f}={$f}-{$num}";
 		}
 		return $this->db->update($data, $this->getOption(), $return);
 	}
