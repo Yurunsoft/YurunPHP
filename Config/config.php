@@ -87,5 +87,7 @@ return array (
 		'URL_PROTOCOL'				=>	'',			// URL的协议，留空则取当前协议。可取值http://和https://
 		
 		// 控制器returnData方法默认返回数据格式类型
-		'CONTROL_RETURN_TYPE'		=>	'json'
+		'CONTROL_RETURN_TYPE'		=>	'json',
+		// 自定义分层
+		'CUSTOM_LAYER'		=>	array()
 );
