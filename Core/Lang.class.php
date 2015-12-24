@@ -74,14 +74,14 @@ class Lang
 	{
 		$list = array ();
 		// 框架语言包
-		$file = PATH_LANG . "{$lang}.lang.php";
+		$file = PATH_LANG . $lang . '.lang.php';
 		if (is_file($file))
 		{
 			$data = include $file;
 			$list = array_merge($list, $data);
 		}
 		// 项目语言包
-		$file = APP_LANG . "{$lang}.lang.php";
+		$file = APP_LANG . $lang . '.lang.php';
 		if (is_file($file))
 		{
 			$data = include $file;
@@ -93,7 +93,7 @@ class Lang
 		if ('' !== $m)
 		{
 			// 模块语言包
-			$file = APP_MODULE . "{$m}/" . Config::get('@.LANG_FOLDER') . "/{$lang}.lang.php";
+			$file = APP_MODULE . $m . '/' . Config::get('@.LANG_FOLDER') . '/'. $lang .'.lang.php';
 			if (is_file($file))
 			{
 				$data = include $file;

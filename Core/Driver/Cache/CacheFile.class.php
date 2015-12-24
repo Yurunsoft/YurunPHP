@@ -179,7 +179,7 @@ class CacheFile extends CacheBase
 		$path = $this->path;
 		if ('.' !== $n)
 		{
-			$path .= "{$n}/";
+			$path .= $n . '/';
 		}
 		if (! is_dir($path))
 		{

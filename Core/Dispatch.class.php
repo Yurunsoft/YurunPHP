@@ -133,7 +133,7 @@ class Dispatch
 			}
 			else
 			{
-				$action = "_R_{$action}";
+				$action = '_R_' . $action;
 				if (method_exists($yurunControl, $action))
 				{
 					$yurunControl->$action();
@@ -247,7 +247,7 @@ class Dispatch
 			// 子域名
 			if(!empty($subDomain))
 			{
-				$domain="{$subDomain}.{$domain}";
+				$domain = $subDomain . '.' . $domain;
 			}
 			// 去除域名后尾的/
 			if('/'===substr($domain,-1,1))
@@ -322,11 +322,11 @@ class Dispatch
 					{
 						if(false===stripos($result['rule'],'?'))
 						{
-							$query="?{$query}";
+							$query = '?' . $query;
 						}
 						else
 						{
-							$query="&{$query}";
+							$query = '&' . $query;
 						}
 					}
 					$result['rule'] = str_replace('{#query#}', $query, $result['rule']);
@@ -340,7 +340,7 @@ class Dispatch
 			// 锚点支持
 			if(!empty($urlInfo['fragment']))
 			{
-				$url.="#{$urlInfo['fragment']}";
+				$url .= '#' . $urlInfo['fragment'];
 			}
 			return $url;
 		}
@@ -364,7 +364,7 @@ class Dispatch
 				$continue = false;
 			}
 			$strRule = implode('.',$rule);
-			$rules=Config::get('@.URL_RULE'.(''==$strRule?'':".{$strRule}"));
+			$rules=Config::get('@.URL_RULE'.(''==$strRule?'':('.' . $strRule)));
 			array_pop($rule);
 			if(is_array($rules))
 			{
@@ -372,9 +372,10 @@ class Dispatch
 				{
 					if(!isset($result[$ruleItem]))
 					{
-						if(isset($rules["-{$ruleItem}"]))
+						$tkey = '-' . $ruleItem;
+						if(isset($rules[$tkey]))
 						{
-							$result[$ruleItem]=$rules["-{$ruleItem}"];
+							$result[$ruleItem]=$rules[$tkey];
 						}
 					}
 				}

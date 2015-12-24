@@ -176,7 +176,7 @@ abstract class DbBase
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
 		{
-			$where = " where {$where}";
+			$where = ' where ' . $where;
 		}
 		$sql = 'update ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $this->parseUpdateSet($data) . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : array ()) . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
@@ -203,7 +203,7 @@ abstract class DbBase
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
 		{
-			$where = " where {$where}";
+			$where = ' where ' . $where;
 		}
 		$sql = 'delete from ' . $this->parseField(isset($option['from']) ? $option['from'] : '') . $where . $this->parseOrder(isset($option['order']) ? $option['order'] : '') . $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
 		$result = $this->execute($sql);
@@ -263,7 +263,7 @@ abstract class DbBase
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
 		{
-			$where = " where {$where}";
+			$where = ' where ' . $where;
 		}
 		return 'select ' . $this->parseDistinct(isset($option['distinct']) ? $option['distinct'] : '')
 				. $this->parseField(isset($option['field']) ? $option['field'] : '*')
@@ -527,10 +527,10 @@ abstract class DbBase
 		}
 		if (is_numeric($limit[0]))
 		{
-			$result = " limit {$limit[0]}";
+			$result = ' limit ' . $limit[0];
 			if (isset($limit[1]) && is_numeric($limit[1]))
 			{
-				$result .= ",{$limit[1]}";
+				$result .= ',' . $limit[1];
 			}
 			return $result;
 		}
@@ -548,14 +548,18 @@ abstract class DbBase
 	 */
 	public function parseGroup($group)
 	{
-		$result = '';
-		if (! is_array($group))
+		if(empty($group))
 		{
-			$group = explode(',', $group);
+			return '';
 		}
+		if (is_string($group))
+		{
+			return ' group by ' . $group;
+		}
+		$result = '';
 		foreach ($group as $key => $value)
 		{
-			$result .= $this->parseField($key) . " $value,";
+			$result .= $this->parseField($value) . ',';
 		}
 		if ('' === $result)
 		{
@@ -582,7 +586,7 @@ abstract class DbBase
 		}
 		else
 		{
-			return " having {$result}";
+			return ' having ' . $result;
 		}
 	}
 	
@@ -600,7 +604,7 @@ abstract class DbBase
 		}
 		if (is_string($order))
 		{
-			return " order by {$order}";
+			return ' order by ' . $order;
 		}
 		$result = '';
 		foreach ($order as $key => $value)
@@ -611,7 +615,7 @@ abstract class DbBase
 			}
 			else
 			{
-				$result .= $this->parseField($key) . " {$value},";
+				$result .= $this->parseField($key) . ' ' . $value . ',';
 			}
 		}
 		if ('*,' === $result || ''===$result)
@@ -642,11 +646,20 @@ abstract class DbBase
 			}
 			else if(is_string($item))
 			{
-				$result.=" {$item}";
+				$result .= ' ' . $item;
 			}
 			else if(isset($item['type'],$item['table'],$item['on']))
 			{
-				$result.=" {$item['type']} join ".$this->parseField($item['table']).' on '.$this->parseCondition(array($item['on']));
+				$result .= ' ' .$item['type'] . ' join ';
+				if(is_array($item['table']))
+				{
+					$result .= $this->parseField($item['table']);
+				}
+				else
+				{
+					$result .= $item['table'];
+				}
+				$result .= ' on ' . $this->parseCondition(array($item['on']));
 			}
 			else
 			{
@@ -734,7 +747,7 @@ abstract class DbBase
 			}
 			if ('' !== $alias)
 			{
-				$result = "{$result} as " . $this->parseArgs($alias);
+				$result = $result . ' as ' . $this->parseArgs($alias);
 			}
 			return $result;
 		}

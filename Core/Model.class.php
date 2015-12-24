@@ -161,7 +161,7 @@ class Model extends ArrayData
 		// 循环取出多条记录
 		foreach ($limits as $value)
 		{
-			$opt['limit'] = "{$value},1";
+			$opt['limit'] = $value . ',1';
 			$results[] = $this->db->select($opt, true);
 		}
 		return $results;
@@ -176,7 +176,7 @@ class Model extends ArrayData
 	{
 		$opt = $this->getOption();
 		$this->setOption($opt);
-		$result = $this->field(array('count(*)'=>'count',"max({$this->pk})"=>'max',"min({$this->pk})"=>'min'))->select(true);
+		$result = $this->field(array('count(*)'=>'count','max(' . $this->pk . ')'=>'max','min(' . $this->pk . ')'=>'min'))->select(true);
 		$this->setOption($opt);
 		$max_count=$result['max']-$result['count']+$num;
 		// 随机出记录位置
@@ -186,11 +186,11 @@ class Model extends ArrayData
 		$type = $this->db->getType();
 		if('Mysql' === substr($type,0,-1))
 		{
-			$this->order("field({$this->pk},".implode(',',$limits).")");
+			$this->order('field(' . $this->pk . ',"' . implode(',',$limits) . ')');
 		}
 		else if('Mssql' === $type)
 		{
-			$this->order("CHARINDEX('|' + LTRIM(RTRIM(STR({$this->pk}))) + '|', '|".implode('|',$limits)."|')");
+			$this->order('CHARINDEX(\'|\' + LTRIM(RTRIM(' + $this->pk + ')) + \'|\', \'|\'' . implode('|',$limits) . '|\')');
 		}
 		$results = $this->select();
 		return $results;
@@ -280,7 +280,7 @@ class Model extends ArrayData
 			}
 			else
 			{
-				if(1===count($arguments))
+				if(is_array($arguments))
 				{
 					if(isset($this->options[$name]))
 					{
@@ -316,7 +316,7 @@ class Model extends ArrayData
 			{
 				$field = '*';
 			}
-			$this->options['field'] = "{$name}({$field})";
+			$this->options['field'] = $name . '(' . $field . ')';
 			return $this->db->selectValue($this->getOption());
 		}
 	}
@@ -759,5 +759,12 @@ class Model extends ArrayData
 	{
 		$this->options['number']=$field;
 		return $this;
+	}
+	/**
+	 * 生成select查询的SQL语句
+	 */
+	public function buildSql()
+	{
+		return $this->db->parseSelectOption($this->getOption());
 	}
 }

@@ -118,17 +118,17 @@ else
 		// 框架公用函数集
 		foreach ($GLOBALS['cfg']['CORE_FUNCTIONS'] as $value)
 		{
-			require_once PATH_CORE_FUNCTIONS . "{$value}.php";
+			require_once PATH_CORE_FUNCTIONS . $value . '.php';
 		}
 		// 核心类
 		foreach ($GLOBALS['cfg']['CORE_REQUIRE'] as $value)
 		{
-			require_once PATH_CORE . "{$value}.class.php";
+			require_once PATH_CORE . $value . '.class.php';
 		}
 		// 核心库
 		foreach ($GLOBALS['cfg']['CORE_DRIVER_REQUIRE'] as $value)
 		{
-			require_once PATH_CORE_DRIVER . "{$value}.class.php";
+			require_once PATH_CORE_DRIVER . $value . '.class.php';
 		}
 	}
 }
@@ -176,7 +176,7 @@ function printError($err)
 		}
 		else
 		{
-			header("Location:{$url}");
+			header('Location:' .$url);
 		}
 	}
 	exit(str_repeat(' ', 1024));
@@ -241,7 +241,7 @@ Dispatch::resolve();
 Dispatch::exec();
 function yurunAutoload($class)
 {
-	$file = "{$class}.class.php";
+	$file = $class . '.class.php';
 	// 使用配置类
 	if (in_array($class, Config::get('@.CORE_CLASSES')))
 	{
@@ -252,7 +252,7 @@ function yurunAutoload($class)
 	else if (in_array($class, Config::get('@.CORE_DRIVER_CLASSES')))
 	{
 		// 类库核心
-		require_once PATH_CORE_DRIVER . "{$class}/{$file}";
+		require_once PATH_CORE_DRIVER . $class . '/' . $file;
 		return;
 	}
 	$currModulePath = APP_MODULE . Dispatch::module() . '/';
@@ -260,9 +260,9 @@ function yurunAutoload($class)
 	{
 		// 控制器
 		if (			// 其他扩展
-		require_once_multi(array ($currModulePath . Config::get('@.CONTROL_FOLDER') . "/{$file}",			// 模块模型目录
+		require_once_multi(array ($currModulePath . Config::get('@.CONTROL_FOLDER') . '/' . $file,			// 模块模型目录
 		APP_CONTROL . $file,			// 项目控制器目录
-		PATH_EX_CONTROL . "/{$file}"), 			// 框架控制器扩展目录
+		PATH_EX_CONTROL . '/' . $file), 			// 框架控制器扩展目录
 		false))
 		{
 			return;
@@ -272,9 +272,9 @@ function yurunAutoload($class)
 	{
 		// 模型
 		if (			// 其他扩展
-		require_once_multi(array ($currModulePath . Config::get('@.MODEL_FOLDER') . "/{$file}",			// 模块模型目录
+		require_once_multi(array ($currModulePath . Config::get('@.MODEL_FOLDER') . '/' . $file,			// 模块模型目录
 		APP_MODEL . $file,			// 项目模型目录
-		PATH_EX_MODEL . "/{$file}"), 			// 框架模型扩展目录
+		PATH_EX_MODEL . '/' . $file), 			// 框架模型扩展目录
 		false))
 		{
 			return;

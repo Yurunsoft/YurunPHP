@@ -142,7 +142,7 @@ if (!function_exists('boolval'))
  */
 function getImages($str)
 {
-	preg_match_all("/<img([^>]*)\s*src=('|\")([^'\"]+)('|\")/i",$str,$matchs);
+	preg_match_all('/<img([^>]*)\s*src=(\'|")([^\'"]+)(\'|")/i',$str,$matchs);
 	return $matchs[3];
 }
 /**

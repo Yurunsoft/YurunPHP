@@ -42,7 +42,7 @@ class DbMysql extends DbBase
 				// 设置编码
 				if (isset($config['charset']))
 				{
-					$this->execute("set names {$config['charset']}");
+					$this->execute('set names ' . $config['charset']);
 				}
 				// 选择数据库
 				if (isset($config['dbname']))
@@ -212,11 +212,11 @@ class DbMysql extends DbBase
 		$p = func_get_args();
 		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryA("call $procName(" . $this->filterValue($p[1]) . ')');
+			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
-			return $this->queryA("call $procName(" . $this->filterValue($p) . ')');
+			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -231,14 +231,13 @@ class DbMysql extends DbBase
 	public function execFunction($funName)
 	{
 		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryValue("select $procName(" . $this->filterValue($p[0]) . ')');
+			return $this->queryValue('select ' . $procName . '(' . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
-			return $this->queryValue("select $procName(" . $this->filterValue($p) . ')');
+			return $this->queryValue('select ' . $procName . '(' . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -285,7 +284,7 @@ class DbMysql extends DbBase
 			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error($this->conn));
 			if ('' !== $error)
 			{
-				$error .= '错误代码：' . mysql_errno($this->conn) . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+				$error .= '错误代码：' . mysql_errno($this->conn) . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
 			}
 		}
 		else
@@ -293,7 +292,7 @@ class DbMysql extends DbBase
 			$error = iconv('GBK', 'UTF-8//IGNORE', mysql_error());
 			if ('' !== $error)
 			{
-				$error .= '错误代码：' . mysql_errno() . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+				$error .= '错误代码：' . mysql_errno() . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
 			}
 		}
 		return $error;
@@ -414,12 +413,12 @@ class DbMysql extends DbBase
 						continue;
 					}
 				}
-				$sql.="{$line}\r\n";
+				$sql .= $line . "\r\n";
 				if (isset($line[0]))
 				{
 					if (';'===substr($line,0,-1))
 					{
-						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
+						$sql=trim(preg_replace('\'/\*[^*]*\*/\'', '', $sql));
 						if(empty($callback))
 						{
 							$result[]=$sql;

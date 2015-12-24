@@ -215,7 +215,7 @@ class View extends ArrayData
 	public function display($template = null, $theme = null)
 	{
 		// 设置内容类型和编码
-		header("Content-type: {$this->contentType}; charset=utf-8");
+		header('Content-type: ' . $this->contentType . '; charset=utf-8');
 		if(empty($theme))
 		{
 			$theme = $this->theme;
@@ -354,7 +354,7 @@ class View extends ArrayData
 	public function __call($name, $arguments)
 	{
 		// 不存在的方法
-		$name2="_R_{$name}";
+		$name2='_R_' . $name;
 		if(method_exists($this,$name2))
 		{
 			return call_user_func_array(array($this,$name2),$arguments);

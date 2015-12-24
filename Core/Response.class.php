@@ -39,9 +39,9 @@ class Response
 				$msg = '';
 			}
 		}
-		header("HTTP/1.1 {$status} {$msg}");
+		header('HTTP/1.1 ' . $status . $msg);
 		// 保证FastCGI模式下正常
-		header("Status:{$status} {$msg}");
+		header('Status:' . $status . $msg);
 	}
 	
 	/**
@@ -55,7 +55,7 @@ class Response
 		ob_end_clean();
 		$ext = Config::get('@.TEMPLATE_EXT');
 		// 项目模版目录下对应http状态的模版文件
-		$file = APP_TEMPLATE . "_Msg/{$status}{$ext}";
+		$file = APP_TEMPLATE . '_Msg/' . $status . $ext;
 		if (is_file($file))
 		{
 			include $file;
@@ -63,7 +63,7 @@ class Response
 		else
 		{
 			// 项目模版目录下公用消息模版
-			$file = APP_TEMPLATE . "_Msg/public{$ext}";
+			$file = APP_TEMPLATE . '_Msg/public' . $ext;
 			if (is_file($file))
 			{
 				include $file;
@@ -71,7 +71,7 @@ class Response
 			else
 			{
 				// 框架模版
-				$file=PATH_TEMPLATE . "_Msg/public$ext";
+				$file=PATH_TEMPLATE . '_Msg/public' . $ext;
 				if(is_file($file))
 				{
 					include $file;
@@ -88,18 +88,20 @@ class Response
 					else
 					{
 						// 跳转
-						$js="location='{$url}';";
+						$js='location=\'' . $url . '\';';
 					}
 					// 输出并结束脚本
 					echo
-"{$msg}
+<<<JS
+{$msg}
 <script>
 function redirect()
 {
 	{$js};
 }
 setTimeout('redirect()',1000);
-</script>";
+</script>
+JS;
 				}
 			}
 		}
@@ -119,7 +121,7 @@ setTimeout('redirect()',1000);
 		// 设置http状态码
 		self::status($status);
 		// 跳转
-		header("Location:{$url}");
+		header('Location:' . $url);
 		exit;
 	}
 	
@@ -287,7 +289,7 @@ setTimeout('redirect()',1000);
 				'ice' => 'x-conference/x-cooltalk',
 				'json' => 'application/json',
 		);
-		header("Content-type: {$mimes[$ext]};charset=utf-8");
+		header('Content-type: ' . $mimes[$ext] . ';charset=utf-8');
 	}
 	/**
 	 * 设置下载文件的文件名
@@ -295,6 +297,6 @@ setTimeout('redirect()',1000);
 	 */
 	public static function setDownFile($fileName)
 	{
-		header("Content-Disposition: attachment; filename=$fileName");
+		header('Content-Disposition: attachment; filename=' . $fileName);
 	}
 }

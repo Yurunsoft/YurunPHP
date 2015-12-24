@@ -50,7 +50,7 @@ abstract class CacheBase
 	 */
 	protected static function isExpired1($startTime, $expire)
 	{
-		return $expire != 0 && $startTime + $expire < $_SERVER["REQUEST_TIME"];
+		return $expire != 0 && $startTime + $expire < $_SERVER['REQUEST_TIME'];
 	}
 	
 	/**
@@ -61,6 +61,6 @@ abstract class CacheBase
 	 */
 	protected static function isExpired2($endTime)
 	{
-		return $endTime != 0 && $endTime < $_SERVER["REQUEST_TIME"];
+		return $endTime != 0 && $endTime < $_SERVER['REQUEST_TIME'];
 	}
 }

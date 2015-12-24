@@ -14,7 +14,7 @@ abstract class Cache extends Driver
 		parent::init();
 		if (null === self::$pageCacheName)
 		{
-			self::$pageCacheName = urlencode("{$_SERVER['HTTP_HOST']}#{$_SERVER['REQUEST_URI']}") . serialize($_REQUEST);
+			self::$pageCacheName = urlencode($_SERVER['HTTP_HOST'] . '#' . $_SERVER['REQUEST_URI']) . serialize($_REQUEST);
 		}
 		self::create('file', null, Config::get('@.CACHE_FILE', array ()));
 	}

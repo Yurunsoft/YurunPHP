@@ -193,7 +193,7 @@ class DbMssql extends DbBase
 	 */
 	public function execProc($procName,$params=array())
 	{
-		return $this->execProcRef($procName,$params);
+		return $this->execProcRef($procName,&$params);
 	}
 	/**
 	 * 执行存储过程
@@ -205,7 +205,7 @@ class DbMssql extends DbBase
 	 */
 	public function execProcRef($procName,&$params=array())
 	{
-		$config = Config::get("YBProc.{$procName}");
+		$config = Config::get('YBProc' . $procName);
 		if($config)
 		{
 			$params2 = array();
@@ -216,15 +216,7 @@ class DbMssql extends DbBase
 				$s = count($config['params']);
 				for($i=0;$i<$s;++$i)
 				{
-					if(is_array($params[$i]))
-					{
-						$value = &$params[$i][0];
-					}
-					else
-					{
-						$value = &$params[$i];
-					}
-					$params2[] = array(&$value,$this->parseDirection(isset($params[$i][1])?$params[$i][1]:$config['params'][$i]['direction']),$this->parsePhpType($config['params'][$i]),$this->parseSqlType($config['params'][$i]));
+					$params2[] = array(&$params[$i],$this->parseDirection($config['params'][$i]['direction']),$this->parsePhpType($config['params'][$i]),$this->parseSqlType($config['params'][$i]));
 				}
 			}
 		}
@@ -244,12 +236,12 @@ class DbMssql extends DbBase
 				{
 					$value = &$params[$i];
 				}
-				$params2[] = array(&$value,$this->parseDirection($params[$i]['direction']),$this->parsePhpType($params[$i]),$this->parseSqlType($params[$i]));
+				$params2[] = array(&$value,$this->parseDirection($params[$i]['direction']));
 			}
 		}
 		// sql语句
 		$p = substr(str_repeat('?,',count($params)),0,-1);
-		$sql = "{?=call {$procName}({$p})}";
+		$sql = '{?=call ' . $procName . '(' . $p . ')}';
 		// 执行查询
 		$this->execute($sql, $params2);
 		// 取出结果
@@ -284,11 +276,11 @@ class DbMssql extends DbBase
 		$p = func_get_args();
 		if (isset($p[1]) && is_array($p[1]))
 		{
-			return $this->queryValue("select {$funName}(" . $this->filterValue($p[1]) . ')');
+			return $this->queryValue('select ' . $funName . '(' . $this->filterValue($p[1]) . ')');
 		}
 		else
 		{
-			return $this->queryValue("select {$funName}(" . $this->filterValue($p) . ')');
+			return $this->queryValue('select ' . $funName . '(' . $this->filterValue($p) . ')');
 		}
 	}
 	
@@ -342,7 +334,7 @@ class DbMssql extends DbBase
 			{
 				$result = $error['message'];
 			}
-			$result .= " 错误代码：{$error['code']}({$error['SQLSTATE']})" . (empty($this->lastSql)?'':" SQL语句:{$this->lastSql}");
+			$result .= ' 错误代码：' . $error['code'] . '(' . $error['SQLSTATE'] . ')' . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
 		}
 		return $result;
 	}
@@ -496,12 +488,12 @@ SQL
 						continue;
 					}
 				}
-				$sql.="{$line}\r\n";
+				$sql.= $line . "\r\n";
 				if (isset($line[0]))
 				{
 					if (';' === substr($line,0,-1))
 					{
-						$sql=trim(preg_replace("'/\*[^*]*\*/'", '', $sql));
+						$sql=trim(preg_replace('\'/\*[^*]*\*/\'', '', $sql));
 						if(empty($callback))
 						{
 							$result[]=$sql;
@@ -735,8 +727,7 @@ SQL
 			$this->parseLimit($limit,$start,$end);
 			if($start==0)
 			{
-				$fields = $this->parseField(isset($option['field']) ? $option['field'] : '*');
-				$fields = "top {$end} {$fields}";
+				$fields = 'top ' . $end . $this->parseField(isset($option['field']) ? $option['field'] : '*');
 			}
 			else
 			{
@@ -769,7 +760,7 @@ EOF
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
 		{
-			$where = " where {$where}";
+			$where = ' where ' . $where;
 		}
 		return 'select ' . $this->parseDistinct(isset($option['distinct']) ? $option['distinct'] : '')
 		. $fields

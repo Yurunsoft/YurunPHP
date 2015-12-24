@@ -12,7 +12,7 @@ abstract class Driver
 	public static function init()
 	{
 		$driver = get_called_class();
-		$className = "{$driver}Base";
+		$className = $driver . 'Base';
 		if (! class_exists($className, false))
 		{
 			// 类名
