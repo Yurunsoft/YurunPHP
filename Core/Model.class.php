@@ -364,7 +364,7 @@ class Model extends ArrayData
 	 *
 	 * @return array
 	 */
-	public function getOption()
+	public function &getOption()
 	{
 		$option = $this->options;
 		// 清空连贯配置

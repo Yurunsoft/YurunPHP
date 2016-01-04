@@ -81,10 +81,11 @@ return array (
 		'LOG_EXT'			=>	'.log',				// 日志文件扩展名
 		
 		// URL配置
-		'URL_HIDE_DEFAULT_MODULE'	=>	true,		// 隐藏URL中默认模块
-		'URL_HIDE_DEFAULT_CONTROL'	=>	true,		// 隐藏URL中默认控制器
-		'URL_HIDE_DEFAULT_ACTION'	=>	true,		// 隐藏URL中默认动作
-		'URL_PROTOCOL'				=>	'',			// URL的协议，留空则取当前协议。可取值http://和https://
+		'URL_PROTOCOL'				=>	'',				// URL的协议，留空则取当前协议。可取值http://和https://
+		'PATHINFO_ON'				=>	true,			// 是否开启支持PATHINFO。格式：index.php/Module/Control/action
+		'URL_PARSE_ON'				=>	true,			// 是否开启URL路由解析支持，需要伪静态规则支持。格式：/Module/Control/action
+		'QUERY_PATHINFO_ON'			=>	true,			// 是否开启支持参数传入URL路由解析。
+		'PATHINFO_QUERY_NAME'		=>	'i',			// 持参数传入URL路由解析查询参数名。格式：i=Module/Control/action
 		
 		// 控制器returnData方法默认返回数据格式类型
 		'CONTROL_RETURN_TYPE'		=>	'json',

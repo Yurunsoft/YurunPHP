@@ -227,3 +227,44 @@ function arrayColumnToKey(&$array,$column,$keepOld = false)
 		}
 	}
 }
+function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
+{
+	$result = null;
+	if('int' === $type)
+	{
+		$result = '\d';
+	}
+	else if('double' === $type || 'float' === $type)
+	{
+		$result = '\d+\\.\d+';
+		return $result;
+	}
+	else if(!empty($type))
+	{
+		return $type;
+	}
+	else
+	{
+		$result = '.';
+	}
+	if($lengthStart > 0)
+	{
+		if($lengthEnd > $lengthStart)
+		{
+			$result = "{$result}{{$lengthStart},{$lengthEnd}}";
+		}
+		else
+		{
+			$result = "{$result}{{$lengthStart}}";
+		}
+	}
+	else 
+	{
+		$result .= '+';
+	}
+	return $result;
+}
+function checkRegexTypeValue($type,$lengthStart = null,$lengthEnd = null,$value)
+{
+	return preg_match('/^' . convertToRegexType($type,$lengthStart,$lengthEnd) . '$/i',$value) > 0;
+}

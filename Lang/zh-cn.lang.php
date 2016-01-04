@@ -17,5 +17,6 @@ return array (
 		'UPLOAD_ERR_EXT'		=> '上传的文件类型不允许上传',
 		'UPLOAD_ERR_SIZE'		=> '上传的文件大小超过限制',
 		'UPLOAD_ERR_SAME_FILE'	=> '不允许覆盖同名文件',
-		'UPLOAD_ERR_MOVE_FAIL'	=> '上传文件移动失败'
+		'UPLOAD_ERR_MOVE_FAIL'	=> '上传文件移动失败',
+		'PAGE_AUTH_NOT'			=> '没有权限访问'
 );
