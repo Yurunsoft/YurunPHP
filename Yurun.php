@@ -235,8 +235,6 @@ Lang::init();
 Event::init();
 // 框架初始化完成事件
 Event::trigger('YURUN_FRAMEWORK_LOAD_COMPLETE');
-// 初始化路由规则
-Dispatch::initRouteRules();
 // 调度解析
 Dispatch::resolve();
 // 调度
