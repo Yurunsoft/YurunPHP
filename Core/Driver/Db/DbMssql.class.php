@@ -205,7 +205,7 @@ class DbMssql extends DbBase
 	 */
 	public function execProcRef($procName,&$params=array())
 	{
-		$config = Config::get('YBProc' . $procName);
+		$config = Config::get('YBProc.' . $procName);
 		if($config)
 		{
 			$params2 = array();
