@@ -282,6 +282,18 @@ function yurunAutoload($class)
 			return;
 		}
 	}
+	if ('View' === substr($class, - 4))
+	{
+		// 模版引擎
+		if (			// 其他扩展
+				require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/View/' . $file,			// 模块扩展目录
+						APP_LIB_EX . '/View/' . $file,			// 项目扩展目录
+						PATH_EX_LIB . '/View/' . $file), 			// 框架扩展目录
+						false))
+		{
+			return;
+		}
+	}
 	// 自定义分层支持
 	$layers = Config::get('@.CUSTOM_LAYER');
 	foreach($layers as $layer)
@@ -303,7 +315,7 @@ function yurunAutoload($class)
 	$file2 = '/' . getClassFirst($class) . "/{$file}";
 	if (		// 其他扩展
 	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
-	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . $file,		// 模块类库扩展
+	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/' . $file,		// 模块类库扩展
 	APP_LIB_DRIVER . $file2,		// 项目类库驱动工厂类
 	APP_LIB_EX . $file,		// 项目类库扩展目录
 	PATH_EX_DRIVER . $file2,		// 框架扩展驱动工厂类

@@ -90,5 +90,13 @@ return array (
 		// 控制器returnData方法默认返回数据格式类型
 		'CONTROL_RETURN_TYPE'		=>	'json',
 		// 自定义分层
-		'CUSTOM_LAYER'		=>	array()
+		'CUSTOM_LAYER'		=>	array(),
+		'TEMPLATE_ENGINE_ON'		=>	true,
+		'TEMPLATE_CACHE_ON'			=>	true,
+		'TEMPLATE_CACHE_EXPIRE'		=>	0,
+		'TEMPLATE_ENGINE'			=>	'DefaultView',
+		'TEMPLATE_TAG_LEFT'			=>	'<',
+		'TEMPLATE_TAG_RIGHT'		=>	'>',
+		'TEMPLATE_ECHO_TAG_LEFT'	=>	'<%=',
+		'TEMPLATE_ECHO_TAG_RIGHT'	=>	'%>',
 );
