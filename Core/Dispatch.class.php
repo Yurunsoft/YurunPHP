@@ -116,7 +116,7 @@ class Dispatch
 			self::$routeRules[$rule] = array('rule' => addcslashes(preg_replace_callback(
 					'/\[([^\]]+)\]/i',
 					function($matches)use(&$fields){
-						if(false !== stripos($matches[1],':'))
+						if(false !== strpos($matches[1],':'))
 						{
 							try {
 								list($name,$type,$lengthStart,$lengthEnd) = explode(':',$matches[1]);
@@ -571,7 +571,7 @@ class Dispatch
 			}
 			if(!empty($param))
 			{
-				if(false === stripos($urlPath,'?'))
+				if(false === strpos($urlPath,'?'))
 				{
 					$query = '?' . http_build_query($param);
 				}
@@ -636,7 +636,7 @@ class Dispatch
 			$result = preg_replace_callback(
 					'/\[([^\]]+)\]/i',
 					function($matches)use(&$param){
-						if(false !== stripos($matches[1],':'))
+						if(false !== strpos($matches[1],':'))
 						{
 							try {
 								list($name) = explode(':',$matches[1]);
