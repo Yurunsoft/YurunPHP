@@ -86,7 +86,7 @@ class Dispatch
 				self::$action = Config::get('@.ACTION_DEFAULT');
 			}
 		}
-		if((null === self::$checkAuth && !self::checkAuth()) || !self::$checkAuth)
+		if((null === self::$checkAuth && !self::checkAuth()) || false === self::$checkAuth)
 		{
 			// 没有权限访问
 			Response::msg(Lang::get('PAGE_AUTH_NOT'), null, 500);
