@@ -239,6 +239,26 @@ function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 		$result = '\d+\\.\d+';
 		return $result;
 	}
+	else if('letter' === $type)
+	{
+		$result = '[a-zA-Z]+';
+		return $result;
+	}
+	else if('big_letter' === $type)
+	{
+		$result = '[A-Z]+';
+		return $result;
+	}
+	else if('small_letter' === $type)
+	{
+		$result = '[a-z]+';
+		return $result;
+	}
+	else if('word' === $type)
+	{
+		$result = '[a-zA-Z0-9_-]+';
+		return $result;
+	}
 	else if(!empty($type))
 	{
 		return $type;
@@ -267,4 +287,19 @@ function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 function checkRegexTypeValue($type,$lengthStart = null,$lengthEnd = null,$value)
 {
 	return preg_match('/^' . convertToRegexType($type,$lengthStart,$lengthEnd) . '$/i',$value) > 0;
+}
+/**
+ * 处理name按.分隔，支持\.转义不分隔
+ * @param unknown $name
+ */
+function &parseCfgName($name)
+{
+	$result = preg_split('#(?<!\\\)\.#', $name);
+	array_walk($result,function(&$value,$key){
+		if(false !== strpos($value,'\.'))
+		{
+			$value = str_replace('\.','.',$value);
+		}
+	});
+	return $result;
 }

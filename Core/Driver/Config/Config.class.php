@@ -96,8 +96,8 @@ abstract class Config extends Driver
 	 */
 	public static function set($name, $value = null)
 	{
-		$names = self::parseName($name);
-		if (count($names) > 0)
+		$names = parseCfgName($name);
+		if (isset($names[0]))
 		{
 			$first = array_shift($names);
 			$obj = self::getObj($first);
@@ -124,8 +124,8 @@ abstract class Config extends Driver
 	 */
 	public static function get($name, $default = false)
 	{
-		$names = self::parseName($name);
-		if (count($names) > 0)
+		$names = parseCfgName($name);
+		if (isset($names[0]))
 		{
 			$first = array_shift($names);
 			$obj = self::getObj($first);
@@ -151,19 +151,19 @@ abstract class Config extends Driver
 	 */
 	public static function remove($name)
 	{
-		$names = self::parseName($name);
-		if (1 === count($names))
-		{
-			// 删除配置分组
-			unset(self::$instance['Config'][$name]);
-			return true;
-		}
-		else
+		$names = parseCfgName($name);
+		if (isset($names[1]))
 		{
 			// 删除数据
 			$first = array_shift($names);
 			$obj = self::getObj($first);
 			return $obj->remove($names);
+		}
+		else
+		{
+			// 删除配置分组
+			unset(self::$instance['Config'][$name]);
+			return true;
 		}
 	}
 	/**
@@ -190,21 +190,6 @@ abstract class Config extends Driver
 		{
 			return 0;
 		}
-	}
-	/**
-	 * 处理name按.分隔，支持\.转义不分隔
-	 * @param unknown $name
-	 */
-	private static function &parseName($name)
-	{
-		$result = preg_split('#(?<!\\\)\.#', $name);
-		array_walk($result,function(&$value,$key){
-			if(false !== strpos($value,'\.'))
-			{
-				$value = str_replace('\.','.',$value);
-			}
-		});
-		return $result;
 	}
 }
 Config::init();
