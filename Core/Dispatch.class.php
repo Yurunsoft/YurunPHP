@@ -486,7 +486,7 @@ class Dispatch
 				$control = ucfirst($mca[0]);
 				$action = $mca[1];
 			}
-			else if(isset($mca[0])) // 1个成员
+			else if(isset($mca[0]) && '' !== $mca[0]) // 1个成员
 			{
 				$module = self::$module;
 				$control = self::$control;

@@ -302,9 +302,10 @@ function yurunAutoload($class)
 		{
 			// 模型
 			if (			// 其他扩展
-					require_once_multi(array ($currModulePath . $layer . "/{$file}",			// 模块模型目录
-					APP_MODEL . $file,			// 项目模型目录
-					PATH_EX_MODEL . "/{$file}"), 			// 框架模型扩展目录
+					require_once_multi(array (
+						$currModulePath . $layer . '/' . $file,	// 模块分层目录
+						APP_LIB . $layer . '/' . $file,			// 项目分层目录
+					),
 					false))
 			{
 				return;
