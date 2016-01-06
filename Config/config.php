@@ -99,4 +99,7 @@ return array (
 		'TEMPLATE_TAG_RIGHT'		=>	'>',
 		'TEMPLATE_ECHO_TAG_LEFT'	=>	'<%=',
 		'TEMPLATE_ECHO_TAG_RIGHT'	=>	'%>',
+		
+		// 静态文件路径
+		'PATH_STATIC' => 'Static'
 );
