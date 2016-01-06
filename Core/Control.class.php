@@ -34,6 +34,11 @@ class Control
 			Response::setMime('xml');
 			exit(wddx_serialize_value($data));
 		}
+		else if('html' === $returnType)
+		{
+			Response::setMime('html');
+			echo $data;
+		}
 		else
 		{
 			Event::trigger($event,$data);
