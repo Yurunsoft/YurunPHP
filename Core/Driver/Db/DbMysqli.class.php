@@ -35,7 +35,7 @@ class DbMysqli extends DbBase
 				// 设置编码
 				if (isset($config['charset']))
 				{
-					$this->execute('set names ' . $config['charset']);
+					mysqli_set_charset($this->conn,$config['charset']);
 				}
 				// 选择数据库
 				$this->connect = true;
@@ -114,7 +114,7 @@ class DbMysqli extends DbBase
 			else
 			{
 				$result = mysqli_fetch_array($this->result);
-				if (false !== $result)
+				if (false === $result)
 				{
 					$result = array();
 					return $result;
@@ -278,10 +278,10 @@ class DbMysqli extends DbBase
 		}
 		else
 		{
-			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_error());
+			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_connect_error($this->conn));
 			if ('' !== $error)
 			{
-				$error .= '错误代码：' . mysqli_errno() . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
+				$error .= '错误代码：' . mysqli_connect_errno();
 			}
 		}
 		return $error;
