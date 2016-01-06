@@ -6,6 +6,11 @@
 class Session
 {
 	/**
+	 * SESSION前缀
+	 * @var string
+	 */
+	private static $prefix;
+	/**
 	 * 初始化Session
 	 */
 	public static function init()
@@ -17,6 +22,7 @@ class Session
 		self::cacheLimiter(Config::get('@.SESSION_CACHE_LIMITER', null));
 		self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
 		self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
+		self::prefix(Config::get('@.SESSION_PREFIX', ''));
 	}
 	
 	/**
@@ -52,7 +58,20 @@ class Session
 	 */
 	public static function set($name, $value)
 	{
-		$_SESSION[$name] = $value;
+		$names = parseCfgName($name);
+		$var = &$_SESSION;
+		foreach($names as $name)
+		{
+			if('@' === $name)
+			{
+				$name = self::$prefix;
+			}
+			if('' !== $name)
+			{
+				$var = &$var[$name];
+			}
+		}
+		$var = $value;
 	}
 	
 	/**
@@ -62,9 +81,26 @@ class Session
 	 * @param mixed $default        	
 	 * @return mixed
 	 */
-	public static function get($name, $default = false)
+	public static function get($name = null, $default = false)
 	{
-		return isset($_SESSION[$name]) ? $_SESSION[$name] : $default;
+		if(null === $name)
+		{
+			return $_SESSION;
+		}
+		$names = parseCfgName($name);
+		$var = &$_SESSION;
+		foreach($names as $name)
+		{
+			if('@' === $name)
+			{
+				$name = self::$prefix;
+			}
+			if('' !== $name)
+			{
+				$var = &$var[$name];
+			}
+		}
+		return isset($var) ? $var : $default;
 	}
 	
 	/**
@@ -74,14 +110,21 @@ class Session
 	 */
 	public static function delete($name)
 	{
-		if(!is_array($name))
+		$names = parseCfgName($name);
+		$var = &$_SESSION;
+		$lastName = array_pop($names);
+		foreach($names as $name)
 		{
-			$name=func_get_args();
+			if('@' === $name)
+			{
+				$name = self::$prefix;
+			}
+			if('' !== $name)
+			{
+				$var = &$var[$name];
+			}
 		}
-		foreach ($name as $val)
-		{
-			unset($_SESSION[$val]);
-		}
+		unset($var[$lastName]);
 		return true;
 	}
 	
@@ -102,7 +145,24 @@ class Session
 	 */
 	public static function exists($name)
 	{
-		return isset($_SESSION[$name]);
+		if(null === $name)
+		{
+			return $_SESSION;
+		}
+		$names = parseCfgName($name);
+		$var = &$_SESSION;
+		foreach($names as $name)
+		{
+			if('@' === $name)
+			{
+				$name = self::$prefix;
+			}
+			if('' !== $name)
+			{
+				$var = &$var[$name];
+			}
+		}
+		return isset($var);
 	}
 	
 	/**
@@ -114,7 +174,7 @@ class Session
 	 */
 	public static function name($name = null)
 	{
-		return is_null($name) ? session_name() : session_name($name);
+		return null === $name ? session_name() : session_name($name);
 	}
 	
 	/**
@@ -126,7 +186,7 @@ class Session
 	 */
 	public static function savePath($savePath = null)
 	{
-		return is_null($savePath) ? session_save_path() : session_save_path($savePath);
+		return null === $savePath ? session_save_path() : session_save_path($savePath);
 	}
 	
 	/**
@@ -138,7 +198,7 @@ class Session
 	 */
 	public static function useCookies($use = null)
 	{
-		return is_null($use) ? ini_get('session.use_cookies') : ini_set('session.use_cookies', $use);
+		return null === $use ? ini_get('session.use_cookies') : ini_set('session.use_cookies', $use);
 	}
 	
 	/**
@@ -150,7 +210,7 @@ class Session
 	 */
 	public static function cacheExpire($expire = null)
 	{
-		return is_null($expire) ? ini_get('session.cache_expire') : ini_set('session.cache_expire', $expire);
+		return null === $expire ? ini_get('session.cache_expire') : ini_set('session.cache_expire', $expire);
 	}
 	
 	/**
@@ -162,7 +222,7 @@ class Session
 	 */
 	public static function cacheLimiter($limiter = null)
 	{
-		return is_null($limiter) ? ini_get('session.cache_limiter') : ini_set('session.cache_limiter', $limiter);
+		return null === $limiter ? ini_get('session.cache_limiter') : ini_set('session.cache_limiter', $limiter);
 	}
 	
 	/**
@@ -174,7 +234,7 @@ class Session
 	 */
 	public static function gcProbability($probability = null)
 	{
-		if (is_null($probability))
+		if (null === $probability)
 		{
 			return ini_get('session.gc_probability') / ini_get('session.gc_divisor');
 		}
@@ -195,7 +255,20 @@ class Session
 	 */
 	public static function maxLifetime($maxLifetime = null)
 	{
-		return is_null($maxLifetime) ? ini_get('session.gc_maxlifetime') : ini_set('session.gc_maxlifetime', $$maxLifetime);
+		return null === $maxLifetime ? ini_get('session.gc_maxlifetime') : ini_set('session.gc_maxlifetime', $$maxLifetime);
+	}
+	/**
+	 * SESSION前缀
+	 * @param string $prefix
+	 * @return string
+	 */
+	public static function prefix($prefix = null)
+	{
+		if(null !== $prefix)
+		{
+			self::$prefix = $prefix;
+		}
+		return self::$prefix;
 	}
 }
 Session::init();
