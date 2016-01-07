@@ -41,7 +41,8 @@ class Control
 		}
 		else
 		{
-			Event::trigger($event,$data);
+			$eventData = array($data,$returnType);
+			Event::trigger('YURUN_RETURN_DATA',$eventData);
 		}
 	}
 }
