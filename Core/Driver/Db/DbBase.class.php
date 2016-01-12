@@ -782,17 +782,17 @@ abstract class DbBase
 	/**
 	 * 查询一条记录
 	 */
-	abstract public function &query($sql,$params = array(),$isReturnParams = false);
+	abstract public function &query($sql);
 	
 	/**
 	 * 查询多条记录
 	 */
-	abstract public function &queryA($sql,$params = array(),$isReturnParams = false);
+	abstract public function &queryA($sql);
 	
 	/**
 	 * 执行SQL语句
 	 */
-	abstract public function execute($sql,$params = array(),$isReturnParams = false);
+	abstract public function execute($sql);
 	
 	/**
 	 * 连接数据库
