@@ -281,7 +281,7 @@ class Validator
 	 */
 	public static function lengthChar($val, $min, $max=null)
 	{
-		$len = mb_strlen($val);
+		$len = mb_strlen($val,'utf8');
 		$result = ($len >= $min);
 		if($max!==null)
 		{
@@ -450,7 +450,7 @@ class Validator
 	 */
 	public static function url($str)
 	{
-		return preg_match('/^([a-z]*:\/\/)?(localhost|(([A-Z0-9][A-Z0-9_-]*(?:\.[A-Z0-9][A-Z0-9_-]*)+):?(\d+)?))\.?\/?/i', $str);
+		return preg_match('/^([a-z]*:\/\/)?(localhost|(([A-Z0-9][A-Z0-9_-]*(?:\.[A-Z0-9][A-Z0-9_-]*)+):?(\d+)?))\.?\/?/i', $str) > 0;
 	}
 	
 	/**
