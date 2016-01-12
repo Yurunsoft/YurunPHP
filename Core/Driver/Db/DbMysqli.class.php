@@ -9,6 +9,12 @@ class DbMysqli extends DbBase
 	protected $param_flag = array ('`','`');
 	private $fp;
 	/**
+	 * mysqli对象
+	 * @var unknown
+	 */
+	private $db;
+	private $stmt;
+	/**
 	 * 连接数据库
 	 */
 	public function connect($config = null)
@@ -27,15 +33,17 @@ class DbMysqli extends DbBase
 			$server = (isset($config['host']) ? $config['host'] : 'localhost');
 			$username = isset($config['username']) ? $config['username'] : 'root';
 			$password = isset($config['password']) ? $config['password'] : '';
-			$flags = ((isset($config['flags']) && is_numeric($config['flags'])) ? $config['flags'] : 0);
+			$dbname = isset($config['dbname']) ? $config['dbname'] : '';
+			$port = isset($config['port']) && is_numeric($config['port']) ? $config['port'] : 3306;
+			$socket = ((isset($config['socket'])) ? $config['socket'] : null);
 			// 连接
-			$this->conn = mysqli_connect($server, $username, $password, $config['dbname'], (isset($config['port']) && is_numeric($config['port']) ? $config['port'] : '3306'));
-			if (false !== $this->conn)
+			$this->db = new Mysqli($server,$username,$password,$dbname,$port,$socket);
+			if (0 === $this->db->connect_errno)
 			{
 				// 设置编码
 				if (isset($config['charset']))
 				{
-					mysqli_set_charset($this->conn,$config['charset']);
+					$this->db->set_charset($config['charset']);
 				}
 				// 选择数据库
 				$this->connect = true;
@@ -58,7 +66,7 @@ class DbMysqli extends DbBase
 	 */
 	public function disConnect()
 	{
-		if ($this->free() && mysqli_close($this->conn))
+		if ($this->free() && $this->db->close())
 		{
 			$this->conn = null;
 			$this->connect = false;
@@ -78,7 +86,7 @@ class DbMysqli extends DbBase
 	 */
 	public function selectDb($dbName)
 	{
-		return mysqli_select_db($dbName);
+		return $this->db->select_db($dbName);
 	}
 	
 	/**
@@ -86,16 +94,6 @@ class DbMysqli extends DbBase
 	 */
 	public function free()
 	{
-		if (null !== $this->result && ! is_bool($this->result))
-		{
-			mysqli_free_result($this->result);
-			$this->result = null;
-			return true;
-		}
-		else
-		{
-			return false;
-		}
 	}
 	
 	/**
@@ -103,31 +101,16 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &query($sql)
+	public function &query($sql,$params = array(),$isReturnParams = false)
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params,$isReturnParams) && isset($this->results[0][0]))
 		{
-			if (is_bool($this->result))
-			{
-				return $this->result;
-			}
-			else
-			{
-				$result = mysqli_fetch_array($this->result);
-				if (false === $result)
-				{
-					$result = array();
-					return $result;
-				}
-				else
-				{
-					return $result;
-				}
-			}
+			return $this->results[0][0];
 		}
 		else
 		{
-			return array ();
+			$result = array();
+			return $result;
 		}
 	}
 	
@@ -136,23 +119,11 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &queryA($sql)
+	public function &queryA($sql,$params = array(),$isReturnParams = false)
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params,$isReturnParams) && isset($this->results[0]))
 		{
-			if (is_bool($this->result))
-			{
-				return $this->result;
-			}
-			else
-			{
-				$result = array ();
-				while ($t = mysqli_fetch_array($this->result))
-				{
-					$result[] = $t;
-				}
-				return $result;
-			}
+			return $this->results[0];
 		}
 		else
 		{
@@ -166,27 +137,138 @@ class DbMysqli extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function execute($sql)
+	public function execute($sql,$params = array(),$isReturnParams = false)
 	{
-		// 解决执行存储过程后再执行语句就出错
-		if ('call ' == substr($this->lastSql, 0, 5))
-		{
-			$this->disconnect();
-			$this->connect();
-		}
+		$this->results = array();
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
-		// 执行SQL语句
-		$this->result = mysqli_query($this->conn,$sql);
-		if(false===$this->result)
+		if($isReturnParams || !empty($params))
 		{
-			// 用于调试
-			$GLOBALS['debug']['lastsql']=$this->lastSql;
-			throw new Exception($this->getError());
+			// 解析预定义变量
+			$varsTypes = '';
+			if($isReturnParams)
+			{
+				$vars = '';
+				$varsSql = 'set ';
+			}
+			$i = 0;
+			$sql = preg_replace_callback(
+					'/%(i|d|s|b)/',
+					function($matches)use(&$i,$isReturnParams,&$varsTypes,&$vars,&$varsSql) {
+						$varsTypes .= $matches[1] . '';
+						if($isReturnParams)
+						{
+							$vars .= "@{$matches[1]}{$i},";
+							$varsSql .= "@{$matches[1]}{$i}=?,";
+							return '@' . $matches[1] . $i++;
+						}
+						else
+						{
+							++$i;
+							return '?';
+						}
+					},
+					$sql);
+			if(isset($vars))
+			{
+				$vars = substr($vars,0,-1);
+			}
+			// 给变量设置值
+			if($isReturnParams)
+			{
+				$varsSql = substr($varsSql,0,-1);
+				$this->stmt = $this->db->prepare($varsSql);
+				if(false === $this->stmt)
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				$tparam = $params;
+				array_unshift($tparam,$varsTypes);
+				call_user_func_array(array(&$this->stmt,'bind_param'),arrayRefer($tparam));
+				$result = $this->stmt->execute();
+				if(false === $result)
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				// 执行SQL
+				if(false === $this->stmt->prepare($sql))
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				if(false === $this->stmt->execute())
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+			}
+			else
+			{
+				// 执行SQL
+				$this->stmt = $this->db->prepare($sql);
+				if(false === $this->stmt)
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				$tparam = $params;
+				array_unshift($tparam,$varsTypes);
+				call_user_func_array(array(&$this->stmt,'bind_param'),arrayRefer($tparam));
+				if(false === $this->stmt->execute())
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+			}
+			// 返回的结果集
+			do
+			{
+				if($result = $this->stmt->get_result())
+				{
+					$this->results[] = $result->fetch_all(MYSQLI_ASSOC);
+				}
+			}
+			while($this->stmt->next_result());
+			// 取返回SQL值
+			if($isReturnParams)
+			{
+				if(false === $this->stmt->prepare('select ' . $vars))
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				if(false === $this->stmt->execute())
+				{
+					$GLOBALS['debug']['lastsql'] = $this->lastSql;
+					throw new Exception($this->getError());
+				}
+				call_user_func_array(array(&$this->stmt,'bind_result'),arrayRefer($params));
+				$this->stmt->fetch();
+			}
+			$this->stmt->close();
 		}
-		return false !== $this->result ? true : false;
+		else
+		{
+			// 执行SQL语句
+			$result = $this->db->multi_query($sql);
+			if(false === $result)
+			{
+				$GLOBALS['debug']['lastsql'] = $this->lastSql;
+				throw new Exception($this->getError());
+			}
+			do
+			{
+				if($result = $this->db->use_result())
+				{
+					$this->results[] = $result->fetch_all();
+				}
+			}
+			while($this->db->next_result());
+		}
+		return true;
 	}
-	
 	/**
 	 * 执行存储过程
 	 *
@@ -195,16 +277,28 @@ class DbMysqli extends DbBase
 	 *        	string procName 存储过程名称
 	 * @return array
 	 */
-	public function &execProc($procName)
+	public function &execProc($procName, $params = array(), $paramTypes = null)
 	{
-		$p = func_get_args();
-		if (isset($p[1]) && is_array($p[1]))
+		if(null === $paramTypes)
 		{
-			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p[1]) . ')');
+			$config = Config::get('@.DbProc.' . $procName);
+			$paramTypes = $config['params'];
+			unset($config);
+		}
+		if($paramTypes)
+		{
+			$vars = substr(preg_replace_callback(
+						'/./',
+						function($matches){
+							return '%' . $matches[0] . ',';
+						},
+						$paramTypes
+					),0,-1);
+			return $this->queryA('call ' . $procName . '(' . $vars . ')',$params,true);
 		}
 		else
 		{
-			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p) . ')');
+			return $this->queryA('call ' . $procName . '(' . $this->filterValue($params) . ')');
 		}
 	}
 	
@@ -216,17 +310,28 @@ class DbMysqli extends DbBase
 	 *        	string procName 函数名称
 	 * @return array
 	 */
-	public function execFunction($funName)
+	public function execFunction($funName, $params = array(), $paramTypes = null)
 	{
-		$p = func_get_args();
-		unset($p[0]);
-		if (count($p) === 1 && is_array($p[0]))
+		if(null === $paramTypes)
 		{
-			return $this->queryValue('select ' . $procName . '(' . $this->filterValue($p[0]) . ')');
+			$config = Config::get('@.DbFunc.' . $procName);
+			$paramTypes = $config['params'];
+			unset($config);
+		}
+		if($paramTypes)
+		{
+			$vars = substr(preg_replace_callback(
+					'/./',
+					function($matches){
+						return '%' . $matches[0] . ',';
+					},
+					$paramTypes
+			),0,-1);
+			return $this->queryA('select ' . $funName . '(' . $vars . ')',$params,true);
 		}
 		else
 		{
-			return $this->queryValue('select ' . $procName . '(' . $this->filterValue($p) . ')');
+			return $this->queryA('select ' . $funName . '(' . $this->filterValue($params) . ')');
 		}
 	}
 	
@@ -238,7 +343,7 @@ class DbMysqli extends DbBase
 	 */
 	public function foundRows()
 	{
-		return mysqli_num_rows($this->result);
+		return 0;
 	}
 	
 	/**
@@ -249,7 +354,7 @@ class DbMysqli extends DbBase
 	 */
 	public function rowCount()
 	{
-		return mysqli_affected_rows($this->conn);
+		return $this->db->affected_rows;
 	}
 	
 	/**
@@ -260,7 +365,7 @@ class DbMysqli extends DbBase
 	 */
 	public function lastInsertID()
 	{
-		return mysqli_insert_id($this->conn);
+		return $this->db->insert_id;
 	}
 	
 	/**
@@ -270,18 +375,16 @@ class DbMysqli extends DbBase
 	{
 		if($this->connect)
 		{
-			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_error($this->conn));
-			if ('' !== $error)
+			if (0 !== $this->db->errno)
 			{
-				$error .= '错误代码：' . mysqli_errno($this->conn) . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
+				$error = iconv('GBK', 'UTF-8//IGNORE', $this->db->error) . '错误代码：' . $this->db->errno . (empty($this->lastSql)?'':' SQL语句:' . $this->lastSql);
 			}
 		}
 		else
 		{
-			$error = iconv('GBK', 'UTF-8//IGNORE', mysqli_connect_error($this->conn));
-			if ('' !== $error)
+			if (0 !== $this->db->connect_errno)
 			{
-				$error .= '错误代码：' . mysqli_connect_errno();
+				$error = iconv('GBK', 'UTF-8//IGNORE', $this->db->connect_error) . '错误代码：' . $this->db->connect_errno;
 			}
 		}
 		return $error;
@@ -355,21 +458,21 @@ class DbMysqli extends DbBase
 	 */
 	public function begin()
 	{
-		$this->execute('begin');
+		$this->db->begin_transaction();
 	}
 	/**
 	 * 回滚事务
 	 */
 	public function rollback()
 	{
-		$this->execute('rollback');
+		$this->db->rollback();
 	}
 	/**
 	 * 提交事务
 	 */
 	public function commit()
 	{
-		$this->execute('commit');
+		$this->db->commit();
 	}
 	/**
 	 * 解析sql文件，支持返回sql数组，或者使用回调函数

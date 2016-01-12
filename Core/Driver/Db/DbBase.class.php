@@ -282,9 +282,9 @@ abstract class DbBase
 	 * @param string $sql        	
 	 * @return mixed
 	 */
-	public function queryValue($sql)
+	public function queryValue($sql,$params = array(),$isReturnParams = false)
 	{
-		$data = $this->query($sql);
+		$data = $this->query($sql,$params,$isReturnParams);
 		if (isset($data[0]))
 		{
 			return $data[0];
@@ -782,17 +782,17 @@ abstract class DbBase
 	/**
 	 * 查询一条记录
 	 */
-	abstract public function &query($sql);
+	abstract public function &query($sql,$params = array(),$isReturnParams = false);
 	
 	/**
 	 * 查询多条记录
 	 */
-	abstract public function &queryA($sql);
+	abstract public function &queryA($sql,$params = array(),$isReturnParams = false);
 	
 	/**
 	 * 执行SQL语句
 	 */
-	abstract public function execute($sql);
+	abstract public function execute($sql,$params = array(),$isReturnParams = false);
 	
 	/**
 	 * 连接数据库

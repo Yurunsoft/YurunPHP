@@ -114,9 +114,9 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &query($sql)
+	public function &query($sql,$params = array(),$isReturnParams = false)
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params,$isReturnParams))
 		{
 			if (is_bool($this->result))
 			{
@@ -148,9 +148,9 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &queryA($sql)
+	public function &queryA($sql,$params = array(),$isReturnParams = false)
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params,$isReturnParams))
 		{
 			if (is_bool($this->result))
 			{
@@ -178,7 +178,7 @@ class DbMysql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function execute($sql)
+	public function execute($sql,$params = array())
 	{
 		// 解决执行存储过程后再执行语句就出错
 		if ('call ' == substr($this->lastSql, 0, 5))
@@ -186,15 +186,42 @@ class DbMysql extends DbBase
 			$this->disconnect();
 			$this->connect();
 		}
-		// 记录最后执行的SQL语句
-		$this->lastSql = $sql;
-		// 执行SQL语句
-		$this->result = mysql_query($sql, $this->conn);
-		if(false===$this->result)
+		if(!empty($params))
 		{
-			// 用于调试
-			$GLOBALS['debug']['lastsql']=$this->lastSql;
-			throw new Exception($this->getError());
+			// 解析预定义变量
+			$varsTypes = '';
+			$i = 0;
+			$_this = &$this;
+			$sql = preg_replace_callback(
+					'/%(i|d|s|b)/',
+					function($matches)use(&$i,&$varsTypes,&$_this,&$params) {
+						$varsTypes .= $matches[1] . '';
+						return $_this->filterValue($params[$i++]);
+					},
+					$sql);
+			// 记录最后执行的SQL语句
+			$this->lastSql = $sql;
+			// 执行SQL
+			$this->result = mysql_query($sql, $this->conn);
+			if(false===$this->result)
+			{
+				// 用于调试
+				$GLOBALS['debug']['lastsql']=$this->lastSql;
+				throw new Exception($this->getError());
+			}
+		}
+		else
+		{
+			// 记录最后执行的SQL语句
+			$this->lastSql = $sql;
+			// 执行SQL语句
+			$this->result = mysql_query($sql, $this->conn);
+			if(false===$this->result)
+			{
+				// 用于调试
+				$GLOBALS['debug']['lastsql']=$this->lastSql;
+				throw new Exception($this->getError());
+			}
 		}
 		return false !== $this->result ? true : false;
 	}
@@ -207,16 +234,28 @@ class DbMysql extends DbBase
 	 *        	string procName 存储过程名称
 	 * @return array
 	 */
-	public function &execProc($procName)
+	public function &execProc($procName, $params = array(), $paramTypes = null)
 	{
-		$p = func_get_args();
-		if (isset($p[1]) && is_array($p[1]))
+		if(null === $paramTypes)
 		{
-			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p[1]) . ')');
+			$config = Config::get('@.DbProc.' . $procName);
+			$paramTypes = $config['params'];
+			unset($config);
+		}
+		if($paramTypes)
+		{
+			$vars = substr(preg_replace_callback(
+					'/./',
+					function($matches){
+						return '%' . $matches[0] . ',';
+					},
+					$paramTypes
+			),0,-1);
+			return $this->queryA('call ' . $procName . '(' . $vars . ')',$params,true);
 		}
 		else
 		{
-			return $this->queryA('call ' . $procName . '(' . $this->filterValue($p) . ')');
+			return $this->queryA('call ' . $procName . '(' . $this->filterValue($params) . ')');
 		}
 	}
 	

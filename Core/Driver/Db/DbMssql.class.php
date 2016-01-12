@@ -96,9 +96,9 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &query($sql)
+	public function &query($sql,$params = array())
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params))
 		{
 			if (is_bool($this->result))
 			{
@@ -131,9 +131,9 @@ class DbMssql extends DbBase
 	 *
 	 * @param string $sql        	
 	 */
-	public function &queryA($sql)
+	public function &queryA($sql,$params = array())
 	{
-		if ($this->execute($sql))
+		if ($this->execute($sql,$params))
 		{
 			if (is_bool($this->result))
 			{
@@ -173,7 +173,7 @@ class DbMssql extends DbBase
 		// 记录最后执行的SQL语句
 		$this->lastSql = $sql;
 		// 执行SQL语句
-		$this->result = sqlsrv_query($this->conn, $sql, $params);
+		$this->result = sqlsrv_query($this->conn,$sql,$params);
 		if(false===$this->result)
 		{
 			// 用于调试
@@ -193,19 +193,7 @@ class DbMssql extends DbBase
 	 */
 	public function execProc($procName,$params=array())
 	{
-		return $this->execProcRef($procName,&$params);
-	}
-	/**
-	 * 执行存储过程
-	 *
-	 * @access public
-	 * @param
-	 *        	string procName 存储过程名称
-	 * @return array
-	 */
-	public function execProcRef($procName,&$params=array())
-	{
-		$config = Config::get('YBProc.' . $procName);
+		$config = Config::get('@.DbProc.' . $procName);
 		if($config)
 		{
 			$params2 = array();
