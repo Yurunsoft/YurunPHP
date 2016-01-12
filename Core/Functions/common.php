@@ -164,7 +164,7 @@ function autoNumber(&$arr,$name)
  * @param array $array
  * @return array
  */
-function arrayRefer(&$array)
+function &arrayRefer(&$array)
 {
 	$result=array();
 	foreach($array as &$item)
