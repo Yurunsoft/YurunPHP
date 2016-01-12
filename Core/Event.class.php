@@ -62,7 +62,7 @@ class Event
 		{
 			foreach (self::$events[$event] as $item)
 			{
-				if(true === call_user_func($item,&$params))
+				if(true === call_user_func($item,$params))
 				{
 					// 事件返回true时不继续执行其余事件
 					return true;
