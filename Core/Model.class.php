@@ -38,9 +38,22 @@ class Model extends ArrayData
 	/**
 	 * 构造方法
 	 */
-	function __construct($table = '', $dbConfig = array())
+	function __construct($table = null, $dbConfig = array())
 	{
-		if (! empty($table))
+		if (null === $table)
+		{
+			if('' === $this->table)
+			{
+				// 根据Model名称自动
+				$this->table = strtolower(substr(preg_replace_callback(
+						'/[A-Z]/',
+						function($matches){
+							return '_' . $matches[0];
+						},
+						substr(get_called_class(),0,-5)),1));
+			}
+		}
+		else
 		{
 			$this->table($table);
 		}
