@@ -197,8 +197,20 @@ class Dispatch
 						},
 						$cfg['url'],
 						-1);
-				$mca = explode('/',$url);
+				// 301跳转支持
+				if(isset($url[0]) && '>' === $url[0])
+				{
+					if(isset($url[1]) && '/' === $url[1])
+					{
+						Response::redirectU(Config::get('@.URL_PROTOCOL',Request::getProtocol()) . substr($url,2));
+					}
+					else
+					{
+						Response::redirect(substr($url,1));
+					}
+				}
 				// 模块控制器动作获取
+				$mca = explode('/',$url);
 				if(isset($mca[2])) // 格式完整
 				{
 					self::$module = ucfirst($mca[0]);
@@ -397,6 +409,35 @@ class Dispatch
 		}
 	}
 	/**
+	 * 准备调用的数据
+	 */
+	private static function prepareData($params)
+	{
+		$data = self::$data;
+		self::$data = array();
+		foreach($params as $param)
+		{
+			if(isset($data[$param->name]))
+			{
+				// 路由获取的数据
+				self::$data[] = $data[$param->name];
+			}
+			else
+			{
+				// 表单提交数据
+				$value = Request::all($param->name);
+				if(false === $value)
+				{
+					self::$data[] = null;
+				}
+				else 
+				{
+					self::$data[] = $value;
+				}
+			}
+		}
+	}
+	/**
 	 * 调用
 	 * @return boolean
 	 */
@@ -409,6 +450,9 @@ class Dispatch
 			// 实例化控制器
 			$yurunControl = new $class();
 			$action = self::$action;
+			$reflection = new ReflectionMethod($yurunControl, $action);
+			self::prepareData($reflection->getParameters());
+			unset($reflection);
 			if (method_exists($yurunControl, $action))
 			{
 				call_user_func_array(array(&$yurunControl,$action),self::$data);
