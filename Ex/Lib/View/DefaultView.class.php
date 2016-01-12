@@ -51,6 +51,8 @@ class DefaultView
 	{
 		// 原生标签
 		$this->parseTag($html);
+		// URL标签支持
+		$this->parseUrl($html);
 		// 扩展控件
 		$this->pregParseTag2($html,self::$controlsPatterns1);
 		$this->pregParseTag2($html,self::$controlsPatterns2);
@@ -335,6 +337,16 @@ PHP
 		{
 			return false;
 		}
+	}
+	public function parseUrl(&$html)
+	{
+		$html = preg_replace_callback(
+					'/' . self::$tagLeft . 'url=(.*)\/' . self::$tagRight . '/isU',
+					function($matches){
+ 						return '<?php echo Dispatch::url(' . $matches[1] . ');?>';
+					},
+					$html,
+					-1);
 	}
 	private function parseSrc($src)
 	{
