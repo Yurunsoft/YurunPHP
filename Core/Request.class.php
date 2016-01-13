@@ -180,21 +180,20 @@ class Request
 			// 返回默认值
 			return $default;
 		}
-		if (empty($filter))
+		if (false===$filter)
 		{
-			// 不过滤直接返回
 			return $value;
 		}
-		else if (false!==$filter)
+		else if(empty($filter))
 		{
 			// 按照配置中的过滤
 			$filter = Config::get('@.DEFAULT_FILTER');
 			// 执行所有过滤操作
 			return execFilter($value, $filter);
 		}
-		else
+		else 
 		{
-			return $value;
+			return execFilter($value, $filter);
 		}
 	}
 	/**
