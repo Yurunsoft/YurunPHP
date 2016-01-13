@@ -130,11 +130,13 @@ class Dispatch
 							$lengthStart = null;
 							$lengthEnd = null;
 						}
-						$fields[] = array('name' => $name,'type' => $type,'lengthStart'=>$lengthStart,'lengthEnd'=>$lengthEnd);
-						return '(' . convertToRegexType($type,$lengthStart,$lengthEnd) . ')';
+						$rule = convertToRegexType($type,$lengthStart,$lengthEnd);
+						$fields[] = array('name' => $name,'type' => $type,'lengthStart'=>$lengthStart,'lengthEnd'=>$lengthEnd,'rule'=>$rule);
+						return '(' . $rule . ')';
 					},
 					$rule,
-					-1),'/'),'url' => $url, 'fields' => $fields, 'filename' => $fileName);
+					-1),'/'),
+					'url' => $url, 'fields' => $fields, 'filename' => $fileName);
 		}
 		// 当前访问的文件名
 		self::$currFileName = basename($_SERVER['SCRIPT_FILENAME']);
@@ -455,6 +457,9 @@ class Dispatch
 			unset($reflection);
 			if (method_exists($yurunControl, $action))
 			{
+				$reflection = new ReflectionMethod($yurunControl, $action);
+				self::prepareData($reflection->getParameters());
+				unset($reflection);
 				call_user_func_array(array(&$yurunControl,$action),self::$data);
 			}
 			else
@@ -462,6 +467,9 @@ class Dispatch
 				$action = '_R_' . $action;
 				if (method_exists($yurunControl, $action))
 				{
+					$reflection = new ReflectionMethod($yurunControl, $action);
+					self::prepareData($reflection->getParameters());
+					unset($reflection);
 					call_user_func_array(array(&$yurunControl,$action),self::$data);
 				}
 				else
@@ -645,9 +653,75 @@ class Dispatch
 	 */
 	private static function parseUrlRoute($path,&$param,&$filename)
 	{
+		$pathMCA = explode('/',$path);
 		foreach(self::$routeRules as $rule => $cfg)
 		{
-			if($cfg['url'] === $path)
+			// 变量出现在【模块控制器动作】中
+			if(isset($cfg['url'][0]) && '>' !== $cfg['url'][0] && false !== strpos($cfg['url'],'$'))
+			{
+				$mca = explode('/',$cfg['url']);
+				$mcaRule = $mca;
+				if(isset($mca[2]))
+				{
+					// 模块中的变量
+					if(false !== strpos($mca[0],'$'))
+					{
+						$mcaRule[0] = preg_replace_callback(
+								'/\$(\d+)/',
+								function($matches)use(&$cfg){
+									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+								},
+								$mcaRule[0]
+						);
+						$mca[0] = $pathMCA[0];
+					}
+					// 控制器中的变量
+					if(false !== strpos($mca[1],'$'))
+					{
+						$mcaRule[1] = preg_replace_callback(
+								'/\$(\d+)/',
+								function($matches)use(&$cfg){
+									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+								},
+								$mcaRule[1]
+						);
+						$mca[1] = $pathMCA[1];
+					}
+					// 动作中的变量
+					if(false !== strpos($mca[2],'$'))
+					{
+						$mcaRule[2] = preg_replace_callback(
+								'/\$(\d+)/',
+								function($matches)use(&$cfg){
+									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+								},
+								$mcaRule[2]
+						);
+						$mca[2] = $pathMCA[2];
+					}
+					// URL
+					$cfg['url'] = implode('/',$mca);
+					$trule = '/^' . implode('\/',$mcaRule) . '$/';
+					// 验证URL格式
+					if(preg_match_all($trule,$cfg['url'],$matches))
+					{
+						$s = count($matches);
+						for($i=1;$i<$s;++$i)
+						{
+							// 把数据加入参数数组里
+							$param[$cfg['fields'][$i-1]['name']] = $matches[$i][0];
+						}
+						$isExists = true;
+						break;
+					}
+				}
+				else 
+				{
+					continue;
+				}
+			}
+			// 固定的url
+			else if($cfg['url'] === $path)
 			{
 				$isExists = true;
 				foreach($cfg['fields'] as $field)
