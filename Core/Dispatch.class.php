@@ -452,9 +452,6 @@ class Dispatch
 			// 实例化控制器
 			$yurunControl = new $class();
 			$action = self::$action;
-			$reflection = new ReflectionMethod($yurunControl, $action);
-			self::prepareData($reflection->getParameters());
-			unset($reflection);
 			if (method_exists($yurunControl, $action))
 			{
 				$reflection = new ReflectionMethod($yurunControl, $action);
