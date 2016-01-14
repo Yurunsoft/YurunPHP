@@ -715,7 +715,7 @@ SQL
 			$this->parseLimit($limit,$start,$end);
 			if($start==0)
 			{
-				$fields = 'top ' . $end . $this->parseField(isset($option['field']) ? $option['field'] : '*');
+				$fields = 'top ' . $end . ' ' . $this->parseField(isset($option['field']) ? $option['field'] : '*');
 			}
 			else
 			{
