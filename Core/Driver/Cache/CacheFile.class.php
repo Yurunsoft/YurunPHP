@@ -114,7 +114,7 @@ class CacheFile extends CacheBase
 				// 获取缓存有效时间
 				$expire = (int)substr($data, 13, 12);
 				// 缓存文件最后修改时间和有效时间判定
-				if ((!isset($config) || !$config['raw']) && $this->isExpired1(filemtime($fileName), $expire))
+				if ((empty($config) || !$config['raw']) && $this->isExpired1(filemtime($fileName), $expire))
 				{
 					// 过期删除
 					unlink($fileName);
@@ -143,7 +143,7 @@ class CacheFile extends CacheBase
 	 * @abstract
 	 *
 	 */
-	public function remove($alias, $config = array())
+	public function remove($alias)
 	{
 		unlink($this->getFileName($alias));
 	}
@@ -162,7 +162,7 @@ class CacheFile extends CacheBase
 	 * @param string $alias        	
 	 * @return boolean
 	 */
-	public function exists($alias, $config = array())
+	public function exists($alias)
 	{
 		return is_file($this->getFileName($alias));
 	}
