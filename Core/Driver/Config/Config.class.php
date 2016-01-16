@@ -24,7 +24,7 @@ abstract class Config extends Driver
 	 * @param bool $merge
 	 * @return boolean
 	 */
-	public static function create($name, $type = 'php', $merge=true)
+	public static function create($name, $type = 'php', $file = '', $merge = true)
 	{
 		if (self::exists($name))
 		{
