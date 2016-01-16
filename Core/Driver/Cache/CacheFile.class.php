@@ -114,7 +114,7 @@ class CacheFile extends CacheBase
 				// 获取缓存有效时间
 				$expire = (int)substr($data, 13, 12);
 				// 缓存文件最后修改时间和有效时间判定
-				if ((!isset($config) || !$config['raw']) && $this->isExpired1(filemtime($fileName), $expire))
+				if ((empty($config) || !$config['raw']) && $this->isExpired1(filemtime($fileName), $expire))
 				{
 					// 过期删除
 					unlink($fileName);
