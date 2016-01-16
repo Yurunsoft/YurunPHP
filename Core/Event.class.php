@@ -7,9 +7,6 @@ class Event
 {
 	// 事件绑定记录
 	private static $events;
-
-	// 引用参数数量
-	private static $args_num=5;
 	/**
 	 * 初始化
 	 */
