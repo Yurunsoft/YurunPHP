@@ -194,11 +194,11 @@ class DbMssql extends DbBase
 	public function execProc($procName,$params=array())
 	{
 		$config = Config::get('@.DbProc.' . $procName);
+		$params2 = array();
+		$return = 0;
+		$params2[] = array(&$return,SQLSRV_PARAM_OUT);
 		if($config)
 		{
-			$params2 = array();
-			$return = 0;
-			$params2[] = array(&$return,SQLSRV_PARAM_OUT);
 			if(isset($config['params']))
 			{
 				$s = count($config['params']);
@@ -210,9 +210,6 @@ class DbMssql extends DbBase
 		}
 		else
 		{
-			$params2 = array();
-			$return = 0;
-			$params2[] = array(&$return,SQLSRV_PARAM_OUT);
 			$s = count($params);
 			for($i=0;$i<$s;++$i)
 			{
