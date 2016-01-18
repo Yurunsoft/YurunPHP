@@ -445,23 +445,21 @@ class Dispatch
 	 */
 	public static function call()
 	{
-		$class = self::$control . 'Control';
+		$yurunControl = autoLoadControl(self::$control,self::$action);
 		// 控制器是否存在
-		if (class_exists($class))
+		if (false !== $yurunControl)
 		{
 			// 实例化控制器
-			$yurunControl = new $class();
-			$action = self::$action;
-			if (method_exists($yurunControl, $action))
+			if (method_exists($yurunControl, self::$action))
 			{
-				$reflection = new ReflectionMethod($yurunControl, $action);
+				$reflection = new ReflectionMethod($yurunControl, self::$action);
 				self::prepareData($reflection->getParameters());
 				unset($reflection);
-				call_user_func_array(array(&$yurunControl,$action),self::$data);
+				call_user_func_array(array(&$yurunControl,self::$action),self::$data);
 			}
 			else
 			{
-				$action = '_R_' . $action;
+				$action = '_R_' . self::$action;
 				if (method_exists($yurunControl, $action))
 				{
 					$reflection = new ReflectionMethod($yurunControl, $action);

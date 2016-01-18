@@ -303,3 +303,32 @@ function &parseCfgName($name)
 	});
 	return $result;
 }
+/**
+ * 根据控制器名和动作自动加载并实例化
+ * @param unknown $control
+ * @param unknown $action
+ */
+function &autoLoadControl($control,$action)
+{
+	$currModulePath = APP_MODULE . Dispatch::module() . '/' . Config::get('@.CONTROL_FOLDER') . '/';
+	$controlFile = $control . 'Control.class.php';
+	$actionFile =  $control . '/' . $action . '.php';
+	if (require_once_multi(array (
+				$currModulePath . $actionFile,			// 模块控制器动作目录
+				$currModulePath . $controlFile,			// 模块控制器目录
+				APP_CONTROL . $actionFile,				// 项目控制器动作目录
+				APP_CONTROL . $controlFile,				// 项目控制器目录
+				PATH_EX_CONTROL . '/' . $actionFile, 	// 框架控制器动作扩展目录
+				PATH_EX_CONTROL . '/' . $controlFile 	// 框架控制器扩展目录
+			),false))
+	{
+		$class = $control . 'Control';
+		$obj = new $class;
+		return $obj;
+	}
+	else
+	{
+		$result = false;
+		return $result;
+	}
+}
