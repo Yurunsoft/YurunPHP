@@ -181,8 +181,12 @@ PHP
 	}
 	private function parsePrint(&$html)
 	{
-		$html = str_replace(Config::get('@.TEMPLATE_ECHO_TAG_LEFT'),'<?php echo ',$html);
-		$html = str_replace(Config::get('@.TEMPLATE_ECHO_TAG_RIGHT'),';?>',$html);
+		$html = preg_replace_callback(
+				'/' . Config::get('@.TEMPLATE_ECHO_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_TAG_RIGHT') . '/isU',
+				function($matches){
+					return '<?php echo ' . $matches[1] . ';?>';
+				},
+				&$html);
 	}
 	private function parsePHP(&$html)
 	{
