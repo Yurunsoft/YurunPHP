@@ -181,12 +181,20 @@ PHP
 	}
 	private function parsePrint(&$html)
 	{
+		// 输出变量
 		$html = preg_replace_callback(
-				'/' . Config::get('@.TEMPLATE_ECHO_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_TAG_RIGHT') . '/isU',
+				'/' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_LEFT') . '(\$.*)' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_RIGHT') . '/isU',
 				function($matches){
 					return '<?php echo ' . $matches[1] . ';?>';
 				},
-				&$html);
+				$html);
+		// 输出常量
+		$html = preg_replace_callback(
+				'/' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_RIGHT') . '/isU',
+				function($matches){
+					return '<?php echo ' . $matches[1] . ';?>';
+				},
+				$html);
 	}
 	private function parsePHP(&$html)
 	{

@@ -97,8 +97,10 @@ return array (
 		'TEMPLATE_ENGINE'			=>	'DefaultView',
 		'TEMPLATE_TAG_LEFT'			=>	'<',
 		'TEMPLATE_TAG_RIGHT'		=>	'>',
-		'TEMPLATE_ECHO_TAG_LEFT'	=>	'<%=',
-		'TEMPLATE_ECHO_TAG_RIGHT'	=>	'%>',
+		'TEMPLATE_ECHO_VAR_TAG_LEFT'	=>	'<%=',
+		'TEMPLATE_ECHO_VAR_TAG_RIGHT'	=>	'%>',
+		'TEMPLATE_ECHO_CONST_TAG_LEFT'	=>	'<c:',
+		'TEMPLATE_ECHO_CONST_TAG_RIGHT'	=>	'>',
 		
 		// 静态文件路径
 		'PATH_STATIC' => 'Static'
