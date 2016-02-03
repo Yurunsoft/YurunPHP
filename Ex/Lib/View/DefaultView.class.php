@@ -16,13 +16,11 @@ class DefaultView
 		'css',
 		'image',
 	);
-	private static $controlsPatterns1;
-	private static $controlsPatterns2;
-	private static $tagsPatterns1;
-	private static $tagsPatterns2;
+	private static $controlsPatterns1,$controlsPatterns2;
+	private static $tagsPatterns1,$tagsPatterns2;
 	private $xml;
-	private static $tagLeft;
-	private static $tagRight;
+	private static $tagLeft,$tagRight;
+	private static $constsKey,$constsValue;
 	
 	public function __construct()
 	{
@@ -37,17 +35,19 @@ class DefaultView
 		self::$controlsPatterns2 = '/' . self::$tagLeft . "([a-z0-9_.-]*)((([\s]+[a-z0-9_.-]*[\s]*=\"[^\"]*\")*)([\s]*runat=\"server\"[\s]*)(([\s]+[a-z0-9_.-]*[\s]*=\"[^\"]*\")*))" . self::$tagRight . '(.*?)' . self::$tagLeft . '\/\\1(\s*?)' . self::$tagRight . '/is';
 		self::$tagsPatterns1 = '/' . self::$tagLeft . "({$tags})(([\s]+[a-z0-9_.-]*[\s]*=\"[^\"]*\")*)" . self::$tagRight . '(.*?)' . self::$tagLeft . '\/\\1(\s*?)' . self::$tagRight . '/is';
 		self::$tagsPatterns2 = '/'. self::$tagLeft ."({$tags})(([\s]+[a-z0-9_.-]*[\s]*=\"[^\"]*\")*)\s*\/". self::$tagRight .'([^'. self::$tagLeft .']*?)/is';
+		self::initConst();
 	}
 	public function &parse($file)
 	{
 		$html = file_get_contents($file);
-		$this->parseTemplate2($html);
+		$this->parseConst($html);
+		$this->parseTemplate($html);
 		$this->parsePrint($html);
 		$this->parsePHP($html);
 		$this->optimizePHP($html);
 		return $html;
 	}
-	private function parseTemplate2(&$html)
+	private function parseTemplate(&$html)
 	{
 		// 原生标签
 		$this->parseTag($html);
@@ -387,6 +387,29 @@ PHP
 			}
 		}
 		return $attrsStr;
+	}
+	private static function initConst()
+	{
+		$consts = array(
+			'__MODULE__'	=>	Dispatch::module(),		// 当前模块名
+			'__CONTROL__'	=>	Dispatch::control(),	// 当前控制器名
+			'__ACTION__'	=>	Dispatch::action(),		// 当前动作名
+			'__WEBROOT__'	=>	WEBROOT,				// 站点根目录
+			'__STATIC__'	=>	STATIC_PATH,			// 静态文件目录
+			'__THEME__'		=>	Config::get('@.THEME')	// 当前主题名
+		);
+		$tplConsts = Config::get('@.TEMPLATE_CONSTS');
+		if(is_array($tplConsts))
+		{
+			$consts = array_merge($consts,$tplConsts);
+		}
+		self::$constsKey = array_keys($consts);
+		self::$constsValue = array_values($consts);
+	}
+	private function parseConst(&$html)
+	{
+		// 预定义常量
+		$html = str_replace(self::$constsKey,self::$constsValue,$html);
 	}
 }
 DefaultView::init();

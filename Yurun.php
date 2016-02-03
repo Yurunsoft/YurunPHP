@@ -43,6 +43,14 @@ define('PATH_LANG', ROOT_PATH . 'Lang/');
 define('PATH_TEMPLATE', ROOT_PATH . 'Template/');
 // 项目根目录
 defined('APP_PATH') or define('APP_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . '/');
+// 站点根目录
+$webroot = dirname($_SERVER['SCRIPT_NAME']);
+if('/' === $webroot || '\\' === $webroot)
+{
+	$webroot = '';
+}
+define('WEBROOT',(isset($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $webroot);
+unset($webroot);
 if (defined('IS_COMPILED'))
 {
 	// {compile}
@@ -229,6 +237,16 @@ Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
 date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 注册autoload方法，自动加载核心类
 spl_autoload_register('yurunAutoload');
+$staticPath = Config::get('@.PATH_STATIC');
+$str = substr($staticPath,0,7);
+if('http://'!==$str && 'https:/'!==$str)
+{
+	// 静态文件是网站根目录下的
+	$staticPath = WEBROOT . '/' . $staticPath;
+}
+// 静态文件目录
+define('STATIC_PATH',$staticPath);
+unset($staticPath);
 // 语言包支持
 Lang::init();
 // 插件扩展初始化
