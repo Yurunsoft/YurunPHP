@@ -262,7 +262,7 @@ class DbMysqli extends DbBase
 			{
 				if($result = $this->db->use_result())
 				{
-					$this->results[] = $result->fetch_all();
+					$this->results[] = $result->fetch_all(MYSQLI_ASSOC);
 				}
 			}
 			while($this->db->next_result());
