@@ -296,15 +296,18 @@ function yurunAutoload($class)
 	}
 	// 自定义分层支持
 	$layers = Config::get('@.CUSTOM_LAYER');
+	$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
+	$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
 	foreach($layers as $layer)
 	{
 		if ($layer === substr($class, - strlen($layer)))
 		{
+			$filePath = $layer . '/' . $file;
 			// 模型
 			if (			// 其他扩展
 					require_once_multi(array (
-						$currModulePath . $layer . '/' . $file,	// 模块分层目录
-						APP_LIB . $layer . '/' . $file,			// 项目分层目录
+						$layerModulePath . $filePath,	// 模块分层目录
+						$layerAppPath . $filePath,			// 项目分层目录
 					),
 					false))
 			{
@@ -312,7 +315,7 @@ function yurunAutoload($class)
 			}
 		}
 	}
-	unset($layers,$layer);
+	unset($layers,$layer,$layerModulePath,$layerAppPath,$filePath);
 	$file2 = '/' . getClassFirst($class) . "/{$file}";
 	if (		// 其他扩展
 	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
