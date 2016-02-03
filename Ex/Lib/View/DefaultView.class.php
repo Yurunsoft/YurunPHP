@@ -195,6 +195,18 @@ PHP
 					return '<?php echo ' . $matches[1] . ';?>';
 				},
 				$html);
+		// 输出配置项
+		$html = preg_replace_callback(
+				'/' . Config::get('@.TEMPLATE_ECHO_CONFIG_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_CONFIG_TAG_RIGHT') . '/isU',
+				function($matches){
+					$arr = explode(' ',$matches[1]);
+					if(isset($arr[1]))
+					{
+						$default = ',' . $arr[1];
+					}
+					return '<?php echo Config::get(\'' . $arr[0] . '\'' . $default . ');?>';
+				},
+				$html);
 	}
 	private function parsePHP(&$html)
 	{
