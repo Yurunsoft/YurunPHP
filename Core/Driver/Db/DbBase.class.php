@@ -284,15 +284,7 @@ abstract class DbBase
 	 */
 	public function queryValue($sql,$params = array(),$isReturnParams = false)
 	{
-		$data = $this->query($sql,$params,$isReturnParams);
-		if (isset($data[0]))
-		{
-			return $data[0];
-		}
-		else
-		{
-			return false;
-		}
+		return array_shift($this->query($sql,$params,$isReturnParams));
 	}
 	
 	/**
