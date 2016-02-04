@@ -393,7 +393,7 @@ abstract class DbBase
 			}
 			else if(is_string($value))
 			{
-				$fields[] = $value;
+				$fields[] = $this->parseArgs($value);
 			}
 		}
 		$fields = implode(',', $fields);
