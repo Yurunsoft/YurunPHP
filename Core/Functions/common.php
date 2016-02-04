@@ -332,3 +332,65 @@ function &autoLoadControl($control,$action)
 		return $result;
 	}
 }
+/**
+ * 根据组名获取数据值，比如<input type="text" name="group.title"/>，传入group
+ * @param unknown $group
+ * @return multitype:NULL
+ */
+function &getDataByGroup($group)
+{
+	$fields = getFieldsByGroup($group);
+	$data = array();
+	// 遍历取出字段对应的数据
+	foreach($fields as $key => $field)
+	{
+		$data[$field] = Request::all($key);
+	}
+	return $data;
+}
+/**
+ * 根据组名获取数据值，比如<input type="text" name="group.title[]"/>，传入group
+ * @param unknown $group
+ * @return Ambigous <multitype:multitype: , unknown>
+ */
+function &getDataArrayByGroup($group)
+{
+	$fields = getFieldsByGroup($group);
+	$data = array();
+	// 遍历取出字段对应的数据
+	foreach($fields as $key => $field)
+	{
+		$arr = Request::all($key,array());
+		$s = count($arr);
+		for($i=0;$i<$s;++$i)
+		{
+			if(!isset($data[$i]))
+			{
+				$data[$i] = array();
+			}
+			$data[$i][$field] = $arr[$i];
+		}
+	}
+	return $data;
+}
+/**
+ * 根据组名获取字段们
+ * @param unknown $group
+ * @return multitype:multitype:unknown
+ */
+function &getFieldsByGroup($group)
+{
+	$group = $group . '_';
+	$groupLen = strlen($group);
+	$fields = array();
+	$data = Request::all();
+	foreach($data as $key=>$value)
+	{
+		if(substr($key,0,$groupLen)===$group)
+		{
+			$fieldKey = substr($key,$groupLen);
+			$fields[$key] = $fieldKey;
+		}
+	}
+	return $fields;
+}
