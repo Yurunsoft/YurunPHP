@@ -712,7 +712,7 @@ SQL
 			$this->parseLimit($limit,$start,$end);
 			if($start==0)
 			{
-				$fields = 'top ' . $end . ' ' . $this->parseField(isset($option['field']) ? $option['field'] : '*');
+				$fields = 'top ' . $end . ' ' . $this->parseSelectField($option);
 			}
 			else
 			{
@@ -740,7 +740,7 @@ EOF
 		}
 		else 
 		{
-			$fields = $this->parseField(isset($option['field']) ? $option['field'] : '*');
+			$fields = $this->parseSelectField($option);
 		}
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)

@@ -266,7 +266,7 @@ abstract class DbBase
 			$where = ' where ' . $where;
 		}
 		return 'select ' . $this->parseDistinct(isset($option['distinct']) ? $option['distinct'] : '')
-				. $this->parseField(isset($option['field']) ? $option['field'] : '*')
+				. $this->parseSelectField($option)
 				. ' from '
 				. $this->parseField(isset($option['from']) ? $option['from'] : '')
 				. $this->parseJoin(isset($option['join']) ? $option['join'] : array())
@@ -274,6 +274,45 @@ abstract class DbBase
 				. $this->parseHaving(isset($option['having']) ? $option['having'] : '')
 				. $this->parseOrder(isset($option['order']) ? $option['order'] : array ())
 				. $this->parseLimit(isset($option['limit']) ? $option['limit'] : '');
+	}
+	
+	/**
+	 * 处理select查询用的字段
+	 * @param unknown $option
+	 * @return string
+	 */
+	public function parseSelectField($option)
+	{
+		if(isset($option['field']))
+		{
+			if(is_array($option['field']))
+			{
+				foreach($option['field'] as $item)
+				{
+					if(is_array($item))
+					{
+						$item = $this->parseField($item);
+					}
+					if(isset($field))
+					{
+						$field .= ',' . $item;
+					}
+					else
+					{
+						$field = $item;
+					}
+				}
+			}
+			else
+			{
+				$field = $option['field'];
+			}
+		}
+		else
+		{
+			$field = '*';
+		}
+		return $field;
 	}
 	
 	/**
@@ -385,7 +424,7 @@ abstract class DbBase
 			}
 			else if(is_string($value))
 			{
-				$fields[] = $this->parseArgs($value);
+				$fields[] = $this->parseNameAlias($value);
 			}
 		}
 		$fields = implode(',', $fields);
