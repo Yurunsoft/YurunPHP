@@ -476,4 +476,19 @@ class DbMysql extends DbBase
 			}
 		}
 	}
+	/**
+	 * 处理order field
+	 * @param mixed $data
+	 */
+	public function parseOrderField($data)
+	{
+		if(is_array($data))
+		{
+			return 'field(' . $data[0] . ',' . $this->filterValue($data[1]) . ')';
+		}
+		else
+		{
+			return $data;
+		}
+	}
 }

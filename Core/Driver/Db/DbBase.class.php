@@ -544,14 +544,20 @@ abstract class DbBase
 		{
 			return '';
 		}
-		if (is_string($group))
-		{
-			return ' group by ' . $group;
-		}
 		$result = '';
-		foreach ($group as $key => $value)
+		foreach ($group as $item)
 		{
-			$result .= $this->parseField($value) . ',';
+			if(is_array($item))
+			{
+				foreach($item as $key => $value)
+				{
+					$result .= $this->parseField($value) . ',';
+				}
+			}
+			else
+			{
+				$result .= $item . ',';
+			}
 		}
 		if ('' === $result)
 		{
@@ -571,7 +577,7 @@ abstract class DbBase
 	 */
 	public function parseHaving($having)
 	{
-		$result = $this->parseCondition(array($having));
+		$result = $this->parseCondition($having);
 		if ('' === $result)
 		{
 			return $result;
@@ -594,20 +600,34 @@ abstract class DbBase
 		{
 			return '';
 		}
-		if (is_string($order))
-		{
-			return ' order by ' . $order;
-		}
 		$result = '';
-		foreach ($order as $key => $value)
+		foreach ($order as $item)
 		{
-			if (is_numeric($key))
+			if(is_array($item))
 			{
-				$result .= $this->parseField($value).',';
+				if(isset($item['#orderfield#']) && $item['#orderfield#'])
+				{
+					// order field
+					$result .= $this->parseOrderField($item['data']) . ',';
+				}
+				else 
+				{
+					foreach($item as $key => $value)
+					{
+						if (is_numeric($key))
+						{
+							$result .= $this->parseField($value).',';
+						}
+						else
+						{
+							$result .= $this->parseField($key) . ' ' . $value . ',';
+						}
+					}
+				}
 			}
 			else
 			{
-				$result .= $this->parseField($key) . ' ' . $value . ',';
+				$result .= $item . ',';
 			}
 		}
 		if ('*,' === $result || ''===$result)
@@ -834,4 +854,9 @@ abstract class DbBase
 	 * @param string $table        	
 	 */
 	abstract public function &getFields($table);
+	/**
+	 * 处理order field
+	 * @param mixed $data
+	 */
+	abstract public function parseOrderField($data);
 }

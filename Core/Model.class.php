@@ -196,16 +196,7 @@ class Model extends ArrayData
 		$limits = randomNums($result['min'], $result['max'], $max_count);
 		$this->where(array($this->pk=>array('in',$limits)));
 		$this->limit($num);
-		$type = $this->db->getType();
-		if('Mysql' === substr($type,0,-1))
-		{
-			$this->order('field(' . $this->pk . ',"' . implode(',',$limits) . ')');
-		}
-		else if('Mssql' === $type)
-		{
-			$this->order('CHARINDEX(\'|\' + LTRIM(RTRIM(' + $this->pk + ')) + \'|\', \'|\'' . implode('|',$limits) . '|\')');
-		}
-		$results = $this->select();
+		$results = $this->orderfield($this->pk,$limits)->select();
 		return $results;
 	}
 	/**
@@ -231,95 +222,81 @@ class Model extends ArrayData
 			{
 				return $this->selectBy($arr[1], $arguments[0]);
 			}
-		}
-		// 全部转为小写，照顾所有大小写习惯的用户
-		$name = strtolower($name);
-		// 方法名是否存在于预定义的连贯操作方法名中
-		if (in_array($name, $this->methods) && isset($arguments[0]))
-		{
-			if('join' === $name)
+			unset($arr);
+			// 全部转为小写，照顾所有大小写习惯的用户
+			$name = strtolower($name);
+			// 方法名是否存在于预定义的连贯操作方法名中
+			if (false !== in_array($name, $this->methods))
 			{
-				// 为空则创建空数组
-				if(!isset($this->options[$name]))
+				if('join' === $name)
 				{
-					$this->options[$name]=array();
-				}
-				// 判断是否批量join
-				if(is_array($arguments[0]))
-				{
-					$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
-				}
-				else
-				{
-					if(count($arguments)>1)
+					// 为空则创建空数组
+					if(!isset($this->options[$name]))
 					{
-						// 参数形式
-						$this->options[$name][]=array('type'=>$arguments[0],'table'=>$arguments[1],'on'=>$arguments[2]);
+						$this->options[$name]=array();
+					}
+					// 判断是否批量join
+					if(is_array($arguments[0]))
+					{
+						$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
 					}
 					else
 					{
-						// sql形式
-						$this->options[$name][]=$arguments[0];
+						if(count($arguments)>1)
+						{
+							// 参数形式
+							$this->options[$name][] = array('type'=>$arguments[0],'table'=>$arguments[1],'on'=>$arguments[2]);
+						}
+						else
+						{
+							// sql形式
+							$this->options[$name][] = $arguments[0];
+						}
 					}
 				}
-			}
-			else if('limit' === $name)
-			{
-				switch(count($arguments))
+				else if('limit' === $name)
 				{
-					case 1:
-						$this->options['limit']=$arguments[0];
-						break;
-					case 2:
-						$this->options['limit']=$arguments;
-						break;
-				}
-			}
-			else if('where' === $name)
-			{
-				if(!isset($this->options[$name]))
-				{
-					$this->options[$name] = array();
-				}
-				$this->options[$name][]=$arguments[0];
-			}
-			else if('field' === $name)
-			{
-				if(!isset($this->options[$name]))
-				{
-					$this->options[$name] = array();
-				}
-				$this->options[$name][] = $arguments[0];
-			}
-			else
-			{
-				if(is_array($arguments))
-				{
-					if(isset($this->options[$name]))
+					if(isset($arguments[1]))
 					{
-						$this->options[$name]+=$arguments[0];
+						$this->options['limit'] = $arguments;
 					}
 					else
 					{
-						$this->options[$name] = $arguments[0];
+						$this->options['limit'] = $arguments[0];
+					}
+				}
+				else if('distinct' === $name)
+				{
+					$this->options['distinct'] = $arguments[0];
+				}
+				else if('orderfield' === $name)
+				{
+					if(!isset($this->options['order']))
+					{
+						$this->options['order'] = array();
+					}
+					if(isset($arguments[1]))
+					{
+						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments);
+					}
+					else
+					{
+						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments[0]);
 					}
 				}
 				else
 				{
-					if(isset($this->options[$name]))
+					if(!isset($this->options[$name]))
 					{
-						$this->options[$name]+=$arguments;
+						$this->options[$name] = array();
 					}
-					else
-					{
-						$this->options[$name] = $arguments;
-					}
+					$this->options[$name][] = $arguments[0];
 				}
+				return $this;
 			}
-			return $this;
 		}
 		// 是否连贯操作函数
-		else if (in_array($name, $this->funcs))
+		if (false !== in_array($name, $this->funcs))
 		{
 			if (isset($arguments[0]))
 			{
