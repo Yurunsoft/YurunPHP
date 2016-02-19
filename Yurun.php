@@ -146,6 +146,12 @@ else
  */
 function printError($err)
 {
+	static $already;
+	if(null !== $already)
+	{
+		return;
+	}
+	$already = true;
 	if(is_array($err))
 	{// 错误数组
 		$error=$err;
@@ -203,7 +209,6 @@ register_shutdown_function(function(){
 	Log::save();
 });
 set_error_handler(function($errno, $errstr, $errfile, $errline){
-	
 	if(E_ERROR === $errno || E_PARSE === $errno || E_CORE_ERROR === $errno || E_COMPILE_ERROR === $errno || E_USER_ERROR === $errno)
 	{
 		ob_end_clean();
