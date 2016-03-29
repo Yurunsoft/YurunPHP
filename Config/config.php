@@ -94,7 +94,7 @@ return array (
 		'TEMPLATE_ENGINE_ON'		=>	true,
 		'TEMPLATE_CACHE_ON'			=>	true,
 		'TEMPLATE_CACHE_EXPIRE'		=>	0,
-		'TEMPLATE_ENGINE'			=>	'DefaultView',
+		'TEMPLATE_ENGINE'			=>	'YurunTPEView',
 		'TEMPLATE_TAG_LEFT'			=>	'<',
 		'TEMPLATE_TAG_RIGHT'		=>	'>',
 		'TEMPLATE_ECHO_VAR_TAG_LEFT'		=>	'<%=',

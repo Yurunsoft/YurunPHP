@@ -501,14 +501,16 @@ SQL
 	{
 		$oldKeys = array_keys($data);
 		$keys = array();
+		$isEncode = false;
 		foreach($oldKeys as $key)
 		{
-			if(is_numeric($str))
+			if(is_numeric($key))
 			{
 				$keys [] = $key;
 			}
 			else
 			{
+				$isEncode = true;
 				$keys [] = iconv('GB2312', 'UTF-8//IGNORE', $key);
 			}
 			if(is_array($data[$key]))
@@ -516,7 +518,7 @@ SQL
 				$this->parseResult($data[$key]);
 			}
 		}
-		if(!empty($keys))
+		if($isEncode)
 		{
 			$data = array_combine($keys,$data);
 		}
