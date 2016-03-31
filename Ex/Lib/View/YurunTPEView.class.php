@@ -159,9 +159,9 @@ class YurunTPEView
 							'{',
 							'}'
 						)
-						,'{',$attrs['id']);
+						,$attrs['id']);
 				$argPreName = '$c' .str_replace('.','',uniqid('',true));
-				$argPre = "{$argPreName} = '{$id}';";
+				$argPre = "{$argPreName} = \"{$id}\";";
 				$id = $argPreName;
 			}
 			else
