@@ -40,7 +40,6 @@ return array (
 		                              
 		// 类库
 		'LIB_FOLDER' => 'Lib',		// 类库文件夹名称
-		'LIB_EX_FOLDER' => 'Ex',		// 类库扩展文件夹名称
 		'LIB_DRIVER_FOLDER' => 'Driver',		// 驱动扩展文件夹名称
 		                                 
 		// 配置

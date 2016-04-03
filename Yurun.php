@@ -16,7 +16,7 @@ header('X-Powered-By:YurunPHP ' . YURUN_VERSION);
 // 是否开启调试
 defined('IS_DEBUG') or define('IS_DEBUG', true);
 // 框架根目录
-define('ROOT_PATH', dirname(__FILE__) . '/');
+define('ROOT_PATH', __DIR__ . '/');
 // 框架核心目录
 define('PATH_CORE', ROOT_PATH . 'Core/');
 // 框架核心驱动目录
@@ -63,8 +63,6 @@ if (defined('IS_COMPILED'))
 	// 项目类库
 	defined('APP_LIB') or define('APP_LIB', APP_PATH . Config::get('@.LIB_FOLDER') . '/');
 	// 项目类库
-	defined('APP_LIB_EX') or define('APP_LIB_EX', APP_LIB . Config::get('@.LIB_EX_FOLDER') . '/');
-	// 项目类库
 	defined('APP_LIB_DRIVER') or define('APP_LIB_DRIVER', APP_LIB . Config::get('@.LIB_DRIVER_FOLDER') . '/');
 	// 项目配置
 	defined('APP_CONFIG') or define('APP_CONFIG', APP_PATH . Config::get('@.CONFIG_FOLDER') . '/');
@@ -95,8 +93,6 @@ else
 	defined('APP_TEMPLATE') or define('APP_TEMPLATE', APP_PATH . $GLOBALS['cfg']['TEMPLATE_FOLDER'] . '/');
 	// 项目类库
 	defined('APP_LIB') or define('APP_LIB', APP_PATH . $GLOBALS['cfg']['LIB_FOLDER'] . '/');
-	// 项目类库
-	defined('APP_LIB_EX') or define('APP_LIB_EX', APP_LIB . $GLOBALS['cfg']['LIB_EX_FOLDER'] . '/');
 	// 项目类库
 	defined('APP_LIB_DRIVER') or define('APP_LIB_DRIVER', APP_LIB . $GLOBALS['cfg']['LIB_DRIVER_FOLDER'] . '/');
 	// 项目配置
@@ -309,10 +305,28 @@ function yurunAutoload($class)
 	{
 		// 模版引擎
 		if (			// 其他扩展
-				require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/View/' . $file,			// 模块扩展目录
-						APP_LIB_EX . '/View/' . $file,			// 项目扩展目录
-						PATH_EX_LIB . '/View/' . $file), 			// 框架扩展目录
+				require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/View/' . $file,			// 模块扩展目录
+						APP_LIB . 'View/' . $file,			// 项目扩展目录
+						PATH_EX_LIB . 'View/' . $file), 			// 框架扩展目录
 						false))
+		{
+			return;
+		}
+	}
+	// 页面组件帮助类
+	if ('YurunComponent' === $class)
+	{
+		require_once PATH_EX_LIB . 'Component/' . $file;
+		return;
+	}
+	// 页面组件类
+	if ('YC' === substr($class, 0,2))
+	{
+		if (require_once_multi(array (
+				$currModulePath . Config::get('@.LIB_FOLDER') . '/Component/' . $class . '/' . $file,	// 模块组件目录
+				APP_LIB . 'Component/' . $class . '/' . $file,										// 项目组件目录
+				PATH_EX_LIB . 'Component/' . $class . '/' . $file										// 框架组件目录
+			),false))
 		{
 			return;
 		}
@@ -342,9 +356,9 @@ function yurunAutoload($class)
 	$file2 = '/' . getClassFirst($class) . "/{$file}";
 	if (		// 其他扩展
 	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
-	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/' . $file,		// 模块类库扩展
+	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . $file,		// 模块类库扩展
 	APP_LIB_DRIVER . $file2,		// 项目类库驱动工厂类
-	APP_LIB_EX . $file,		// 项目类库扩展目录
+	APP_LIB . $file,		// 项目类库扩展目录
 	PATH_EX_DRIVER . $file2,		// 框架扩展驱动工厂类
 	PATH_EX_LIB . $file), 		// 框架扩展类库目录
 	false))

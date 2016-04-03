@@ -170,12 +170,12 @@ class YurunTPEView
 			}
 			$argName = '$'.$id;
 			$attrs['innerHtml'] = base64_encode($inner);
-			$attrsStr = Html::arrayToStr($attrs);
+			$attrsStr = YurunComponent::arrayToStr($attrs);
 			$php = <<<PHP
-<?php {$argPre}{$argName}=Html::get{$tag}($attrsStr);if(false!=={$argName}->begin()):?>{$inner}<?php endif;{$argName}->end();?>
+<?php {$argPre}{$argName}=YurunComponent::get{$tag}($attrsStr);if(false!=={$argName}->begin()):?>{$inner}<?php endif;{$argName}->end();?>
 PHP
 			;
-			$php = Html::getTemplatePHP($tag,$php);
+			$php = YurunComponent::getTemplatePHP($tag,$php);
 			return $php;
 		}
 	}
@@ -326,7 +326,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			return "<script src=\"{$src}\" type=\"text/javascript\"></script>";
 		}
 		else 
@@ -339,7 +339,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			return "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$src}\"/>";
 		}
 		else
@@ -352,7 +352,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			unset($attrs['src']);
 			$attrs = $this->parseAttrs($attrs);
 			return "<img src=\"{$src}\"{$attrs}/>";
@@ -368,34 +368,6 @@ PHP
 					'/' . self::$tagLeft . 'url=(.*)\/' . self::$tagRight . '/isU',
 					'<?php echo Dispatch::url(\\1);?>',
 					$html);
-	}
-	private function parseSrc($src)
-	{
-		$str = substr($src,0,7);
-		if('http://'===$str || 'https:/'===$str)
-		{
-			// 绝对地址
-			return $src;
-		}
-		else
-		{
-			$staticPath = Config::get('@.PATH_STATIC','');
-			if('/'!==substr($staticPath,-1,1))
-			{
-				$staticPath .= '/';
-			}
-			$str = substr($staticPath,0,7);
-			if('http://'===$str || 'https:/'===$str)
-			{
-				// 静态文件是某域名下的
-				return $staticPath . $src;
-			}
-			else
-			{
-				// 静态文件是网站根目录下的
-				return Request::getHome($staticPath . $src);
-			}
-		}
 	}
 	private function &parseAttrsString($attrs)
 	{
