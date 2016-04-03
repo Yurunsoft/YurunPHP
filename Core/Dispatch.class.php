@@ -485,9 +485,10 @@ class Dispatch
 	 * @param string $rule        	
 	 * @param array $param        	
 	 * @param mixed $subDomain 子域名前缀
+	 * @param bool	$noEvent 是否强制不触发生成事件，默认为false
 	 * @return type
 	 */
-	public static function url($rule = null, $param = null, $subDomain = null)
+	public static function url($rule = null, $param = null, $subDomain = null, $noEvent = false)
 	{
 		// 支持数组和文本两种数据格式
 		if(empty($param))
@@ -498,147 +499,148 @@ class Dispatch
 		{
 			parse_str($param, $param);
 		}
-		// 事件处理
-		$args=array('rule'=>$rule, 'param'=>$param, 'subDomain'=>$subDomain, 'result'=>'');
-		Event::trigger('YP_URL_CREATE',$args);
-		if (!empty($args['result']))
+		if(!$noEvent)
 		{
-			return $args['result']; // 返回事件处理结果
+			// 事件处理
+			$args = array('rule'=>$rule, 'param'=>$param, 'subDomain'=>$subDomain, 'result'=>&$result);
+			Event::trigger('YP_URL_CREATE',$args);
+			if (!empty($result))
+			{
+				return $result; // 返回事件处理结果
+			}
+		}
+		unset($args,$result);
+		// 解析url
+		$urlInfo = parse_url($rule);
+		// 处理参数
+		if(!empty($urlInfo['query']))
+		{
+			parse_str($urlInfo['query'], $tmpParam);
+			$param = array_merge($tmpParam,$param);
+			unset($tmpParam);
+		}
+		// 处理path
+		try {
+			$mca = explode('/', $urlInfo['path']);
+		} catch (Exception $e) {
+		}
+		if(isset($mca[2])) // 3个成员
+		{
+			$module = ucfirst($mca[0]);
+			$control = ucfirst($mca[1]);
+			$action = $mca[2];
+		}
+		else if(isset($mca[1])) // 2个成员
+		{
+			$module = self::$module;
+			$control = ucfirst($mca[0]);
+			$action = $mca[1];
+		}
+		else if(isset($mca[0]) && '' !== $mca[0]) // 1个成员
+		{
+			$module = self::$module;
+			$control = self::$control;
+			$action = $mca[0];
+		}
+		else // 为空时
+		{
+			$module = self::$module;
+			$control = self::$control;
+			$action = self::$action;
+		}
+		unset($mca);
+		$path = "{$module}/{$control}/{$action}";
+		// 根据路由规则判断
+		$urlPath = self::parseUrlRoute($path,$param,$filename);
+		if(false === $urlPath)
+		{
+			// 文件名
+			$filename = Config::get('@.route.default_file',self::$currFileName);
+			if(Config::get('@.route.hide_default_file') && $filename === Config::get('@.route.default_file'))
+			{
+				$filename = '';
+			}
+			// 没有开启路由或没有匹配到路由
+			if(Config::get('@.PATHINFO_ON') || Config::get('@.URL_PARSE_ON'))
+			{
+				// PATHINFO
+				$urlPath = $path;
+				if('' !== $filename)
+				{
+					$filename = $filename . '/';
+				}
+			}
+			else if(Config::get('@.QUERY_PATHINFO_ON'))
+			{
+				// URL路由解析
+				$param[Config::get('@.PATHINFO_QUERY_NAME')] = $path;
+			}
+			else
+			{
+				// 传统
+				$param[Config::get('@.MODULE_NAME')] = $module;
+				$param[Config::get('@.CONTROL_NAME')] = $control;
+				$param[Config::get('@.ACTION_NAME')] = $action;
+			}
+		}
+		// 协议，http、https……
+		if(isset($urlInfo['scheme']))
+		{
+			$protocol=$urlInfo['scheme'];
 		}
 		else
 		{
-			// 解析url
-			$urlInfo = parse_url($rule);
-			// 处理参数
-			if(!empty($urlInfo['query']))
+			$protocol = Config::get('@.URL_PROTOCOL');
+			if(empty($protocol))
 			{
-				parse_str($urlInfo['query'], $tmpParam);
-				$param = array_merge($tmpParam,$param);
-				unset($tmpParam);
+				$protocol=Request::getProtocol();
 			}
-			// 处理path
-			try {
-				$mca = explode('/', $urlInfo['path']);
-			} catch (Exception $e) {
-			}
-			if(isset($mca[2])) // 3个成员
-			{
-				$module = ucfirst($mca[0]);
-				$control = ucfirst($mca[1]);
-				$action = $mca[2];
-			}
-			else if(isset($mca[1])) // 2个成员
-			{
-				$module = self::$module;
-				$control = ucfirst($mca[0]);
-				$action = $mca[1];
-			}
-			else if(isset($mca[0]) && '' !== $mca[0]) // 1个成员
-			{
-				$module = self::$module;
-				$control = self::$control;
-				$action = $mca[0];
-			}
-			else // 为空时
-			{
-				$module = self::$module;
-				$control = self::$control;
-				$action = self::$action;
-			}
-			unset($mca);
-			$path = "{$module}/{$control}/{$action}";
-			// 根据路由规则判断
-			$urlPath = self::parseUrlRoute($path,$param,$filename);
-			if(false === $urlPath)
-			{
-				// 文件名
-				$filename = Config::get('@.route.default_file',self::$currFileName);
-				if(Config::get('@.route.hide_default_file') && $filename === Config::get('@.route.default_file'))
-				{
-					$filename = '';
-				}
-				// 没有开启路由或没有匹配到路由
-				if(Config::get('@.PATHINFO_ON') || Config::get('@.URL_PARSE_ON'))
-				{
-					// PATHINFO
-					$urlPath = $path;
-					if('' !== $filename)
-					{
-						$filename = $filename . '/';
-					}
-				}
-				else if(Config::get('@.QUERY_PATHINFO_ON'))
-				{
-					// URL路由解析
-					$param[Config::get('@.PATHINFO_QUERY_NAME')] = $path;
-				}
-				else
-				{
-					// 传统
-					$param[Config::get('@.MODULE_NAME')] = $module;
-					$param[Config::get('@.CONTROL_NAME')] = $control;
-					$param[Config::get('@.ACTION_NAME')] = $action;
-				}
-			}
-			// 协议，http、https……
-			if(isset($urlInfo['scheme']))
-			{
-				$protocol=$urlInfo['scheme'];
-			}
-			else
-			{
-				$protocol = Config::get('@.URL_PROTOCOL');
-				if(empty($protocol))
-				{
-					$protocol=Request::getProtocol();
-				}
-			}
-			// 域名
-			if(isset($urlInfo['host']))
-			{
-				$domain = $urlInfo['host'];
-			}
-			else
-			{
-				$domain = Config::get('@.DOMAIN');
-				if(empty($domain))
-				{
-					$domain = $_SERVER['HTTP_HOST'] . strtr(dirname($_SERVER['SCRIPT_NAME']), '\\','/');
-				}
-			}
-			// 子域名
-			if(is_string($subDomain))
-			{
-				$domain = $subDomain . '.' . $domain;
-			}
-			// 去除域名后尾的/
-			if('/' === substr($domain,-1,1))
-			{
-				$domain = substr($domain,0,-1);
-			}
-			if(!empty($param))
-			{
-				if(false === strpos($urlPath,'?'))
-				{
-					$query = '?' . http_build_query($param);
-				}
-				else
-				{
-					$query = '&' . http_build_query($param);
-				}
-			}
-			// 锚点支持
-			if(isset($urlInfo['fragment']))
-			{
-				$fragment = '#' . $urlInfo['fragment'];
-			}
-			else 
-			{
-				$fragment = '';
-			}
-			$url = "{$protocol}{$domain}/{$filename}{$urlPath}{$query}{$fragment}";
-			return $url;
 		}
+		// 域名
+		if(isset($urlInfo['host']))
+		{
+			$domain = $urlInfo['host'];
+		}
+		else
+		{
+			$domain = Config::get('@.DOMAIN');
+			if(empty($domain))
+			{
+				$domain = $_SERVER['HTTP_HOST'] . strtr(dirname($_SERVER['SCRIPT_NAME']), '\\','/');
+			}
+		}
+		// 子域名
+		if(is_string($subDomain))
+		{
+			$domain = $subDomain . '.' . $domain;
+		}
+		// 去除域名后尾的/
+		if('/' === substr($domain,-1,1))
+		{
+			$domain = substr($domain,0,-1);
+		}
+		if(!empty($param))
+		{
+			if(false === strpos($urlPath,'?'))
+			{
+				$query = '?' . http_build_query($param);
+			}
+			else
+			{
+				$query = '&' . http_build_query($param);
+			}
+		}
+		// 锚点支持
+		if(isset($urlInfo['fragment']))
+		{
+			$fragment = '#' . $urlInfo['fragment'];
+		}
+		else 
+		{
+			$fragment = '';
+		}
+		$url = "{$protocol}{$domain}/{$filename}{$urlPath}{$query}{$fragment}";
+		return $url;
 	}
 	/**
 	 * 处理URL路由

@@ -501,14 +501,16 @@ SQL
 	{
 		$oldKeys = array_keys($data);
 		$keys = array();
+		$isEncode = false;
 		foreach($oldKeys as $key)
 		{
-			if(is_numeric($str))
+			if(is_numeric($key))
 			{
 				$keys [] = $key;
 			}
 			else
 			{
+				$isEncode = true;
 				$keys [] = iconv('GB2312', 'UTF-8//IGNORE', $key);
 			}
 			if(is_array($data[$key]))
@@ -516,7 +518,7 @@ SQL
 				$this->parseResult($data[$key]);
 			}
 		}
-		if(!empty($keys))
+		if($isEncode)
 		{
 			$data = array_combine($keys,$data);
 		}
@@ -712,7 +714,7 @@ SQL
 			$this->parseLimit($limit,$start,$end);
 			if($start==0)
 			{
-				$fields = 'top ' . $end . ' ' . $this->parseField(isset($option['field']) ? $option['field'] : '*');
+				$fields = 'top ' . $end . ' ' . $this->parseSelectField($option);
 			}
 			else
 			{
@@ -740,7 +742,7 @@ EOF
 		}
 		else 
 		{
-			$fields = $this->parseField(isset($option['field']) ? $option['field'] : '*');
+			$fields = $this->parseSelectField($option);
 		}
 		$where = $this->parseCondition(isset($option['where']) ? $option['where'] : '');
 		if ('' !== $where)
@@ -780,6 +782,21 @@ EOF
 				$start = 0;
 				$end = $limit[0];
 			}
+		}
+	}
+	/**
+	 * 处理order field
+	 * @param mixed $data
+	 */
+	public function parseOrderField($data)
+	{
+		if(is_array($data))
+		{
+			return 'CHARINDEX(\'|\' + LTRIM(RTRIM(' . $data[0] . ')) + \'|\', \'|\'' . $this->filterValue($data[1]) . '|\')';
+		}
+		else
+		{
+			return $data;
 		}
 	}
 }

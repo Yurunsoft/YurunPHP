@@ -1,5 +1,5 @@
 <?php
-class DefaultView
+class YurunTPEView
 {
 	private static $tags = array(
 		'if',
@@ -54,10 +54,9 @@ class DefaultView
 		// URL标签支持
 		$this->parseUrl($html);
 		// 扩展控件
-		$this->pregParseTag2($html,self::$controlsPatterns1);
-		$this->pregParseTag2($html,self::$controlsPatterns2);
+		$this->pregParseTagEx($html,array(self::$controlsPatterns1,self::$controlsPatterns2));
 	}
-	private function pregParseTag2(&$html,$pattern)
+	private function pregParseTagEx(&$html,$pattern)
 	{
 		$_this = &$this;
 		do
@@ -80,16 +79,13 @@ class DefaultView
 							return $matches[0];
 						}
 					},
-					$html,
-					-1,
-					$sum);
+					$html);
 		}
 		while($count > 0);
 	}
 	private function parseTag(&$html)
 	{
-		$this->pregParseTag($html,self::$tagsPatterns1);
-		$this->pregParseTag($html,self::$tagsPatterns2);
+		$this->pregParseTag($html,array(self::$tagsPatterns1,self::$tagsPatterns2));
 	}
 	private function pregParseTag(&$html,$pattern)
 	{
@@ -113,9 +109,7 @@ class DefaultView
 							return $matches[0];
 						}
 					},
-					$html,
-					-1,
-					$sum);
+					$html);
 		}
 		while($count > 0);
 	}
@@ -156,10 +150,16 @@ class DefaultView
 			}
 			if(isset($attrs['id']))
 			{
-				$id = str_ireplace(self::$tagLeft . 'php' . self::$tagRight,'{',$attrs['id']);
-				$id = str_ireplace(self::$tagLeft . '/php' . self::$tagRight,'}',$id);
-				$id = str_ireplace(self::$tagLeft . 'php','{',$id);
-				$id = str_replace('?' . self::$tagRight,'}',$id);
+				$id = str_ireplace(
+						array(
+							self::$tagLeft . 'php' . self::$tagRight,
+							self::$tagLeft . '/php' . self::$tagRight
+						),
+						array(
+							'{',
+							'}'
+						)
+						,$attrs['id']);
 				$argPreName = '$c' .str_replace('.','',uniqid('',true));
 				$argPre = "{$argPreName} = \"{$id}\";";
 				$id = $argPreName;
@@ -170,27 +170,25 @@ class DefaultView
 			}
 			$argName = '$'.$id;
 			$attrs['innerHtml'] = base64_encode($inner);
-			$attrsStr = Html::arrayToStr($attrs);
+			$attrsStr = YurunComponent::arrayToStr($attrs);
 			$php = <<<PHP
-<?php {$argPre}{$argName}=Html::get{$tag}($attrsStr);if(false!=={$argName}->begin()):?>{$inner}<?php endif;{$argName}->end();?>
+<?php {$argPre}{$argName}=YurunComponent::get{$tag}($attrsStr);if(false!=={$argName}->begin()):?>{$inner}<?php endif;{$argName}->end();?>
 PHP
 			;
-			$php = Html::getTemplatePHP($tag,$php);
+			$php = YurunComponent::getTemplatePHP($tag,$php);
 			return $php;
 		}
 	}
 	private function parsePrint(&$html)
 	{
-		// 输出变量
- 		$html = preg_replace_callback(
- 				'/' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_RIGHT') . '/isU',
- 				function($matches){
- 					return '<?php echo ' . $matches[1] . ';?>';
- 				},
- 				$html);
-		// 输出常量
+		$patterns = array(
+			// 输出变量
+			'/' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_VAR_TAG_RIGHT') . '/isU',
+			// 输出常量
+			'/' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_RIGHT') . '/isU',
+		);
 		$html = preg_replace_callback(
-				'/' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_CONST_TAG_RIGHT') . '/isU',
+				$patterns,
 				function($matches){
 					return '<?php echo ' . $matches[1] . ';?>';
 				},
@@ -210,8 +208,10 @@ PHP
 	}
 	private function parsePHP(&$html)
 	{
-		$html = str_ireplace(self::$tagLeft . 'php' . self::$tagRight,'<?php ',$html);
-		$html = str_ireplace(self::$tagLeft . '/php' . self::$tagRight,'?>',$html);
+		$html = str_ireplace(
+				array(self::$tagLeft . 'php' . self::$tagRight,self::$tagLeft . '/php' . self::$tagRight),
+				array('<?php ','?>'),
+				$html);
 	}
 	private function optimizePHP(&$html)
 	{
@@ -326,7 +326,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			return "<script src=\"{$src}\" type=\"text/javascript\"></script>";
 		}
 		else 
@@ -339,7 +339,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			return "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$src}\"/>";
 		}
 		else
@@ -352,7 +352,7 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = $this->parseSrc($attrs['src']);
+			$src = parseStatic($attrs['src']);
 			unset($attrs['src']);
 			$attrs = $this->parseAttrs($attrs);
 			return "<img src=\"{$src}\"{$attrs}/>";
@@ -364,41 +364,10 @@ PHP
 	}
 	public function parseUrl(&$html)
 	{
-		$html = preg_replace_callback(
+		$html = preg_replace(
 					'/' . self::$tagLeft . 'url=(.*)\/' . self::$tagRight . '/isU',
-					function($matches){
- 						return '<?php echo Dispatch::url(' . $matches[1] . ');?>';
-					},
-					$html,
-					-1);
-	}
-	private function parseSrc($src)
-	{
-		$str = substr($src,0,7);
-		if('http://'===$str || 'https:/'===$str)
-		{
-			// 绝对地址
-			return $src;
-		}
-		else
-		{
-			$staticPath = Config::get('@.PATH_STATIC','');
-			if('/'!==substr($staticPath,-1,1))
-			{
-				$staticPath .= '/';
-			}
-			$str = substr($staticPath,0,7);
-			if('http://'===$str || 'https:/'===$str)
-			{
-				// 静态文件是某域名下的
-				return $staticPath . $src;
-			}
-			else
-			{
-				// 静态文件是网站根目录下的
-				return Request::getHome($staticPath . $src);
-			}
-		}
+					'<?php echo Dispatch::url(\\1);?>',
+					$html);
 	}
 	private function &parseAttrsString($attrs)
 	{
@@ -436,4 +405,4 @@ PHP
 		$html = str_replace(self::$constsKey,self::$constsValue,$html);
 	}
 }
-DefaultView::init();
+YurunTPEView::init();

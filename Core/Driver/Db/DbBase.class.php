@@ -266,7 +266,7 @@ abstract class DbBase
 			$where = ' where ' . $where;
 		}
 		return 'select ' . $this->parseDistinct(isset($option['distinct']) ? $option['distinct'] : '')
-				. $this->parseField(isset($option['field']) ? $option['field'] : '*')
+				. $this->parseSelectField($option)
 				. ' from '
 				. $this->parseField(isset($option['from']) ? $option['from'] : '')
 				. $this->parseJoin(isset($option['join']) ? $option['join'] : array())
@@ -277,6 +277,45 @@ abstract class DbBase
 	}
 	
 	/**
+	 * 处理select查询用的字段
+	 * @param unknown $option
+	 * @return string
+	 */
+	public function parseSelectField($option)
+	{
+		if(isset($option['field']))
+		{
+			if(is_array($option['field']))
+			{
+				foreach($option['field'] as $item)
+				{
+					if(is_array($item))
+					{
+						$item = $this->parseField($item);
+					}
+					if(isset($field))
+					{
+						$field .= ',' . $item;
+					}
+					else
+					{
+						$field = $item;
+					}
+				}
+			}
+			else
+			{
+				$field = $option['field'];
+			}
+		}
+		else
+		{
+			$field = '*';
+		}
+		return $field;
+	}
+	
+	/**
 	 * 查询取值
 	 *
 	 * @param string $sql        	
@@ -284,15 +323,7 @@ abstract class DbBase
 	 */
 	public function queryValue($sql,$params = array(),$isReturnParams = false)
 	{
-		$data = $this->query($sql,$params,$isReturnParams);
-		if (isset($data[0]))
-		{
-			return $data[0];
-		}
-		else
-		{
-			return false;
-		}
+		return array_shift($this->query($sql,$params,$isReturnParams));
 	}
 	
 	/**
@@ -393,7 +424,7 @@ abstract class DbBase
 			}
 			else if(is_string($value))
 			{
-				$fields[] = $value;
+				$fields[] = $this->parseNameAlias($value);
 			}
 		}
 		$fields = implode(',', $fields);
@@ -552,14 +583,20 @@ abstract class DbBase
 		{
 			return '';
 		}
-		if (is_string($group))
-		{
-			return ' group by ' . $group;
-		}
 		$result = '';
-		foreach ($group as $key => $value)
+		foreach ($group as $item)
 		{
-			$result .= $this->parseField($value) . ',';
+			if(is_array($item))
+			{
+				foreach($item as $key => $value)
+				{
+					$result .= $this->parseField($value) . ',';
+				}
+			}
+			else
+			{
+				$result .= $item . ',';
+			}
 		}
 		if ('' === $result)
 		{
@@ -579,7 +616,7 @@ abstract class DbBase
 	 */
 	public function parseHaving($having)
 	{
-		$result = $this->parseCondition(array($having));
+		$result = $this->parseCondition($having);
 		if ('' === $result)
 		{
 			return $result;
@@ -602,20 +639,34 @@ abstract class DbBase
 		{
 			return '';
 		}
-		if (is_string($order))
-		{
-			return ' order by ' . $order;
-		}
 		$result = '';
-		foreach ($order as $key => $value)
+		foreach ($order as $item)
 		{
-			if (is_numeric($key))
+			if(is_array($item))
 			{
-				$result .= $this->parseField($value).',';
+				if(isset($item['#orderfield#']) && $item['#orderfield#'])
+				{
+					// order field
+					$result .= $this->parseOrderField($item['data']) . ',';
+				}
+				else 
+				{
+					foreach($item as $key => $value)
+					{
+						if (is_numeric($key))
+						{
+							$result .= $this->parseField($value).',';
+						}
+						else
+						{
+							$result .= $this->parseField($key) . ' ' . $value . ',';
+						}
+					}
+				}
 			}
 			else
 			{
-				$result .= $this->parseField($key) . ' ' . $value . ',';
+				$result .= $item . ',';
 			}
 		}
 		if ('*,' === $result || ''===$result)
@@ -842,4 +893,9 @@ abstract class DbBase
 	 * @param string $table        	
 	 */
 	abstract public function &getFields($table);
+	/**
+	 * 处理order field
+	 * @param mixed $data
+	 */
+	abstract public function parseOrderField($data);
 }

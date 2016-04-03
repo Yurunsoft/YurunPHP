@@ -40,7 +40,6 @@ return array (
 		                              
 		// 类库
 		'LIB_FOLDER' => 'Lib',		// 类库文件夹名称
-		'LIB_EX_FOLDER' => 'Ex',		// 类库扩展文件夹名称
 		'LIB_DRIVER_FOLDER' => 'Driver',		// 驱动扩展文件夹名称
 		                                 
 		// 配置
@@ -94,11 +93,15 @@ return array (
 		'TEMPLATE_ENGINE_ON'		=>	true,
 		'TEMPLATE_CACHE_ON'			=>	true,
 		'TEMPLATE_CACHE_EXPIRE'		=>	0,
-		'TEMPLATE_ENGINE'			=>	'DefaultView',
+		'TEMPLATE_ENGINE'			=>	'YurunTPEView',
 		'TEMPLATE_TAG_LEFT'			=>	'<',
 		'TEMPLATE_TAG_RIGHT'		=>	'>',
-		'TEMPLATE_ECHO_TAG_LEFT'	=>	'<%=',
-		'TEMPLATE_ECHO_TAG_RIGHT'	=>	'%>',
+		'TEMPLATE_ECHO_VAR_TAG_LEFT'		=>	'<%=',
+		'TEMPLATE_ECHO_VAR_TAG_RIGHT'		=>	'%>',
+		'TEMPLATE_ECHO_CONST_TAG_LEFT'		=>	'<CONST:',
+		'TEMPLATE_ECHO_CONST_TAG_RIGHT'		=>	'>',
+		'TEMPLATE_ECHO_CONFIG_TAG_LEFT'		=>	'<CONFIG:',
+		'TEMPLATE_ECHO_CONFIG_TAG_RIGHT'	=>	'>',
 		
 		// 静态文件路径
 		'PATH_STATIC' => 'Static'

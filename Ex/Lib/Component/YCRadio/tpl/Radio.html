@@ -1,0 +1,21 @@
+<?php
+if('default' ===$this->theme)
+{
+?>
+<label><?php echo $this->left_text;?><input type="radio"<?php echo $this->attrsStr;?>/><?php echo $this->right_text;?></label>
+<?php
+}
+else if('hdw' ===$this->theme)
+{
+?>
+<span name="radiospan<?php echo $this->name;?>" class="radio<?php if($this->checked){?> radio-checked<?php }?>"<?php echo $this->attrsStr;?>> 
+			<?php echo $this->left_text;?>
+			<input type="radio"<?php echo $this->attrsStr;?>/>
+			<?php echo $this->right_text;?>
+		</span>
+		<script>
+		control.initRadio('<?php echo $this->name;?>');
+		</script>
+<?php
+}
+?>

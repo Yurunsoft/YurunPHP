@@ -16,7 +16,7 @@ header('X-Powered-By:YurunPHP ' . YURUN_VERSION);
 // 是否开启调试
 defined('IS_DEBUG') or define('IS_DEBUG', true);
 // 框架根目录
-define('ROOT_PATH', dirname(__FILE__) . '/');
+define('ROOT_PATH', __DIR__ . '/');
 // 框架核心目录
 define('PATH_CORE', ROOT_PATH . 'Core/');
 // 框架核心驱动目录
@@ -43,6 +43,14 @@ define('PATH_LANG', ROOT_PATH . 'Lang/');
 define('PATH_TEMPLATE', ROOT_PATH . 'Template/');
 // 项目根目录
 defined('APP_PATH') or define('APP_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . '/');
+// 站点根目录
+$webroot = dirname($_SERVER['SCRIPT_NAME']);
+if('/' === $webroot || '\\' === $webroot)
+{
+	$webroot = '';
+}
+define('WEBROOT',(isset($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $webroot);
+unset($webroot);
 if (defined('IS_COMPILED'))
 {
 	// {compile}
@@ -54,8 +62,6 @@ if (defined('IS_COMPILED'))
 	defined('APP_TEMPLATE') or define('APP_TEMPLATE', APP_PATH . Config::get('@.TEMPLATE_FOLDER') . '/');
 	// 项目类库
 	defined('APP_LIB') or define('APP_LIB', APP_PATH . Config::get('@.LIB_FOLDER') . '/');
-	// 项目类库
-	defined('APP_LIB_EX') or define('APP_LIB_EX', APP_LIB . Config::get('@.LIB_EX_FOLDER') . '/');
 	// 项目类库
 	defined('APP_LIB_DRIVER') or define('APP_LIB_DRIVER', APP_LIB . Config::get('@.LIB_DRIVER_FOLDER') . '/');
 	// 项目配置
@@ -87,8 +93,6 @@ else
 	defined('APP_TEMPLATE') or define('APP_TEMPLATE', APP_PATH . $GLOBALS['cfg']['TEMPLATE_FOLDER'] . '/');
 	// 项目类库
 	defined('APP_LIB') or define('APP_LIB', APP_PATH . $GLOBALS['cfg']['LIB_FOLDER'] . '/');
-	// 项目类库
-	defined('APP_LIB_EX') or define('APP_LIB_EX', APP_LIB . $GLOBALS['cfg']['LIB_EX_FOLDER'] . '/');
 	// 项目类库
 	defined('APP_LIB_DRIVER') or define('APP_LIB_DRIVER', APP_LIB . $GLOBALS['cfg']['LIB_DRIVER_FOLDER'] . '/');
 	// 项目配置
@@ -138,6 +142,12 @@ else
  */
 function printError($err)
 {
+	static $already;
+	if(null !== $already)
+	{
+		return;
+	}
+	$already = true;
 	if(is_array($err))
 	{// 错误数组
 		$error=$err;
@@ -195,7 +205,6 @@ register_shutdown_function(function(){
 	Log::save();
 });
 set_error_handler(function($errno, $errstr, $errfile, $errline){
-	
 	if(E_ERROR === $errno || E_PARSE === $errno || E_CORE_ERROR === $errno || E_COMPILE_ERROR === $errno || E_USER_ERROR === $errno)
 	{
 		ob_end_clean();
@@ -229,6 +238,16 @@ Config::create('Plugin', 'php', APP_CONFIG . 'plugin.php');
 date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 注册autoload方法，自动加载核心类
 spl_autoload_register('yurunAutoload');
+$staticPath = Config::get('@.PATH_STATIC');
+$str = substr($staticPath,0,7);
+if('http://'!==$str && 'https:/'!==$str)
+{
+	// 静态文件是网站根目录下的
+	$staticPath = WEBROOT . '/' . $staticPath;
+}
+// 静态文件目录
+define('STATIC_PATH',$staticPath);
+unset($staticPath);
 // 语言包支持
 Lang::init();
 // 插件扩展初始化
@@ -286,25 +305,46 @@ function yurunAutoload($class)
 	{
 		// 模版引擎
 		if (			// 其他扩展
-				require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/View/' . $file,			// 模块扩展目录
-						APP_LIB_EX . '/View/' . $file,			// 项目扩展目录
-						PATH_EX_LIB . '/View/' . $file), 			// 框架扩展目录
+				require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/View/' . $file,			// 模块扩展目录
+						APP_LIB . 'View/' . $file,			// 项目扩展目录
+						PATH_EX_LIB . 'View/' . $file), 			// 框架扩展目录
 						false))
+		{
+			return;
+		}
+	}
+	// 页面组件帮助类
+	if ('YurunComponent' === $class)
+	{
+		require_once PATH_EX_LIB . 'Component/' . $file;
+		return;
+	}
+	// 页面组件类
+	if ('YC' === substr($class, 0,2))
+	{
+		if (require_once_multi(array (
+				$currModulePath . Config::get('@.LIB_FOLDER') . '/Component/' . $class . '/' . $file,	// 模块组件目录
+				APP_LIB . 'Component/' . $class . '/' . $file,										// 项目组件目录
+				PATH_EX_LIB . 'Component/' . $class . '/' . $file										// 框架组件目录
+			),false))
 		{
 			return;
 		}
 	}
 	// 自定义分层支持
 	$layers = Config::get('@.CUSTOM_LAYER');
+	$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
+	$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
 	foreach($layers as $layer)
 	{
 		if ($layer === substr($class, - strlen($layer)))
 		{
+			$filePath = $layer . '/' . $file;
 			// 模型
 			if (			// 其他扩展
 					require_once_multi(array (
-						$currModulePath . $layer . '/' . $file,	// 模块分层目录
-						APP_LIB . $layer . '/' . $file,			// 项目分层目录
+						$layerModulePath . $filePath,	// 模块分层目录
+						$layerAppPath . $filePath,			// 项目分层目录
 					),
 					false))
 			{
@@ -312,13 +352,13 @@ function yurunAutoload($class)
 			}
 		}
 	}
-	unset($layers,$layer);
+	unset($layers,$layer,$layerModulePath,$layerAppPath,$filePath);
 	$file2 = '/' . getClassFirst($class) . "/{$file}";
 	if (		// 其他扩展
 	require_once_multi(array ($currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_DRIVER_FOLDER') . $file2,		// 模块类库驱动工厂类
-	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . Config::get('@.LIB_EX_FOLDER') . '/' . $file,		// 模块类库扩展
+	$currModulePath . Config::get('@.LIB_FOLDER') . '/' . $file,		// 模块类库扩展
 	APP_LIB_DRIVER . $file2,		// 项目类库驱动工厂类
-	APP_LIB_EX . $file,		// 项目类库扩展目录
+	APP_LIB . $file,		// 项目类库扩展目录
 	PATH_EX_DRIVER . $file2,		// 框架扩展驱动工厂类
 	PATH_EX_LIB . $file), 		// 框架扩展类库目录
 	false))

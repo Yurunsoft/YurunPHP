@@ -1,0 +1,27 @@
+<?php
+class PagebarUrl
+{
+	private $url_param;
+	private $url_rule;
+	private $page_field;
+	private $show_field;
+	private $show;
+	public function __construct($url_rule,$url_param,$page_field,$show_field,$show)
+	{
+		$this->url_rule = $url_rule;
+		$this->url_param = $url_param;
+		$this->page_field = $page_field;
+		$this->show_field = $show_field;
+		$this->show = $show;
+	}
+	public function get($page,$pageShow=null)
+	{
+		$param=$this->url_param;
+		$param[$this->page_field]=$page;
+		$param[$this->show_field]=null===$pageShow?$this->show:$pageShow;
+		return Dispatch::url($this->url_rule,$param);
+	}
+}
+global $url;
+$url = new PagebarUrl($this->url_rule,$this->url_param,$this->page_field,$this->page_show_field,$this->page_show);
+?>

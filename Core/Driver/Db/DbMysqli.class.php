@@ -262,7 +262,7 @@ class DbMysqli extends DbBase
 			{
 				if($result = $this->db->use_result())
 				{
-					$this->results[] = $result->fetch_all();
+					$this->results[] = $result->fetch_all(MYSQLI_ASSOC);
 				}
 			}
 			while($this->db->next_result());
@@ -527,6 +527,21 @@ class DbMysqli extends DbBase
 			{
 				return $result;
 			}
+		}
+	}
+	/**
+	 * 处理order field
+	 * @param mixed $data
+	 */
+	public function parseOrderField($data)
+	{
+		if(is_array($data))
+		{
+			return 'field(' . $data[0] . ',' . $this->filterValue($data[1]) . ')';
+		}
+		else
+		{
+			return $data;
 		}
 	}
 }

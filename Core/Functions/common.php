@@ -332,3 +332,116 @@ function &autoLoadControl($control,$action)
 		return $result;
 	}
 }
+/**
+ * 根据组名获取数据值，比如<input type="text" name="group.title"/>，传入group
+ * @param unknown $group
+ * @return multitype:NULL
+ */
+function &getDataByGroup($group)
+{
+	$fields = getFieldsByGroup($group);
+	$data = array();
+	// 遍历取出字段对应的数据
+	foreach($fields as $key => $field)
+	{
+		$data[$field] = Request::all($key);
+	}
+	return $data;
+}
+/**
+ * 根据组名获取数据值，比如<input type="text" name="group.title[]"/>，传入group
+ * @param unknown $group
+ * @return Ambigous <multitype:multitype: , unknown>
+ */
+function &getDataArrayByGroup($group)
+{
+	$fields = getFieldsByGroup($group);
+	$data = array();
+	// 遍历取出字段对应的数据
+	foreach($fields as $key => $field)
+	{
+		$arr = Request::all($key,array());
+		$s = count($arr);
+		for($i=0;$i<$s;++$i)
+		{
+			if(!isset($data[$i]))
+			{
+				$data[$i] = array();
+			}
+			$data[$i][$field] = $arr[$i];
+		}
+	}
+	return $data;
+}
+/**
+ * 根据组名获取字段们
+ * @param unknown $group
+ * @return multitype:multitype:unknown
+ */
+function &getFieldsByGroup($group)
+{
+	$group = $group . '_';
+	$groupLen = strlen($group);
+	$fields = array();
+	$data = Request::all();
+	foreach($data as $key=>$value)
+	{
+		if(substr($key,0,$groupLen)===$group)
+		{
+			$fieldKey = substr($key,$groupLen);
+			$fields[$key] = $fieldKey;
+		}
+	}
+	return $fields;
+}
+/**
+ * 将parse_url结果组合成为字符串
+ * @param unknown $parsed_url
+ * @return string
+ */
+function unparse_url($parsed_url)
+{
+	$scheme   = isset($parsed_url['scheme']) ? $parsed_url['scheme'] . '://' : '';
+	$host     = isset($parsed_url['host']) ? $parsed_url['host'] : '';
+	$port     = isset($parsed_url['port']) ? ':' . $parsed_url['port'] : '';
+	$user     = isset($parsed_url['user']) ? $parsed_url['user'] : '';
+	$pass     = isset($parsed_url['pass']) ? ':' . $parsed_url['pass']  : '';
+	$pass     = ($user || $pass) ? "$pass@" : '';
+	$path     = isset($parsed_url['path']) ? $parsed_url['path'] : '';
+	$query    = isset($parsed_url['query']) ? '?' . $parsed_url['query'] : '';
+	$fragment = isset($parsed_url['fragment']) ? '#' . $parsed_url['fragment'] : '';
+	return "$scheme$user$pass$host$port$path$query$fragment";
+}
+/**
+ * 获取静态文件绝对路径
+ * @param unknown $src
+ * @return unknown|string
+ */
+function parseStatic($src)
+{
+	$str = substr($src,0,7);
+	if('http://'===$str || 'https:/'===$str)
+	{
+		// 绝对地址
+		return $src;
+	}
+	else
+	{
+		$staticPath = Config::get('@.PATH_STATIC','');
+		if('/'!==substr($staticPath,-1,1))
+		{
+			$staticPath .= '/';
+		}
+		$str = substr($staticPath,0,7);
+		if('http://'===$str || 'https:/'===$str)
+		{
+			// 静态文件是某域名下的
+			return $staticPath . $src;
+		}
+		else
+		{
+			// 静态文件是网站根目录下的
+			return Request::getHome($staticPath . $src);
+		}
+	}
+}
