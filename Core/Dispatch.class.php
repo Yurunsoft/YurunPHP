@@ -430,7 +430,7 @@ class Dispatch
 				$value = Request::all($param->name);
 				if(false === $value)
 				{
-					self::$data[] = null;
+					self::$data[] = $param->getDefaultValue();
 				}
 				else 
 				{
