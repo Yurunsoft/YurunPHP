@@ -472,28 +472,14 @@ class DbMysqli extends DbBase
 	 */
 	public function rollback()
 	{
-		if (PHP_VERSION >= 5.5)
-		{
-			$this->db->rollback();
-		}
-		else
-		{
-			$this->execute('rollback');
-		}
+		$this->db->rollback();
 	}
 	/**
 	 * 提交事务
 	 */
 	public function commit()
 	{
-		if (PHP_VERSION >= 5.5)
-		{
-			$this->db->commit();
-		}
-		else
-		{
-			$this->execute('commit');
-		}
+		$this->db->commit();
 	}
 	/**
 	 * 解析sql文件，支持返回sql数组，或者使用回调函数
