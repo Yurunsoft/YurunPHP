@@ -1,5 +1,5 @@
 <?php
-class YCRadio extends HtmlCheckRadioBase
+class YCRadio extends YCCheckRadioBase
 {
 	public function __construct($attrs,$tagName)
 	{

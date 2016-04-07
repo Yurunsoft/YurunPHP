@@ -445,3 +445,12 @@ function parseStatic($src)
 		}
 	}
 }
+/**
+ * xml转数组
+ * @param unknown $xmlstring
+ * @return mixed
+ */
+function xmlToArray($xmlstring)
+{
+	return json_decode(json_encode((array)simplexml_load_string($xmlstring)), true);
+}

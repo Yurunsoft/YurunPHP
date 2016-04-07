@@ -16,7 +16,7 @@ class YCCol extends YCBase
 	public function prepareView()
 	{
 		parent::prepareView();
-		$this->_table = HtmlTable::getTable();
+		$this->_table = YCTable::getTable();
 		$this->_table->addColumn($this);
 	}
 	/**

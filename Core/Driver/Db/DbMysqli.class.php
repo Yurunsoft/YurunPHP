@@ -458,21 +458,42 @@ class DbMysqli extends DbBase
 	 */
 	public function begin()
 	{
-		$this->db->begin_transaction();
+		if (PHP_VERSION >= 5.5)
+		{
+			$this->db->begin_transaction();
+		}
+		else
+		{
+			$this->execute('begin');
+		}
 	}
 	/**
 	 * 回滚事务
 	 */
 	public function rollback()
 	{
-		$this->db->rollback();
+		if (PHP_VERSION >= 5.5)
+		{
+			$this->db->rollback();
+		}
+		else
+		{
+			$this->execute('rollback');
+		}
 	}
 	/**
 	 * 提交事务
 	 */
 	public function commit()
 	{
-		$this->db->commit();
+		if (PHP_VERSION >= 5.5)
+		{
+			$this->db->commit();
+		}
+		else
+		{
+			$this->execute('commit');
+		}
 	}
 	/**
 	 * 解析sql文件，支持返回sql数组，或者使用回调函数

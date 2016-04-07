@@ -14,7 +14,7 @@ class YCDatacol extends YCBase
 	 */
 	public function prepareView()
 	{
-		$_table = &HtmlTable::getTable();
+		$_table = &YCTable::getTable();
 		$this->rowData = current($_table->dataset);
 		$this->datasetIndex = $_table->datasetIndex + 1;
 		parent::prepareView();

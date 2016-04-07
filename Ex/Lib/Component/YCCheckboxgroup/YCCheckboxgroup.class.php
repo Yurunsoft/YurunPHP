@@ -1,4 +1,4 @@
 <?php
-class YCCheckboxgroup extends HtmlCheckRadioGroupBase
+class YCCheckboxgroup extends YCCheckRadioGroupBase
 {
 }
