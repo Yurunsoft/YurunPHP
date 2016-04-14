@@ -67,11 +67,11 @@ class YCTable extends YCBase
 	public function _firstDataset()
 	{
 		$this->datasetIndex = 0;
-		return reset(&$this->dataset);
+		return reset($this->dataset);
 	}
 	public function _nextDataset()
 	{
 		++$this->datasetIndex;
-		return next(&$this->dataset);
+		return next($this->dataset);
 	}
 }
