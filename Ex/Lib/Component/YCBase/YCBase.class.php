@@ -112,7 +112,7 @@ class YCBase extends ArrayData
 	 */
 	public function end()
 	{
-		if($printEnd)
+		if($this->printEnd)
 		{
 			echo '</' . $this->tagName . '>';
 		}

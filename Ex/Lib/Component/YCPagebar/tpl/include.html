@@ -18,7 +18,6 @@ class PagebarUrl
 	{
 		$param=$this->url_param;
 		$param[$this->page_field]=$page;
-		$param[$this->show_field]=null===$pageShow?$this->show:$pageShow;
 		return Dispatch::url($this->url_rule,$param);
 	}
 }

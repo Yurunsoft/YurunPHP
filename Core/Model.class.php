@@ -30,7 +30,7 @@ class Model extends ArrayData
 	// 连贯操作
 	protected $options = array ();
 	// 连贯操作方法名
-	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join');
+	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page');
 	// 连贯操作函数
 	protected $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
@@ -120,6 +120,18 @@ class Model extends ArrayData
 	public function &select($first = false)
 	{
 		return $this->db->select($this->getOption(), $first);
+	}
+	
+	/**
+	 * 分页查询，获取总记录数
+	 * @param unknown $recordCount
+	 */
+	public function &selectPage($page = 1,$show = 10,&$recordCount = 0)
+	{
+		$option = $this->options;
+		$recordCount = $this->count();
+		$this->options = $option;
+		return $this->db->select($this->page($page,$show)->getOption(), false);
 	}
 	
 	/**
@@ -263,6 +275,13 @@ class Model extends ArrayData
 					else
 					{
 						$this->options['limit'] = $arguments[0];
+					}
+				}
+				else if('page' === $name)
+				{
+					if(isset($arguments[1]))
+					{
+						$this->options['limit'] = array($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
 					}
 				}
 				else if('distinct' === $name)

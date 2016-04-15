@@ -16,6 +16,7 @@ class YCTable extends YCBase
 	private static $stack = array();		// 堆栈
 	private static $stackSize = 0;
 	private $_cols = array();		// 列们
+	protected $printEnd = true;
 	public function __construct($attrs,$tagName)
 	{
 		parent::__construct($attrs,$tagName);
