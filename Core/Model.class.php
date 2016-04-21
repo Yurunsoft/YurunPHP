@@ -30,7 +30,7 @@ class Model extends ArrayData
 	// 连贯操作
 	protected $options = array ();
 	// 连贯操作方法名
-	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page');
+	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
 	// 连贯操作函数
 	protected $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
@@ -119,7 +119,10 @@ class Model extends ArrayData
 	 */
 	public function &select($first = false)
 	{
-		return $this->db->select($this->getOption(), $first);
+		$option = $this->getOption();
+		$data = $this->db->select($option, $first);
+		$this->parseTotal($data,$option);
+		return $data;
 	}
 	
 	/**
@@ -131,7 +134,52 @@ class Model extends ArrayData
 		$option = $this->options;
 		$recordCount = $this->count();
 		$this->options = $option;
-		return $this->db->select($this->page($page,$show)->getOption(), false);
+		$data = $this->db->select($this->page($page,$show)->getOption(), false);
+		$this->parseTotal($data,$option);
+		return $data;
+	}
+	
+	private function parseTotal(&$data,$option,$headOrFoot = null)
+	{
+		if(null === $headOrFoot)
+		{
+			if(isset($option['headtotal']))
+			{
+				$this->parseTotal($data,$option,'head');
+			}
+			if(isset($option['foottotal']))
+			{
+				$this->parseTotal($data,$option,'foot');
+			}
+		}
+		else
+		{
+			unset($option['limit']);
+			$k = $headOrFoot . 'total';
+			$option['field'] = array();
+			foreach($option[$k] as $array)
+			{
+				foreach($array as $key => $value)
+				{
+					if(is_array($value))
+					{
+						$option['field'][] = $value[0] . '(' . $key . ') as ' . $value[1];
+					}
+					else
+					{
+						$option['field'][] = $value . '(' . $key . ') as ' . $key;
+					}
+				}
+			}
+			if('head' === $headOrFoot)
+			{
+				array_unshift($data,$this->db->select($option, true));
+			}
+			else if('foot' === $headOrFoot)
+			{
+				$data[] = $this->db->select($option, true);
+			}
+		}
 	}
 	
 	/**
