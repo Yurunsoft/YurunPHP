@@ -11,30 +11,13 @@ class LogFile extends LogBase
 	protected $ext;
 	
 	/**
-	 * 构造方法
-	 */
-	public function __construct($config = null)
-	{
-		parent::__construct();
-		// 日志设置
-		if (null === $config)
-		{
-			$this->path = Config::get('@.LOG_PATH');
-			$this->ext = Config::get('@.LOG_EXT');
-		}
-		else
-		{
-			$this->path = $config['LOG_PATH'];
-			$this->ext = $config['LOG_EXT'];
-		}
-	}
-	
-	/**
 	 * 保存
 	 * @param array $data
 	 */
 	public function save($data)
 	{
+		$this->path = Config::get('@.LOG_PATH');
+		$this->ext = Config::get('@.LOG_EXT');
 		if(!is_dir($this->path))
 		{
 			mkdir($this->path,0777,true);
