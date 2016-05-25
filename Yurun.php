@@ -10,7 +10,7 @@ if (PHP_VERSION < 5.3)
 	exit('框架最低支持PHP 5.3版本，请尽量使用最新稳定版本，以确保更多功能以及更高运行效率！');
 }
 // 框架版本
-define('YURUN_VERSION', '1.1');
+define('YURUN_VERSION', '1.2');
 // 版本声明，请勿去除或擅改，否则将在法律范围内不保证贵站能安全运行！
 header('X-Powered-By:YurunPHP ' . YURUN_VERSION);
 // 是否开启调试
