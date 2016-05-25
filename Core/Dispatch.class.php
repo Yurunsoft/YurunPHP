@@ -113,7 +113,7 @@ class Dispatch
 			{
 				list($fileName,$rule) = explode('@',$rule,2);
 			}
-			self::$routeRules[$rule] = array('rule' => addcslashes(preg_replace_callback(
+			$tRule = preg_replace_callback(
 					'/\[([^\]]+)\]/i',
 					function($matches)use(&$fields){
 						if(false !== strpos($matches[1],':'))
@@ -134,9 +134,9 @@ class Dispatch
 						$fields[] = array('name' => $name,'type' => $type,'lengthStart'=>$lengthStart,'lengthEnd'=>$lengthEnd,'rule'=>$rule);
 						return '(' . $rule . ')';
 					},
-					$rule,
-					-1),'/'),
-					'url' => $url, 'fields' => $fields, 'filename' => $fileName);
+					addcslashes($rule,'/.'),
+					-1);
+			self::$routeRules[$rule] = array('rule' => $tRule,'url' => $url, 'fields' => $fields, 'filename' => $fileName);
 		}
 		// 当前访问的文件名
 		self::$currFileName = basename($_SERVER['SCRIPT_FILENAME']);
@@ -430,7 +430,7 @@ class Dispatch
 				$value = Request::all($param->name);
 				if(false === $value)
 				{
-					self::$data[] = null;
+					self::$data[] = $param->getDefaultValue();
 				}
 				else 
 				{
@@ -650,6 +650,7 @@ class Dispatch
 	 */
 	private static function parseUrlRoute($path,&$param,&$filename)
 	{
+		$tParam = $param;
 		$pathMCA = explode('/',$path);
 		foreach(self::$routeRules as $rule => $cfg)
 		{
@@ -670,7 +671,6 @@ class Dispatch
 								},
 								$mcaRule[0]
 						);
-						$mca[0] = $pathMCA[0];
 					}
 					// 控制器中的变量
 					if(false !== strpos($mca[1],'$'))
@@ -682,7 +682,6 @@ class Dispatch
 								},
 								$mcaRule[1]
 						);
-						$mca[1] = $pathMCA[1];
 					}
 					// 动作中的变量
 					if(false !== strpos($mca[2],'$'))
@@ -694,21 +693,47 @@ class Dispatch
 								},
 								$mcaRule[2]
 						);
-						$mca[2] = $pathMCA[2];
 					}
 					// URL
-					$cfg['url'] = implode('/',$mca);
+					$cfg['url'] = implode('/',$pathMCA);
 					$trule = '/^' . implode('\/',$mcaRule) . '$/';
 					// 验证URL格式
 					if(preg_match_all($trule,$cfg['url'],$matches))
 					{
+						$tParam['module'] = $pathMCA[0];
+						$tParam['control'] = $pathMCA[1];
+						$tParam['action'] = $pathMCA[2];
+						$isExists = true;
+						foreach($cfg['fields'] as $field)
+						{
+							if(!isset($tParam[$field['name']]))
+							{
+								$isExists = false;
+								break;
+							}
+						}
+						if(!$isExists)
+						{
+							continue;
+						}
+						foreach($cfg['fields'] as $field)
+						{
+							if(!checkRegexTypeValue($field['type'],$field['lengthStart'],$field['lengthEnd'],$tParam[$field['name']]))
+							{
+								$isExists = false;
+								break;
+							}
+						}
+						if(!$isExists)
+						{
+							continue;
+						}
 						$s = count($matches);
 						for($i=1;$i<$s;++$i)
 						{
 							// 把数据加入参数数组里
 							$param[$cfg['fields'][$i-1]['name']] = $matches[$i][0];
 						}
-						$isExists = true;
 						break;
 					}
 				}

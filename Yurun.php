@@ -239,6 +239,7 @@ date_default_timezone_set(Config::get('@.TIMEZONE'));
 // 注册autoload方法，自动加载核心类
 spl_autoload_register('yurunAutoload');
 $staticPath = Config::get('@.PATH_STATIC');
+define('LOCAL_STATIC_PATH', APP_PATH . Config::get('@.LOCAL_PATH_STATIC',$staticPath));
 $str = substr($staticPath,0,7);
 if('http://'!==$str && 'https:/'!==$str)
 {

@@ -458,7 +458,14 @@ class DbMysqli extends DbBase
 	 */
 	public function begin()
 	{
-		$this->db->begin_transaction();
+		if (PHP_VERSION >= 5.5)
+		{
+			$this->db->begin_transaction();
+		}
+		else
+		{
+			$this->execute('begin');
+		}
 	}
 	/**
 	 * 回滚事务

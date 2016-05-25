@@ -33,6 +33,9 @@ return array (
 		// 模版
 		'TEMPLATE_FOLDER' => 'Template',		// 模版文件夹名称
 		'TEMPLATE_EXT' => '.php',		// 模版扩展名
+		
+		// 组件
+		'COMPONENT_EXT' => '.html',		// 组件模版扩展名
 		                          
 		// 主题
 		'THEME_ON' => false,		// 是否开启主题功能

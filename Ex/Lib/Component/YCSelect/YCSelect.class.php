@@ -39,18 +39,12 @@ class YCSelect extends YCBase
 			$select_value = $this->get('select_value',null);
 			$select_text = $this->get('select_text',null);
 			$option_selected = (null!==$select_value && select_value==$option_value) || (null!==$select_text && $select_text==$option_text);
-// 			$data = array(
-// 				'option_text' => $option_text,
-// 				'option_value' => $option_value,
-// 				'option_selected' => $option_selected
-// 			);
-// 			$this->view->set($data);
 			$this->option_text = $option_text;
 			$this->option_value = $option_value;
 			$this->option_selected = $option_selected;
 			$this->innerHtml .= $this->getTemplate('option',false);
 		}
-		foreach($this->dataset as $option)
+		foreach($this->dataset as $key => $option)
 		{
 			$data = array();
 			if(is_array($option))
@@ -60,16 +54,13 @@ class YCSelect extends YCBase
 			}
 			else
 			{
-				$option_text = $option;
+				$option_text = $key;
 				$option_value = $option;
 			}
-// 			$data['option_text'] = $option_text;
-// 			$data['option_value'] = $option_value;
 			$this->option_text = $option_text;
 			$this->option_value = $option_value;
 			$select_value = $this->get('select_value',null);
 			$select_text = $this->get('select_text',null);
-// 			$data['option_selected'] = (null!==$select_value && $select_value==$option_value) || (null!==$select_text && $select_text==$option_text);
 			$this->option_selected = (null!==$select_value && $select_value==$option_value) || (null!==$select_text && $select_text==$option_text);
 			$this->view->set($data);
 			$this->innerHtml .= $this->getTemplate('option',false);

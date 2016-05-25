@@ -2,7 +2,7 @@
 	<?php foreach($this->dataset as $value){?>
 		<li>
 			<?php
-				Html::Checkbox(array('dataset'=>$value,'text_align'=>$this->text_align,'text_field'=>$this->text_field,'value_field'=>$this->value_field,'checked_field'=>$this->checked_field,'name'=>"{$this->name}[]"));
+				YurunComponent::Checkbox(array('dataset'=>$value,'text_align'=>$this->text_align,'text_field'=>$this->text_field,'value_field'=>$this->value_field,'checked_field'=>$this->checked_field,'name'=>"{$this->name}[]"));
 			?>
 		</li>
 	<?php }?>

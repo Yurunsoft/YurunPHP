@@ -112,7 +112,7 @@ class YCBase extends ArrayData
 	 */
 	public function end()
 	{
-		if($printEnd)
+		if($this->printEnd)
 		{
 			echo '</' . $this->tagName . '>';
 		}
@@ -174,11 +174,11 @@ class YCBase extends ArrayData
 		$tagName = ucfirst($this->tagName);
 		if('' === $fileName)
 		{
-			$file = '/Component/YC' . $tagName . '/tpl/' . $tagName.Config::get('@.TEMPLATE_EXT');
+			$file = '/Component/YC' . $tagName . '/tpl/' . $tagName.Config::get('@.COMPONENT_EXT');
 		}
 		else
 		{
-			$file = '/Component/YC' . $tagName . '/tpl/' . $fileName.Config::get('@.TEMPLATE_EXT');
+			$file = '/Component/YC' . $tagName . '/tpl/' . $fileName.Config::get('@.COMPONENT_EXT');
 		}
 		// 模块扩展目录
 		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_FOLDER') . $file;
@@ -199,7 +199,7 @@ class YCBase extends ArrayData
 			return $filename;
 		}
 		// 默认模版
-		$file = '/Component/YCBase/tpl/_Default' . Config::get('@.TEMPLATE_EXT');
+		$file = '/Component/YCBase/tpl/_Default' . Config::get('@.COMPONENT_EXT');
 		// 模块扩展目录
 		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_FOLDER') . $file;
 		if(is_file($filename))

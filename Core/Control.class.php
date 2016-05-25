@@ -17,7 +17,7 @@ class Control
 	 * @param string $returnType	返回类型，默认从配置CONTROL_RETURN_TYPE中读取
 	 * @param mixed $option			json_encode函数参数
 	 */
-	public function returnData($data,$returnType = null,$option = 0)
+	public function returnData($data,$returnType = null,$option = null)
 	{
 		if(null === $returnType)
 		{
@@ -27,12 +27,12 @@ class Control
 		if('json' === $returnType)
 		{
 			Response::setMime('json');
-			exit(json_encode($data,$option));
+			exit(json_encode($data,null === $option?0:$option));
 		}
 		else if('xml' === $returnType)
 		{
 			Response::setMime('xml');
-			exit(wddx_serialize_value($data));
+			exit(ArrayToXML::parse($data,null === $option?'xml':$option));
 		}
 		else if('html' === $returnType)
 		{

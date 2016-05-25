@@ -1,5 +1,5 @@
 <?php
-class YCCheckbox extends HtmlCheckRadioBase
+class YCCheckbox extends YCCheckRadioBase
 {
 	public function __construct($attrs,$tagName)
 	{

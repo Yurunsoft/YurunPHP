@@ -445,3 +445,24 @@ function parseStatic($src)
 		}
 	}
 }
+/**
+ * xml转数组
+ * @param unknown $xmlstring
+ * @return mixed
+ */
+function xmlToArray($xmlstring)
+{
+	return json_decode(json_encode((array)simplexml_load_string($xmlstring)), true);
+}
+/**
+ * 移出数组中数字键的成员
+ * @param unknown $array
+ */
+function removeArrayKeyNumeric(&$array)
+{
+	$s = count($array)+1;
+	for($i=0;$i<=$s;++$i)
+	{
+		unset($array[$i]);
+	}
+}
