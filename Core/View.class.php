@@ -229,6 +229,9 @@ class View extends ArrayData
 	{
 		// 解析出模版文件名
 		$file = $this->getTemplateFile($template, $theme);
+		$this->pathStack[] = dirname($file).'/';
+		// 将view层数据转为变量，方便模版中直接调用
+		extract($this->data);
 		// 模版引擎处理后的文件名
 		$file = $this->templateEngineParse($file);
 		ob_start();

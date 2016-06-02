@@ -5,7 +5,6 @@
  */
 class Control
 {
-	protected $db;
 	protected $view;
 	function __construct()
 	{
