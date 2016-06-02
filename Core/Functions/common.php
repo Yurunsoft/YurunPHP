@@ -322,9 +322,15 @@ function &autoLoadControl($control,$action)
 				PATH_EX_CONTROL . '/' . $controlFile 	// 框架控制器扩展目录
 			),false))
 	{
-		$class = $control . 'Control';
-		$obj = new $class;
-		return $obj;
+		$r = new ReflectionClass($control . 'Control');
+		if($r->isInstantiable())
+		{
+			return $r->newInstance();
+		}
+		else
+		{
+			return false;
+		}
 	}
 	else
 	{
