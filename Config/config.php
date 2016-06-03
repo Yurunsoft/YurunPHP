@@ -105,6 +105,8 @@ return array (
 		'TEMPLATE_ECHO_CONST_TAG_RIGHT'		=>	'>',
 		'TEMPLATE_ECHO_CONFIG_TAG_LEFT'		=>	'<CONFIG:',
 		'TEMPLATE_ECHO_CONFIG_TAG_RIGHT'	=>	'>',
+		'TEMPLATE_ECHO_LANG_TAG_LEFT'		=>	'<LANG:',
+		'TEMPLATE_ECHO_LANG_TAG_RIGHT'	=>	'>',
 		
 		// 静态文件路径
 		'PATH_STATIC' => 'Static'
