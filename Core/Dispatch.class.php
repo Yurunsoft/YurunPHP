@@ -190,7 +190,7 @@ class Dispatch
 		}
 		foreach(self::$routeRules as $rule => $cfg)
 		{
-			if(($cfg['filename'] === self::$currFileName || '' === $cfg['filename']) && preg_match('/^' . $cfg['rule'] . '$/i',$requestURI,$matches)>0)
+			if(($cfg['filename'] === self::$currFileName || '' === $cfg['filename']) && preg_match('/^' . $cfg['rule'] . '$/i',('/' === $rule[0] ? '/' : '') . $requestURI,$matches)>0)
 			{
 				$url = preg_replace_callback(
 						'/\$(\d+)/i',
@@ -639,6 +639,10 @@ class Dispatch
 		{
 			$fragment = '';
 		}
+// 		if('' !== $filename)
+// 		{
+// 			$filename .= '/';
+// 		}
 		$url = "{$protocol}{$domain}/{$filename}{$urlPath}{$query}{$fragment}";
 		return $url;
 	}
@@ -800,10 +804,6 @@ class Dispatch
 			else 
 			{
 				$filename = $cfg['filename'];
-			}
-			if(Config::get('@.route.hide_default_file') && $filename === Config::get('@.route.default_file'))
-			{
-				$filename = '';
 			}
 			return $result;
 		}
