@@ -54,7 +54,14 @@ class YCSelect extends YCBase
 			}
 			else
 			{
-				$option_text = $key;
+				if($this->value_field === $this->text_field)
+				{
+					$option_text = $option;
+				}
+				else
+				{
+					$option_text = $key;
+				}
 				$option_value = $option;
 			}
 			$this->option_text = $option_text;
