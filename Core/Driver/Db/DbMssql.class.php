@@ -476,7 +476,7 @@ SQL
 				$sql.= $line . "\r\n";
 				if (isset($line[0]))
 				{
-					if (';' === substr($line,0,-1))
+					if (';' === substr($line,-1,1))
 					{
 						$sql=trim(preg_replace('\'/\*[^*]*\*/\'', '', $sql));
 						if(empty($callback))
