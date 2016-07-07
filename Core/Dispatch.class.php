@@ -552,23 +552,18 @@ class Dispatch
 		$path = "{$module}/{$control}/{$action}";
 		// 根据路由规则判断
 		$urlPath = self::parseUrlRoute($path,$param,$filename);
+		// 文件名
+		if(Config::get('@.route.hide_default_file') && $filename === Config::get('@.route.default_file'))
+		{
+			$filename = '';
+		}
 		if(false === $urlPath)
 		{
-			// 文件名
-			$filename = Config::get('@.route.default_file',self::$currFileName);
-			if(Config::get('@.route.hide_default_file') && $filename === Config::get('@.route.default_file'))
-			{
-				$filename = '';
-			}
 			// 没有开启路由或没有匹配到路由
 			if(Config::get('@.PATHINFO_ON') || Config::get('@.URL_PARSE_ON'))
 			{
 				// PATHINFO
 				$urlPath = $path;
-				if('' !== $filename)
-				{
-					$filename = $filename . '/';
-				}
 			}
 			else if(Config::get('@.QUERY_PATHINFO_ON'))
 			{
@@ -639,10 +634,10 @@ class Dispatch
 		{
 			$fragment = '';
 		}
-// 		if('' !== $filename)
-// 		{
-// 			$filename .= '/';
-// 		}
+		if('' !== $filename && $filename !== null)
+		{
+			$filename .= '/';
+		}
 		$url = "{$protocol}{$domain}/{$filename}{$urlPath}{$query}{$fragment}";
 		return $url;
 	}
