@@ -1,0 +1,51 @@
+<?php
+if($this->isHeadStart)
+{
+	if(!$this->isHeadEnd)
+	{
+		echo '</thead>';
+	}
+}
+else
+{
+	$arr = $this->dataset[0];
+	removeArrayKeyNumeric($arr);
+	$keys = array_keys($arr);
+?>
+	<thead>
+		<tr>
+		<?php foreach($keys as $value){?>
+				<th><?php echo $value;?></th>
+		<?php }?>
+		</tr>
+	</thead>
+<?php
+}
+if($this->isBodyStart)
+{
+	if(!$this->isBodyEnd)
+	{
+		echo '</tbody>';
+	}
+}
+else
+{
+?>
+	<tbody>
+		<?php $_index = 0;foreach($this->dataset as $row){?>
+			<tr>
+				<?php foreach($this->cols as $col){
+					if('index'===$col->type)
+					{
+					?>
+						<td<?php echo $col->attrsStr;?>><?php echo $_index+1;?></td>
+					<?php }
+					else {?>
+					<td<?php echo $col->attrsStr;?>><?php echo $row[$col->field];?></td>
+					<?php } }?>
+			</tr>
+		<?php ++$_index;}?>
+	</tbody>
+<?php
+}
+?>

@@ -1,0 +1,10 @@
+<<?php echo $this->tagName;?><?php echo $this->attrsStr;?>>
+<?php if($this->allowInner)
+{
+	echo $this->innerHtml;
+}
+else
+{
+	echo '</' , $this->tagName , '>';
+}
+?>

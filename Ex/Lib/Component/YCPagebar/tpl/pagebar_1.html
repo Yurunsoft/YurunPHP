@@ -1,0 +1,28 @@
+<?php global $url;?>
+<div class="pagebar" id="<?php echo $this->id;?>">
+	<ul>
+		<li><a href="<?php echo $url->get(1);?>">首页</a></li>
+		<?php if($this->curr_page!=1){?>
+		<li><a href="<?php echo $url->get($this->curr_page-1);?>" class="prev">上一页</a></li>
+		<?php }
+				// 确认开始的数字
+				$start=(int)(($this->curr_page-1)/$this->page_item_count)*$this->page_item_count+1;
+				// 显示几个页码
+				$itemCount=$this->page_item_count-(int)($start/10);
+				// 确认结束的数字
+				$end=$start+$this->page_item_count-1;
+				if($end>$this->total_pages)
+				{
+					$end=$this->total_pages;
+				}
+				for($page=$start;$page<=$end;++$page)
+				{
+			?>
+			<li><a href="<?php echo $url->get($page);?>"<?php if($page==$this->curr_page){?> class="on"<?php }?>><?php echo $page;?></a></li>
+		<?php }
+			if($this->curr_page<$this->total_pages){?>
+		<li><a href="<?php echo $url->get($this->curr_page+1);?>" class="next">下一页</a></li>
+		<?php }?>
+		<li><a href="<?php echo $url->get($this->total_pages);?>">尾页</a></li>
+	</ul>
+</div>
