@@ -28,6 +28,7 @@ class Dispatch
 	{
 		// 路由解析
 		self::parseRoute();
+		$mca = explode('/',self::$currFileCfg['default_mca']);
 		// 模块
 		if (Config::get('@.MODULE_ON'))
 		{
@@ -41,9 +42,9 @@ class Dispatch
 				else 
 				{
 					// 判断使用绑定模块还是默认模块
-					if(isset($dmc[0]))
+					if(isset($mca[0]))
 					{
-						self::$module = $dmc[0];
+						self::$module = $mca[0];
 					}
 					else
 					{
@@ -67,9 +68,9 @@ class Dispatch
 			else
 			{
 				// 判断使用绑定控制器还是默认控制器
-				if(isset($dmc[1]))
+				if(isset($mca[1]))
 				{
-					self::$control = $dmc[1];
+					self::$control = $mca[1];
 				}
 				else
 				{
@@ -136,7 +137,7 @@ class Dispatch
 					},
 					addcslashes($rule,'/.'),
 					-1);
-			self::$routeRules[$rule] = array('rule' => $tRule,'url' => $url, 'fields' => $fields, 'filename' => $fileName);
+			self::$routeRules[] = array('rule_alias'=>$rule,'rule' => $tRule,'url' => $url, 'fields' => $fields, 'filename' => $fileName);
 		}
 		// 当前访问的文件名
 		self::$currFileName = basename($_SERVER['SCRIPT_FILENAME']);
@@ -178,6 +179,10 @@ class Dispatch
 		{
 			$requestURI = Request::get(Config::get('@.PATHINFO_QUERY_NAME'),'');
 		}
+		if('' == $requestURI)
+		{
+			$requestURI = $_SERVER['REQUEST_URI'];
+		}
 		// 防止前面带/
 		if(isset($requestURI[0]) && '/' === $requestURI[0])
 		{
@@ -188,8 +193,9 @@ class Dispatch
 		{
 			$requestURI = substr($requestURI,0,-1);
 		}
-		foreach(self::$routeRules as $rule => $cfg)
+		foreach(self::$routeRules as $cfg)
 		{
+			$rule = $cfg['rule_alias'];
 			if(($cfg['filename'] === self::$currFileName || '' === $cfg['filename']) && preg_match('/^' . $cfg['rule'] . '$/i',('/' === $rule[0] ? '/' : '') . $requestURI,$matches)>0)
 			{
 				$url = preg_replace_callback(
@@ -249,33 +255,6 @@ class Dispatch
 			self::$module = ucfirst($mca[0]);
 			self::$control = ucfirst($mca[1]);
 			self::$action = $mca[2];
-		}
-		else
-		{
-			if(isset($mca[1])) // 2个成员
-			{
-				self::$control = ucfirst($mca[0]);
-				self::$action = $mca[1];
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
-			else if(isset($mca[0])) // 1个成员
-			{
-				self::$action = $mca[0];
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module,self::$control) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
-			else
-			{
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module,self::$control,self::$action) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
 		}
 	}
 	public static function checkAuth()
@@ -651,8 +630,9 @@ class Dispatch
 	{
 		$tParam = $param;
 		$pathMCA = explode('/',$path);
-		foreach(self::$routeRules as $rule => $cfg)
+		foreach(self::$routeRules as $cfg)
 		{
+			$rule = $cfg['rule_alias'];
 			// 变量出现在【模块控制器动作】中
 			if(isset($cfg['url'][0]) && '>' !== $cfg['url'][0] && false !== strpos($cfg['url'],'$'))
 			{
