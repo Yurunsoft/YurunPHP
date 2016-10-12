@@ -130,6 +130,7 @@ class YCSelect extends YCBase
 		{
 			$option_text = $option[$this->text_field];
 			$this->option_text = $option_text;
+			$this->option_value = isset($option[$this->value_field])?$option[$this->value_field]:$option[$this->text_field];
 			$this->isGroup = true;
 			$this->innerHtml .= $this->getTemplate('group',false);
 			foreach($option['children'] as $item)
