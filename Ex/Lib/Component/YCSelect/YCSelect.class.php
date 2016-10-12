@@ -64,6 +64,7 @@ class YCSelect extends YCBase
 				}
 			}
 			$this->dataset = $dataset;
+//			var_dump($this->dataset);
 		}
 	}
 	protected function renderOption()
@@ -128,11 +129,14 @@ class YCSelect extends YCBase
 	{
 		if(!empty($option))
 		{
-			$option_text = $option[$this->text_field];
-			$this->option_text = $option_text;
-			$this->option_value = isset($option[$this->value_field])?$option[$this->value_field]:$option[$this->text_field];
-			$this->isGroup = true;
-			$this->innerHtml .= $this->getTemplate('group',false);
+			if(count($option) > 1)
+			{
+				$option_text = $option[$this->text_field];
+				$this->option_text = $option_text;
+				$this->option_value = isset($option[$this->value_field])?$option[$this->value_field]:$option[$this->text_field];
+				$this->isGroup = true;
+				$this->innerHtml .= $this->getTemplate('group',false);
+			}
 			foreach($option['children'] as $item)
 			{
 				$this->renderOptionItem($item);
