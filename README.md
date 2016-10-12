@@ -5,6 +5,8 @@ YurunPHP是宇润两年来研究PHP的成果，基于MVC动态分层架构，开
 
 开发手册：http://www.kancloud.cn/yurun/php-framework-1_0
 
+宇润PHP技术交流群：74401592
+
 #特色功能
 
 > * **双向路由：**解析、生成一步到位
