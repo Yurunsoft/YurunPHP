@@ -79,8 +79,10 @@ class YCSelect extends YCBase
 			$this->option_text = $option_text;
 			$this->option_value = $option_value;
 			$this->option_selected = $option_selected;
+			$this->isFirstItem = true;
 			$this->innerHtml .= $this->getTemplate('option',false);
 		}
+		$this->isFirstItem = false;
 		foreach($this->dataset as $key => $option)
 		{
 			if(isset($option['children']))
