@@ -391,11 +391,25 @@ class Dispatch
 			// 载入模块配置
 			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
 		}
-		if(false===self::call() && $pageNotFound)
+		if(
+				// 判断域名是否有权限访问
+				!self::checkDomain()
+				||
+				// 判断是否执行成功
+				(false===self::call() && $pageNotFound))
 		{
 			// 页面不存在
 			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
 		}
+	}
+	/**
+	 * 判断域名是否有权限访问
+	 * @return type
+	 */
+	public static function checkDomain()
+	{
+		$domain = Config::get('@.DOMAIN');
+		return empty($domain) || !Config::get('@.FILTER_DOMAIN') || $domain === Request::server('HTTP_HOST');
 	}
 	/**
 	 * 准备调用的数据
