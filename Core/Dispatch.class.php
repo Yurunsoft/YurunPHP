@@ -82,9 +82,17 @@ class Dispatch
 		if(empty(self::$action))
 		{
 			self::$action = Request::get(Config::get('@.ACTION_NAME'), false);
-			if (! self::$action)
+			if (!self::$action)
 			{
-				self::$action = Config::get('@.ACTION_DEFAULT');
+				// 判断使用绑定控制器还是默认控制器
+				if(isset($mca[2]))
+				{
+					self::$action = $mca[2];
+				}
+				else
+				{
+					self::$action = Config::get('@.CONTROL_DEFAULT');
+				}
 			}
 		}
 		if((null === self::$checkAuth && !self::checkAuth()) || false === self::$checkAuth)
@@ -189,10 +197,10 @@ class Dispatch
 			$requestURI = substr($requestURI,1);
 		}
 		// 防止后面带/
-		if('/' === substr($requestURI,-1))
-		{
-			$requestURI = substr($requestURI,0,-1);
-		}
+//		if('/' === substr($requestURI,-1))
+//		{
+//			$requestURI = substr($requestURI,0,-1);
+//		}
 		foreach(self::$routeRules as $cfg)
 		{
 			$rule = $cfg['rule_alias'];
@@ -324,7 +332,7 @@ class Dispatch
 	 */
 	private static function checkDeny($rule)
 	{
-		foreach($cfg['deny'] as $item)
+		foreach($rule as $item)
 		{
 			$mca = explode('/',$item);
 			if(!isset($mca[2]))
