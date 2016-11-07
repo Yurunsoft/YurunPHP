@@ -386,13 +386,14 @@ function &getDataArrayByGroup($group)
  */
 function &getFieldsByGroup($group)
 {
-	$group = $group . '_';
+	$isGroup = '' !== $group && null !== $groupl;
+	$group = $isGroup ? ($group . '_') : '';
 	$groupLen = strlen($group);
 	$fields = array();
 	$data = Request::all();
 	foreach($data as $key=>$value)
 	{
-		if(substr($key,0,$groupLen)===$group)
+		if(!$isGroup || substr($key,0,$groupLen)===$group)
 		{
 			$fieldKey = substr($key,$groupLen);
 			$fields[$key] = $fieldKey;
