@@ -597,27 +597,22 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function inc($field, $num = null, $return = Db::RETURN_ISOK)
+	public function inc($field, $num = 1, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
-		if (null === $num)
-		{ // 参数都在field
-			if (is_array($field))
-			{ // 数组参数，多个
-				foreach ($field as $key => $value)
-				{
-					$f = $this->db->parseField($key);
-					$data[] = "{$f}={$f}+{$value}";
-				}
-			}
-			else
-			{ // 单个单数
-				$f = $this->db->parseField($field);
-				$data[] = "{$f}={$f}+1";
+		// 参数都在field
+		if (is_array($field))
+		{
+			// 数组参数，多个
+			foreach ($field as $key => $value)
+			{
+				$f = $this->db->parseField($key);
+				$data[] = "{$f}={$f}+{$value}";
 			}
 		}
 		else
-		{ // $field为字段名,$num为增加的值
+		{
+			// 单个单数
 			$f = $this->db->parseField($field);
 			$data[] = "{$f}={$f}+{$num}";
 		}
@@ -632,29 +627,24 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function dec($field, $num = null, $return = Db::RETURN_ISOK)
+	public function dec($field, $num = 1, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
-		if (null === $num)
-		{ // 参数都在field
-			if (is_array($field))
-			{ // 数组参数，多个
-				foreach ($field as $key => $value)
-				{
-					$f = $this->db->parseField($key);
-					$data[$key] = "{$f}={$f}-{$value}";
-				}
-			}
-			else
-			{ // 单个单数
-				$f = $this->db->parseField($field);
-				$data[$field] = "{$f}={$f}-1";
+		// 参数都在field
+		if (is_array($field))
+		{
+			// 数组参数，多个
+			foreach ($field as $key => $value)
+			{
+				$f = $this->db->parseField($key);
+				$data[] = "{$f}={$f}-{$value}";
 			}
 		}
 		else
-		{ // $field为字段名,$num为减少的值
+		{
+			// 单个单数
 			$f = $this->db->parseField($field);
-			$data[$field] = "{$f}={$f}-{$num}";
+			$data[] = "{$f}={$f}-{$num}";
 		}
 		return $this->db->update($data, $this->getOption(), $return);
 	}
