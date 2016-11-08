@@ -386,7 +386,7 @@ function &getDataArrayByGroup($group)
  */
 function &getFieldsByGroup($group)
 {
-	$isGroup = '' !== $group && null !== $groupl;
+	$isGroup = '' !== $group && null !== $group;
 	$group = $isGroup ? ($group . '_') : '';
 	$groupLen = strlen($group);
 	$fields = array();
