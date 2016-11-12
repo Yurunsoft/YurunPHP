@@ -90,13 +90,13 @@ class CacheFile extends CacheBase
 		$fileName = $this->getFileName($alias);
 		if (! is_file($fileName))
 		{
-			return $default;
+			return $this->parseDefault($default);
 		}
 		// 打开或创建缓存文件
 		$fp = fopen($fileName, 'r');
 		if (false === $fp)
 		{
-			return $default;
+			return $this->parseDefault($default);
 		}
 		else
 		{
@@ -119,7 +119,7 @@ class CacheFile extends CacheBase
 				{
 					// 过期删除
 					unlink($fileName);
-					return $default;
+					return $this->parseDefault($default);
 				}
 				else if($isRaw)
 				{
@@ -138,11 +138,21 @@ class CacheFile extends CacheBase
 				flock($fp, LOCK_UN);
 				// 关闭文件
 				fclose($fp);
-				return $default;
+				return $this->parseDefault($default);
 			}
 		}
 	}
-	
+	private function parseDefault($default)
+	{
+		if(is_callable($default))
+		{
+			return $default();
+		}
+		else
+		{
+			return $default;
+		}
+	}
 	/**
 	 * 删除缓存
 	 *

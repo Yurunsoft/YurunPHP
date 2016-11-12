@@ -56,6 +56,8 @@ class Response
 		$ext = Config::get('@.TEMPLATE_EXT');
 		// 项目模版目录下对应http状态的模版文件
 		$file = APP_TEMPLATE . '_Msg/' . $status . $ext;
+		// 设置http状态码
+		self::status($status);
 		if (is_file($file))
 		{
 			include $file;
@@ -105,8 +107,6 @@ JS;
 				}
 			}
 		}
-		// 设置http状态码
-		self::status($status);
 		exit;
 	}
 	
