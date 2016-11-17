@@ -473,3 +473,13 @@ function removeArrayKeyNumeric(&$array)
 		unset($array[$i]);
 	}
 }
+/**
+ * 处理多行文本，替换使用指定换行符换行
+ * @param type $text
+ * @param type $newLineSplit
+ * @return type
+ */
+function parseMuiltLine($text,$newLineSplit = PHP_EOL)
+{
+	return str_replace("\n",PHP_EOL,str_replace("\n\n", "\n", str_replace("\r", "\n", $text)));
+}
