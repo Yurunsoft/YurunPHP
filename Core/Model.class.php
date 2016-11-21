@@ -351,6 +351,10 @@ class Model extends ArrayData
 						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments[0]);
 					}
 				}
+				else if('from' === $name)
+				{
+					$this->options['from'] = $arguments[0];
+				}
 				else
 				{
 					if(!isset($this->options[$name]))
