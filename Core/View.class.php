@@ -260,7 +260,7 @@ class View extends ArrayData
 	{
 		if (Config::get('@.TEMPLATE_ENGINE_ON'))
 		{
-			$cacheFileName = md5($file);
+			$cacheFileName = 'Template/' . md5($file);
 			// 启用模版引擎
 			$cacheFile = Cache::getObj('File')->getFileName($cacheFileName);
 			if($this->cacheIsExpired($cacheFile))

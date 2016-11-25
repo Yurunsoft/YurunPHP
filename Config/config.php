@@ -28,7 +28,9 @@ return array (
 		'ACTION_DEFAULT' => 'index',		// 默认参数名
 		                             
 		// 模型
-		'MODEL_FOLDER' => 'Model',		// 模型文件夹名称
+		'MODEL_FOLDER'			=> 'Model',		// 模型文件夹名称
+		'MODEL_AUTO_FIELDS'		=>	true,		// 模型是否自动获取字段信息
+		'MODEL_FIELDS_CACHE'	=>	true,		// 是否对模型字段缓存
 		                           
 		// 模版
 		'TEMPLATE_FOLDER' => 'Template',		// 模版文件夹名称

@@ -22,7 +22,7 @@ class Model extends ArrayData
 	// 表名
 	protected $table = '';
 	// 数据库操作对象
-	protected $db;
+	public $db;
 	// 字段映射
 	protected $fieldsMap = array (
 			// '表单字段'=>'数据库字段'
@@ -35,6 +35,12 @@ class Model extends ArrayData
 	protected $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
 	protected $rules = array ();
+	// 是否自动加载字段信息
+	public $autoFields = true;
+	// 字段名数组
+	public $fieldNames = array();
+	// 字段所有属性数组
+	public $fields = array();
 	/**
 	 * 构造方法
 	 */
@@ -72,6 +78,11 @@ class Model extends ArrayData
 		}
 		// 表前缀
 		$this->prefix=Config::get('@.DB.prefix');
+		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
+		if($this->autoFields && $this->table != '')
+		{
+			$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+		}
 	}
 	
 	/**
@@ -391,8 +402,13 @@ class Model extends ArrayData
 	 */
 	public function add($data = null, $return = Db::RETURN_ISOK)
 	{
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$data = $this->parseSaveData($data);
 		$option=$this->getOption();
-		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), null === $data ? $this->data : $data, $return);
+		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data, $return);
 	}
 	
 	/**
@@ -405,7 +421,80 @@ class Model extends ArrayData
 	 */
 	public function edit($data = null, $return = Db::RETURN_ISOK)
 	{
-		return $this->db->update(null === $data ? $this->data : $data, $this->getOption(), $return);
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$data = $this->parseSaveData($data);
+		return $this->db->update($data, $this->getOption(), $return);
+	}
+	
+	/**
+	 * 保存数据，自动判断有主键则修改，没主键则插入
+	 * @param type $data
+	 * @param type $return
+	 */
+	public function save($data = null, $return = Db::RETURN_ISOK)
+	{
+		$table = $this->getOptionTable();
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$pk = $this->pk;
+		}
+		$pk = explode(',', $pk);
+		$isEdit = true;
+		foreach($pk as $tpk)
+		{
+			if(!array_key_exists($tpk, $data))
+			{
+				$isEdit = false;
+				break;
+			}
+		}
+		if($isEdit)
+		{
+			$option = $this->options;
+			$isEdit = $this->wherePk($data,$table)->count() > 0;
+			$this->options = $option;
+		}
+		if($isEdit)
+		{
+			return $this->wherePk($data,$table)->edit($data,$return);
+		}
+		else
+		{
+			return $this->add($data);
+		}
+	}
+	
+	/**
+	 * 处理保存的数据
+	 * @param type $data
+	 */
+	public function parseSaveData(&$data)
+	{
+		$table = $this->getOptionTable();
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$fieldNames = $this->fieldNames;
+		}
+		$result = array();
+		foreach($fieldNames as $field)
+		{
+			if(isset($data[$field]))
+			{
+				$result[$field] = $data[$field];
+			}
+		}
+		return $result;
 	}
 	
 	/**
@@ -415,8 +504,12 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function delete($return = Db::RETURN_ISOK)
+	public function delete($pkData = null,$return = Db::RETURN_ISOK)
 	{
+		if(null !== $pkData)
+		{
+			$this->wherePk($pkData,$this->getOptionTable());
+		}
 		return $this->db->delete($this->getOption(), $return);
 	}
 	
@@ -445,6 +538,29 @@ class Model extends ArrayData
 	public function setOption($option)
 	{
 		$this->options=$option;
+	}
+	
+	/**
+	 * 获取连贯操作配置中的表
+	 */
+	public function getOptionTable()
+	{
+		if(!isset($this->options['from']))
+		{
+			return $this->tableName();
+		}
+		if(is_array($this->options['from']))
+		{
+			foreach($this->options['from'] as $table => $alias)
+			{
+				return $table;
+			}
+			return $this->tableName();
+		}
+		else
+		{
+			return $this->options['from'];
+		}
 	}
 	
 	/**
@@ -772,7 +888,7 @@ class Model extends ArrayData
 	 */
 	public function &getByPk($value)
 	{
-		return $this->where(array($this->pk=>$value))
+		return $this->wherePk($value)
 					->limit(1)
 					->select(true);
 	}
@@ -797,6 +913,7 @@ class Model extends ArrayData
 			$tTable=$this->table;
 			$this->table=$table;
 		}
+		$this->loadFields($this->fields,$this->fieldNames,$this->pk);
 	}
 	public function lastSql()
 	{
@@ -817,5 +934,96 @@ class Model extends ArrayData
 	public function buildSql()
 	{
 		return $this->db->parseSelectOption($this->getOption());
+	}
+	/**
+	 * 加载字段数据
+	 * @param type $noCache
+	 * @return type
+	 */
+	public function loadFields(&$fields,&$fieldNames,&$pk,$table = null,$refresh = false)
+	{
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		$cacheName = 'Db/TableFields/' . $table;
+		if($refresh || !Config::get('@.MODEL_FIELDS_CACHE'))
+		{
+			$fields = $this->db->getFields($table);
+			if(Config::get('@.MODEL_FIELDS_CACHE'))
+			{
+				Cache::set($cacheName,$fields);
+			}
+		}
+		else
+		{
+			$_this = $this;
+			Cache::get($cacheName,function() use($_this,&$fields,&$fieldNames,&$pk,$table){
+				$_this->loadFields($fields,$fieldNames,$pk,$table,true);
+			});
+			return;
+		}
+		$fieldNames = array_keys($fields);
+		$pk = array();
+		foreach($fields as $field)
+		{
+			if($field['pk'])
+			{
+				$pk[] = $field['name'];
+			}
+		}
+		if(isset($pk[0]) && !isset($pk[1]))
+		{
+			$pk = $pk[0];
+		}
+	}
+	/**
+	 * 加入主键条件
+	 * @param type $pkData
+	 * @return type
+	 */
+	public function wherePk($pkData,$table = null,$tableAlias = null)
+	{
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		if(null === $tableAlias)
+		{
+			$tableAlias = $table;
+		}
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$pk = $this->pk;
+		}
+		if(is_array($pk))
+		{
+			if(isset($pk[0]))
+			{
+				if(isset($pk[1]))
+				{
+					$where = array();
+					$tWhere = &$where;
+					foreach($pk as $pk)
+					{
+						$tWhere['and'] = array($tableAlias . '.' . $pk => $pkData[$pk]);
+						$tWhere = &$tWhere['and'];
+					}
+				}
+				else
+				{
+					$where = array($tableAlias . '.' . $pk[0]=>isset($pkData[$pk[0]]) ? $pkData[$pk[0]] : $pkData);
+				}
+			}
+		}
+		else
+		{
+			$where = array($tableAlias . '.' . $pk=>$pkData);
+		}
+		return $this->where($where);
 	}
 }
