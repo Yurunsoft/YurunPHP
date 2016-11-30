@@ -62,20 +62,15 @@ class CacheFile extends CacheBase
 					// 写入序列化后的值
 					fwrite($fp, serialize($value));
 				}
-				// 解锁
-				flock($fp, LOCK_UN);
-				// 关闭文件
-				fclose($fp);
-				return true;
+				$result = true;
 			}
 			else
 			{
-				// 解锁
-				flock($fp, LOCK_UN);
-				// 关闭文件
-				fclose($fp);
-				return false;
+				$result = false;
 			}
+			// 关闭文件
+			fclose($fp);
+			return $result;
 		}
 	}
 	
@@ -107,8 +102,6 @@ class CacheFile extends CacheBase
 				{
 					$data .= fread($fp, 4096);
 				}
-				// 解锁
-				flock($fp, LOCK_UN);
 				// 关闭文件
 				fclose($fp);
 				// 获取缓存有效时间
@@ -134,8 +127,6 @@ class CacheFile extends CacheBase
 			}
 			else
 			{
-				// 解锁
-				flock($fp, LOCK_UN);
 				// 关闭文件
 				fclose($fp);
 				return $this->parseDefault($default);

@@ -235,7 +235,10 @@ class View extends ArrayData
 		// 模版引擎处理后的文件名
 		$file = $this->templateEngineParse($file);
 		ob_start();
+		$fp = fopen($file,'r');
+		flock($fp,LOCK_SH);
 		include $file;
+		fclose($fp);
 		return ob_get_clean();
 	}
 	
@@ -252,7 +255,11 @@ class View extends ArrayData
 		// 将view层数据转为变量，方便模版中直接调用
 		extract($this->data);
 		// 返回模版引擎处理后的文件名
-		include $this->templateEngineParse($file);
+		$file = $this->templateEngineParse($file);
+		$fp = fopen($file,'r');
+		flock($fp,LOCK_SH);
+		include $file;
+		fclose($fp);
 		array_pop($this->pathStack);
 	}
 	

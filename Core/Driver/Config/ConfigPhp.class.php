@@ -32,7 +32,10 @@ class ConfigPhp extends ConfigBase
 	{
 		if (is_file($fileName))
 		{
+			$file = fopen($fileName,'r');
+			flock($file,LOCK_SH);
 			$this->data = include $fileName;
+			fclose($file);
 			return true;
 		}
 		else
@@ -50,6 +53,6 @@ class ConfigPhp extends ConfigBase
 	 */
 	public function save($fileName = null)
 	{
-		file_put_contents(empty($fileName) ? $this->fileName : $fileName, '<?php return ' . var_export($this->data, true) . ';');
+		file_put_contents(empty($fileName) ? $this->fileName : $fileName, '<?php return ' . var_export($this->data, true) . ';', LOCK_EX);
 	}
 }

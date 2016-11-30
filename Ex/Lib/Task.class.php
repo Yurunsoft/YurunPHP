@@ -228,7 +228,6 @@ class Task
 		$className::exec();
 		Config::set('Task.List.' . $name . '.LastRunTime',time());
 		Config::save('Task');
-		flock($file,LOCK_UN);
 		fclose($file);
 		unlink(self::$lockFileName);
 	}
