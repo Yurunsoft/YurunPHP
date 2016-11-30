@@ -500,6 +500,10 @@ class Dispatch
 		{
 			parse_str($param, $param);
 		}
+		if(empty($rule))
+		{
+			$rule = self::$module . '/' . self::$control . '/' . self::$action;
+		}
 		if(!$noEvent)
 		{
 			// 事件处理
