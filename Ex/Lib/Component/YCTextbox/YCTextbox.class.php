@@ -7,7 +7,7 @@ class YCTextbox extends YCBase
 	 */
 	protected $attrsDefault = array(
 			'text'			=> '',
-			'popup_type'	=> 'tree',
+			'muiltline'		=> false
 	);
 	/**
 	 * 构造方法
@@ -18,7 +18,7 @@ class YCTextbox extends YCBase
 	{
 		parent::__construct($attrs,$tagName);
 		$this->excludeAttrs = array_merge($this->excludeAttrs,array(
-			'text','val','popup_url','popup_title','popup_type','mode','elem'
+			'text','muiltline'
 		));
 	}
 	/**
@@ -32,7 +32,17 @@ class YCTextbox extends YCBase
 		}
 		$this->value = $this->text;
 		$this->popup_type = $this->popup_type;
-		parent::prepareView();
+		if($this->muiltline)
+		{
+			$text = $this->data['text'];
+			unset($this->data['text']);
+			parent::prepareView();
+			$this->data['text'] = $text;
+		}
+		else
+		{
+			parent::prepareView();
+		}
 	}
 	private function getTextFromDataset()
 	{
