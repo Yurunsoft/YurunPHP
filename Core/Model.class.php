@@ -958,11 +958,22 @@ class Model extends ArrayData
 		else
 		{
 			$_this = $this;
-			Cache::get($cacheName,function() use($_this,&$fields,&$fieldNames,&$pk,$table){
+			$isNewCache = false;
+			$data = Cache::get($cacheName,function() use($_this,&$fields,&$fieldNames,&$pk,$table,&$isNewCache){
 				$_this->loadFields($fields,$fieldNames,$pk,$table,true);
+				$isNewCache = true;
 			});
-			return;
+			if($isNewCache)
+			{
+				return;
+			}
+			else
+			{
+				$fields = $data;
+			}
+			unset($data);
 		}
+		
 		$fieldNames = array_keys($fields);
 		$pk = array();
 		foreach($fields as $field)
