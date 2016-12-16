@@ -65,7 +65,10 @@ class Model extends ArrayData
 		{
 			$this->table($table);
 		}
-		$this->dbAlias = $dbAlias;
+		if(null !== $dbAlias)
+		{
+			$this->dbAlias = $dbAlias;
+		}
 		$this->db = Db::get($this->dbAlias);
 		if(false!==$this->db && !$this->db->isConnect())
 		{
