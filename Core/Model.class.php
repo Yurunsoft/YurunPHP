@@ -16,35 +16,37 @@ class Model extends ArrayData
 	 */
 	const TO_FORM = 1;
 	// 主键
-	protected $pk = 'id';
+	public $pk = 'id';
 	// 前缀
-	protected $prefix ='';
+	public $prefix ='';
 	// 表名
-	protected $table = '';
+	public $table = '';
 	// 数据库操作对象
 	public $db;
 	// 字段映射
-	protected $fieldsMap = array (
-			// '表单字段'=>'数据库字段'
+	public $fieldsMap = array (
+		// '表单字段'=>'数据库字段'
 	);
 	// 连贯操作
-	protected $options = array ();
+	public $options = array ();
 	// 连贯操作方法名
-	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
+	public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
 	// 连贯操作函数
-	protected $funcs = array ('sum','max','min','avg','count');
+	public $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
-	protected $rules = array ();
+	public $rules = array ();
 	// 是否自动加载字段信息
 	public $autoFields = true;
 	// 字段名数组
 	public $fieldNames = array();
 	// 字段所有属性数组
 	public $fields = array();
+	// 数据库连接配置别名，为空则使用默认连接
+	public $dbAlias = null;
 	/**
 	 * 构造方法
 	 */
-	function __construct($table = null, $dbConfig = array())
+	function __construct($table = null, $dbAlias = null)
 	{
 		if (null === $table)
 		{
@@ -63,21 +65,14 @@ class Model extends ArrayData
 		{
 			$this->table($table);
 		}
-		if (empty($dbConfig))
+		$this->dbAlias = $dbAlias;
+		$this->db = Db::get($this->dbAlias);
+		if(false!==$this->db && !$this->db->isConnect())
 		{
-			// 尝试获取数据库配置
-			$dbConfig = Config::get('@.DB');
-		}
-		if(!empty($dbConfig))
-		{
-			$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
-			if(false!==$this->db && !$this->db->isConnect())
-			{
-				throw new Exception($this->db->getError());
-			}
+			throw new Exception($this->db->getError());
 		}
 		// 表前缀
-		$this->prefix=Config::get('@.DB.prefix');
+		$this->prefix = $this->db->tablePrefix;
 		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
 		if($this->autoFields && $this->table != '')
 		{
