@@ -42,13 +42,13 @@ class Dispatch
 				else 
 				{
 					// 判断使用绑定模块还是默认模块
-					if(isset($mca[0]))
+					if(empty($mca[0]))
 					{
-						self::$module = $mca[0];
+						self::$module = Config::get('@.MODULE_DEFAULT', '');
 					}
 					else
 					{
-						self::$module = Config::get('@.MODULE_DEFAULT', '');
+						self::$module = $mca[0];
 					}
 				}
 			}
