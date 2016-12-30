@@ -52,7 +52,7 @@ class Task
 		define('APP_TASK', APP_PATH . 'Task/');
 		self::$lockFileName = APP_CACHE . 'task.lock';
 		// 判断是否每次请求都会触发定时任务检测
-		if(Config::get('Task.EveryRequestExec'))
+		if(Config::get('Task.Status') && Config::get('Task.ExecPercent',1) >= mt_rand(1,100) / 100)
 		{
 			register_shutdown_function(function(){
 				Task::exec();
@@ -232,4 +232,3 @@ class Task
 		unlink(self::$lockFileName);
 	}
 }
-Task::init();

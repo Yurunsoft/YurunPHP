@@ -7,7 +7,8 @@ class YCTextbox extends YCBase
 	 */
 	protected $attrsDefault = array(
 			'text'			=> '',
-			'muiltline'		=> false
+			'muiltline'		=> false,
+			'text_field'	=> '',
 	);
 	/**
 	 * 构造方法
@@ -18,7 +19,7 @@ class YCTextbox extends YCBase
 	{
 		parent::__construct($attrs,$tagName);
 		$this->excludeAttrs = array_merge($this->excludeAttrs,array(
-			'text','muiltline'
+			'text','muiltline','text_field'
 		));
 	}
 	/**
@@ -46,7 +47,7 @@ class YCTextbox extends YCBase
 	}
 	private function getTextFromDataset()
 	{
-		if(isset($this->text_field) && is_array($this->dataset) && count($this->dataset)>0)
+		if(!empty($this->text_field) && is_array($this->dataset) && count($this->dataset)>0)
 		{
 			if(isset($this->dataset[$this->text_field]))
 			{

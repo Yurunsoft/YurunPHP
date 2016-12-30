@@ -14,9 +14,9 @@ class APIBaseControl extends Control
 	}
 	public function parseResult($params)
 	{
-		if(null !== $params[0])
+		if(null !== $params['returnResult'])
 		{
-			$this->status = $params[0];
+			$this->status = $params['returnResult'];
 		}
 		$this->__parseResult();
 		$this->returnData($this->apiData, $this->dataFormat, $this->dataFormatOption);
