@@ -434,6 +434,10 @@ class Model extends ArrayData
 	 */
 	public function save($data = null, $return = Db::RETURN_ISOK)
 	{
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
 		$table = $this->getOptionTable();
 		if(empty($this->fields) || $table !== $this->tableName())
 		{
