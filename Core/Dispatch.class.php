@@ -196,11 +196,6 @@ class Dispatch
 		{
 			$requestURI = substr($requestURI,1);
 		}
-		// 防止后面带/
-//		if('/' === substr($requestURI,-1))
-//		{
-//			$requestURI = substr($requestURI,0,-1);
-//		}
 		foreach(self::$routeRules as $cfg)
 		{
 			$rule = $cfg['rule_alias'];
@@ -398,6 +393,7 @@ class Dispatch
 				// 判断是否执行成功
 				(false===self::call() && $pageNotFound))
 		{
+			Event::trigger('YURUN_MCA_NOT_FOUND');
 			// 页面不存在
 			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
 		}
@@ -456,7 +452,7 @@ class Dispatch
 				$reflection = new ReflectionMethod($yurunControl, self::$action);
 				self::prepareData($reflection->getParameters());
 				unset($reflection);
-				call_user_func_array(array(&$yurunControl,self::$action),self::$data);
+				$returnResult = call_user_func_array(array(&$yurunControl,self::$action),self::$data);
 			}
 			else
 			{
@@ -466,7 +462,7 @@ class Dispatch
 					$reflection = new ReflectionMethod($yurunControl, $action);
 					self::prepareData($reflection->getParameters());
 					unset($reflection);
-					call_user_func_array(array(&$yurunControl,$action),self::$data);
+					$returnResult = call_user_func_array(array(&$yurunControl,$action),self::$data);
 				}
 				else
 				{
@@ -478,6 +474,8 @@ class Dispatch
 		{
 			return false;
 		}
+		$param = array($returnResult);
+		Event::trigger('YURUN_CONTROL_EXEC_COMPLETE',$param);
 		return true;
 	}
 	/**
