@@ -393,9 +393,14 @@ class Dispatch
 				// 判断是否执行成功
 				(false===self::call() && $pageNotFound))
 		{
-			Event::trigger('YURUN_MCA_NOT_FOUND');
 			// 页面不存在
-			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+			$continue = true;
+			$params = array('continue'=>&$continue);
+			Event::trigger('YURUN_MCA_NOT_FOUND',$params);
+			if($continue)
+			{
+				Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+			}
 		}
 	}
 	/**
@@ -474,7 +479,7 @@ class Dispatch
 		{
 			return false;
 		}
-		$param = array($returnResult);
+		$param = array('returnResult'=>$returnResult);
 		Event::trigger('YURUN_CONTROL_EXEC_COMPLETE',$param);
 		return true;
 	}
