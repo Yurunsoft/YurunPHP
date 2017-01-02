@@ -1,4 +1,4 @@
 <?php
-class YCRadiogroup extends HtmlCheckRadioGroupBase
+class YCRadiogroup extends YCCheckRadioGroupBase
 {
 }

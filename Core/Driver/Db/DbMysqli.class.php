@@ -443,14 +443,23 @@ class DbMysqli extends DbBase
 		}
 		else
 		{
-			$r = array ();
+			$fields = array ();
 			// 处理数据
-			foreach ($result as $value)
+			foreach($result as $item)
 			{
-				$r[] = array ('name' => $value['Field'],'type' => $value['Type'],'null' => 'yes' === strtolower($value['Null']),'default' => $value['Default'],'key' => $value['Key'],'autoinc' => strtolower($value['Extra']) === 'auto_increment','ex' => $value['Extra']);
+				$fields[$item['Field']] = array(
+					'name'			=>	$item['Field'],
+					'type'			=>	$item['Type'],
+					'null'			=>	'yes' === strtolower($item['Null']),
+					'default'		=>	$item['Default'],
+					'pk'			=>	'PRI' === $item['Key'],
+					'is_auto_inc'	=>	false !== strpos($item['Extra'], 'auto_increment'),
+					'key'			=>	$item['Key'],
+					'extra'			=>	$item['Extra']
+				);
 			}
 			// 返回结果
-			return $r;
+			return $fields;
 		}
 	}
 	/**
@@ -458,7 +467,14 @@ class DbMysqli extends DbBase
 	 */
 	public function begin()
 	{
-		$this->db->begin_transaction();
+		if (PHP_VERSION >= 5.5)
+		{
+			$this->db->begin_transaction();
+		}
+		else
+		{
+			$this->execute('begin');
+		}
 	}
 	/**
 	 * 回滚事务
@@ -508,7 +524,7 @@ class DbMysqli extends DbBase
 				$sql .= $line . "\r\n";
 				if (isset($line[0]))
 				{
-					if (';'===substr($line,0,-1))
+					if (';'===substr($line,-1,1))
 					{
 						$sql=trim(preg_replace('\'/\*[^*]*\*/\'', '', $sql));
 						if(empty($callback))

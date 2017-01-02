@@ -89,7 +89,7 @@ class Cookie
 	 * @param int $secure        	
 	 * @return type
 	 */
-	public static function delete($name)
+	public static function delete($name,$path = '', $domain = '', $secure = '')
 	{
 		if(!is_array($name))
 		{
@@ -97,7 +97,7 @@ class Cookie
 		}
 		foreach ($name as $val)
 		{
-			setcookie($val,null,0);
+			setcookie($val,null,0,'' == $path ? self::$path : $path, '' == $domain ? self::$domain : $domain, '' == $secure ? self::$secure : $secure);
 		}
 		return true;
 	}

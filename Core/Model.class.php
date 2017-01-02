@@ -16,29 +16,37 @@ class Model extends ArrayData
 	 */
 	const TO_FORM = 1;
 	// 主键
-	protected $pk = 'id';
+	public $pk = 'id';
 	// 前缀
-	protected $prefix ='';
+	public $prefix ='';
 	// 表名
-	protected $table = '';
+	public $table = '';
 	// 数据库操作对象
-	protected $db;
+	public $db;
 	// 字段映射
-	protected $fieldsMap = array (
-			// '表单字段'=>'数据库字段'
+	public $fieldsMap = array (
+		// '表单字段'=>'数据库字段'
 	);
 	// 连贯操作
-	protected $options = array ();
+	public $options = array ();
 	// 连贯操作方法名
-	protected $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join');
+	public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
 	// 连贯操作函数
-	protected $funcs = array ('sum','max','min','avg','count');
+	public $funcs = array ('sum','max','min','avg','count');
 	// 从表单创建数据并验证的规则
-	protected $rules = array ();
+	public $rules = array ();
+	// 是否自动加载字段信息
+	public $autoFields = true;
+	// 字段名数组
+	public $fieldNames = array();
+	// 字段所有属性数组
+	public $fields = array();
+	// 数据库连接配置别名，为空则使用默认连接
+	public $dbAlias = null;
 	/**
 	 * 构造方法
 	 */
-	function __construct($table = null, $dbConfig = array())
+	function __construct($table = null, $dbAlias = null)
 	{
 		if (null === $table)
 		{
@@ -57,21 +65,22 @@ class Model extends ArrayData
 		{
 			$this->table($table);
 		}
-		if (empty($dbConfig))
+		if(null !== $dbAlias)
 		{
-			// 尝试获取数据库配置
-			$dbConfig = Config::get('@.DB');
+			$this->dbAlias = $dbAlias;
 		}
-		if(!empty($dbConfig))
+		$this->db = Db::get($this->dbAlias);
+		if(false!==$this->db && !$this->db->isConnect())
 		{
-			$this->db = Db::create(isset($dbConfig['type']) ? $dbConfig['type'] : Config::get('@.DB_DEFAULT_TYPE'), '', $dbConfig);
-			if(false!==$this->db && !$this->db->isConnect())
-			{
-				throw new Exception($this->db->getError());
-			}
+			throw new Exception($this->db->getError());
 		}
 		// 表前缀
-		$this->prefix=Config::get('@.DB.prefix');
+		$this->prefix = $this->db->tablePrefix;
+		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
+		if($this->autoFields && $this->table != '')
+		{
+			$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+		}
 	}
 	
 	/**
@@ -119,7 +128,67 @@ class Model extends ArrayData
 	 */
 	public function &select($first = false)
 	{
-		return $this->db->select($this->getOption(), $first);
+		$option = $this->getOption();
+		$data = $this->db->select($option, $first);
+		$this->parseTotal($data,$option);
+		return $data;
+	}
+	
+	/**
+	 * 分页查询，获取总记录数
+	 * @param unknown $recordCount
+	 */
+	public function &selectPage($page = 1,$show = 10,&$recordCount = 0)
+	{
+		$option = $this->options;
+		$recordCount = $this->count();
+		$this->options = $option;
+		$data = $this->db->select($this->page($page,$show)->getOption(), false);
+		$this->parseTotal($data,$option);
+		return $data;
+	}
+	
+	private function parseTotal(&$data,$option,$headOrFoot = null)
+	{
+		if(null === $headOrFoot)
+		{
+			if(isset($option['headtotal']))
+			{
+				$this->parseTotal($data,$option,'head');
+			}
+			if(isset($option['foottotal']))
+			{
+				$this->parseTotal($data,$option,'foot');
+			}
+		}
+		else
+		{
+			unset($option['limit']);
+			$k = $headOrFoot . 'total';
+			$option['field'] = array();
+			foreach($option[$k] as $array)
+			{
+				foreach($array as $key => $value)
+				{
+					if(is_array($value))
+					{
+						$option['field'][] = $value[0] . '(' . $key . ') as ' . $value[1];
+					}
+					else
+					{
+						$option['field'][] = $value . '(' . $key . ') as ' . $key;
+					}
+				}
+			}
+			if('head' === $headOrFoot)
+			{
+				array_unshift($data,$this->db->select($option, true));
+			}
+			else if('foot' === $headOrFoot)
+			{
+				$data[] = $this->db->select($option, true);
+			}
+		}
 	}
 	
 	/**
@@ -265,6 +334,13 @@ class Model extends ArrayData
 						$this->options['limit'] = $arguments[0];
 					}
 				}
+				else if('page' === $name)
+				{
+					if(isset($arguments[1]))
+					{
+						$this->options['limit'] = array($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
+					}
+				}
 				else if('distinct' === $name)
 				{
 					$this->options['distinct'] = $arguments[0];
@@ -283,6 +359,10 @@ class Model extends ArrayData
 					{
 						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments[0]);
 					}
+				}
+				else if('from' === $name)
+				{
+					$this->options['from'] = $arguments[0];
 				}
 				else
 				{
@@ -320,8 +400,13 @@ class Model extends ArrayData
 	 */
 	public function add($data = null, $return = Db::RETURN_ISOK)
 	{
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$data = $this->parseSaveData($data);
 		$option=$this->getOption();
-		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), null === $data ? $this->data : $data, $return);
+		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data, $return);
 	}
 	
 	/**
@@ -334,7 +419,84 @@ class Model extends ArrayData
 	 */
 	public function edit($data = null, $return = Db::RETURN_ISOK)
 	{
-		return $this->db->update(null === $data ? $this->data : $data, $this->getOption(), $return);
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$data = $this->parseSaveData($data);
+		return $this->db->update($data, $this->getOption(), $return);
+	}
+	
+	/**
+	 * 保存数据，自动判断有主键则修改，没主键则插入
+	 * @param type $data
+	 * @param type $return
+	 */
+	public function save($data = null, $return = Db::RETURN_ISOK)
+	{
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$table = $this->getOptionTable();
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$pk = $this->pk;
+		}
+		$pk = explode(',', $pk);
+		$isEdit = true;
+		foreach($pk as $tpk)
+		{
+			if(!array_key_exists($tpk, $data))
+			{
+				$isEdit = false;
+				break;
+			}
+		}
+		if($isEdit)
+		{
+			$option = $this->options;
+			$isEdit = $this->wherePk($data,$table)->count() > 0;
+			$this->options = $option;
+		}
+		if($isEdit)
+		{
+			return $this->wherePk($data,$table)->edit($data,$return);
+		}
+		else
+		{
+			return $this->add($data);
+		}
+	}
+	
+	/**
+	 * 处理保存的数据
+	 * @param type $data
+	 */
+	public function parseSaveData(&$data)
+	{
+		$table = $this->getOptionTable();
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$fieldNames = $this->fieldNames;
+		}
+		$result = array();
+		foreach($fieldNames as $field)
+		{
+			if(isset($data[$field]))
+			{
+				$result[$field] = $data[$field];
+			}
+		}
+		return $result;
 	}
 	
 	/**
@@ -344,8 +506,12 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function delete($return = Db::RETURN_ISOK)
+	public function delete($pkData = null,$return = Db::RETURN_ISOK)
 	{
+		if(null !== $pkData)
+		{
+			$this->wherePk($pkData,$this->getOptionTable());
+		}
 		return $this->db->delete($this->getOption(), $return);
 	}
 	
@@ -374,6 +540,29 @@ class Model extends ArrayData
 	public function setOption($option)
 	{
 		$this->options=$option;
+	}
+	
+	/**
+	 * 获取连贯操作配置中的表
+	 */
+	public function getOptionTable()
+	{
+		if(!isset($this->options['from']))
+		{
+			return $this->tableName();
+		}
+		if(is_array($this->options['from']))
+		{
+			foreach($this->options['from'] as $table => $alias)
+			{
+				return $table;
+			}
+			return $this->tableName();
+		}
+		else
+		{
+			return $this->options['from'];
+		}
 	}
 	
 	/**
@@ -530,27 +719,22 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function inc($field, $num = null, $return = Db::RETURN_ISOK)
+	public function inc($field, $num = 1, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
-		if (null === $num)
-		{ // 参数都在field
-			if (is_array($field))
-			{ // 数组参数，多个
-				foreach ($field as $key => $value)
-				{
-					$f = $this->db->parseField($key);
-					$data[] = "{$f}={$f}+{$value}";
-				}
-			}
-			else
-			{ // 单个单数
-				$f = $this->db->parseField($field);
-				$data[] = "{$f}={$f}+1";
+		// 参数都在field
+		if (is_array($field))
+		{
+			// 数组参数，多个
+			foreach ($field as $key => $value)
+			{
+				$f = $this->db->parseField($key);
+				$data[] = "{$f}={$f}+{$value}";
 			}
 		}
 		else
-		{ // $field为字段名,$num为增加的值
+		{
+			// 单个单数
 			$f = $this->db->parseField($field);
 			$data[] = "{$f}={$f}+{$num}";
 		}
@@ -565,29 +749,24 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function dec($field, $num = null, $return = Db::RETURN_ISOK)
+	public function dec($field, $num = 1, $return = Db::RETURN_ISOK)
 	{
 		$data = array ();
-		if (null === $num)
-		{ // 参数都在field
-			if (is_array($field))
-			{ // 数组参数，多个
-				foreach ($field as $key => $value)
-				{
-					$f = $this->db->parseField($key);
-					$data[$key] = "{$f}={$f}-{$value}";
-				}
-			}
-			else
-			{ // 单个单数
-				$f = $this->db->parseField($field);
-				$data[$field] = "{$f}={$f}-1";
+		// 参数都在field
+		if (is_array($field))
+		{
+			// 数组参数，多个
+			foreach ($field as $key => $value)
+			{
+				$f = $this->db->parseField($key);
+				$data[] = "{$f}={$f}-{$value}";
 			}
 		}
 		else
-		{ // $field为字段名,$num为减少的值
+		{
+			// 单个单数
 			$f = $this->db->parseField($field);
-			$data[$field] = "{$f}={$f}-{$num}";
+			$data[] = "{$f}={$f}-{$num}";
 		}
 		return $this->db->update($data, $this->getOption(), $return);
 	}
@@ -711,7 +890,7 @@ class Model extends ArrayData
 	 */
 	public function &getByPk($value)
 	{
-		return $this->where(array($this->pk=>$value))
+		return $this->wherePk($value)
 					->limit(1)
 					->select(true);
 	}
@@ -736,6 +915,7 @@ class Model extends ArrayData
 			$tTable=$this->table;
 			$this->table=$table;
 		}
+		$this->loadFields($this->fields,$this->fieldNames,$this->pk);
 	}
 	public function lastSql()
 	{
@@ -756,5 +936,107 @@ class Model extends ArrayData
 	public function buildSql()
 	{
 		return $this->db->parseSelectOption($this->getOption());
+	}
+	/**
+	 * 加载字段数据
+	 * @param type $noCache
+	 * @return type
+	 */
+	public function loadFields(&$fields,&$fieldNames,&$pk,$table = null,$refresh = false)
+	{
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		$cacheName = 'Db/TableFields/' . $table;
+		if($refresh || !Config::get('@.MODEL_FIELDS_CACHE'))
+		{
+			$fields = $this->db->getFields($table);
+			if(Config::get('@.MODEL_FIELDS_CACHE'))
+			{
+				Cache::set($cacheName,$fields);
+			}
+		}
+		else
+		{
+			$_this = $this;
+			$isNewCache = false;
+			$data = Cache::get($cacheName,function() use($_this,&$fields,&$fieldNames,&$pk,$table,&$isNewCache){
+				$_this->loadFields($fields,$fieldNames,$pk,$table,true);
+				$isNewCache = true;
+			});
+			if($isNewCache)
+			{
+				return;
+			}
+			else
+			{
+				$fields = $data;
+			}
+			unset($data);
+		}
+		
+		$fieldNames = array_keys($fields);
+		$pk = array();
+		foreach($fields as $field)
+		{
+			if($field['pk'])
+			{
+				$pk[] = $field['name'];
+			}
+		}
+		if(isset($pk[0]) && !isset($pk[1]))
+		{
+			$pk = $pk[0];
+		}
+	}
+	/**
+	 * 加入主键条件
+	 * @param type $pkData
+	 * @return type
+	 */
+	public function wherePk($pkData,$table = null,$tableAlias = null)
+	{
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		if(null === $tableAlias)
+		{
+			$tableAlias = $table;
+		}
+		if(empty($this->fields) || $table !== $this->tableName())
+		{
+			$this->loadFields($fields, $fieldNames, $pk, $table);
+		}
+		else
+		{
+			$pk = $this->pk;
+		}
+		if(is_array($pk))
+		{
+			if(isset($pk[0]))
+			{
+				if(isset($pk[1]))
+				{
+					$where = array();
+					$tWhere = &$where;
+					foreach($pk as $pk)
+					{
+						$tWhere['and'] = array($tableAlias . '.' . $pk => $pkData[$pk]);
+						$tWhere = &$tWhere['and'];
+					}
+				}
+				else
+				{
+					$where = array($tableAlias . '.' . $pk[0]=>isset($pkData[$pk[0]]) ? $pkData[$pk[0]] : $pkData);
+				}
+			}
+		}
+		else
+		{
+			$where = array($tableAlias . '.' . $pk=>$pkData);
+		}
+		return $this->where($where);
 	}
 }

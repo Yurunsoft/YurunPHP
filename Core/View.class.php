@@ -229,10 +229,16 @@ class View extends ArrayData
 	{
 		// 解析出模版文件名
 		$file = $this->getTemplateFile($template, $theme);
+		$this->pathStack[] = dirname($file).'/';
+		// 将view层数据转为变量，方便模版中直接调用
+		extract($this->data);
 		// 模版引擎处理后的文件名
 		$file = $this->templateEngineParse($file);
 		ob_start();
+		$fp = fopen($file,'r');
+		flock($fp,LOCK_SH);
 		include $file;
+		fclose($fp);
 		return ob_get_clean();
 	}
 	
@@ -249,7 +255,11 @@ class View extends ArrayData
 		// 将view层数据转为变量，方便模版中直接调用
 		extract($this->data);
 		// 返回模版引擎处理后的文件名
-		include $this->templateEngineParse($file);
+		$file = $this->templateEngineParse($file);
+		$fp = fopen($file,'r');
+		flock($fp,LOCK_SH);
+		include $file;
+		fclose($fp);
 		array_pop($this->pathStack);
 	}
 	
@@ -257,7 +267,7 @@ class View extends ArrayData
 	{
 		if (Config::get('@.TEMPLATE_ENGINE_ON'))
 		{
-			$cacheFileName = md5($file);
+			$cacheFileName = 'Template/' . md5($file);
 			// 启用模版引擎
 			$cacheFile = Cache::getObj('File')->getFileName($cacheFileName);
 			if($this->cacheIsExpired($cacheFile))

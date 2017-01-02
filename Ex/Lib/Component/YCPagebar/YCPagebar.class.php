@@ -73,21 +73,24 @@ class YCPagebar extends YCBase
 	 */
 	protected function calcTotalPages()
 	{
-		if($this->page_show>0 && is_numeric($this->total_records))
+		if(false === $this->total_pages)
 		{
-			$this->total_pages=(int)($this->total_records/$this->page_show);
-			if($this->total_records % $this->page_show!=0)
+			if($this->page_show>0 && is_numeric($this->total_records))
 			{
-				++$this->total_pages;
+				$this->total_pages=(int)($this->total_records/$this->page_show);
+				if($this->total_records % $this->page_show!=0)
+				{
+					++$this->total_pages;
+				}
+				else if($this->total_pages<1)
+				{
+					$this->total_pages=1;
+				}
 			}
-			else if($this->total_pages<1)
+			else
 			{
 				$this->total_pages=1;
 			}
-		}
-		else
-		{
-			$this->total_pages=1;
 		}
 	}
 	

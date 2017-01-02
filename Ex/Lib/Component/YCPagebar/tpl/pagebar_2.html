@@ -22,7 +22,7 @@
 				for($page=$start;$page<=$end;++$page)
 				{
 			?>
-			<li><a href="<?php echo $url->get($page);?>"<?php if($page==$this->curr_page){?> class="page-cur"<?php }?>><?php echo $page;?></a></li>
+			<li><a href="<?php echo $url->get($page);?>"<?php if($page==$this->curr_page){?> class="on"<?php }?>><?php echo $page;?></a></li>
 		<?php }
 			if($this->curr_page<$this->total_pages){?>
 		<li><a href="<?php echo $url->get($this->curr_page+1);?>" class="next">下一页</a></li>

@@ -205,6 +205,14 @@ PHP
 					return '<?php echo Config::get(\'' . $arr[0] . '\'' . $default . ');?>';
 				},
 				$html);
+		// 输出语言包
+		$html = preg_replace_callback(
+				'/' . Config::get('@.TEMPLATE_ECHO_LANG_TAG_LEFT') . '(.*)' . Config::get('@.TEMPLATE_ECHO_LANG_TAG_RIGHT') . '/isU',
+				function($matches){
+					$arr = explode(' ',$matches[1]);
+					return '<?php echo Lang::get(\'' . $arr[0] . '\');?>';
+				},
+				$html);
 	}
 	private function parsePHP(&$html)
 	{

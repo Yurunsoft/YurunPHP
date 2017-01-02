@@ -14,7 +14,7 @@ class YCDatarow extends YCBase
 	 */
 	protected function __render()
 	{
-		$table = &HtmlTable::getTable();
+		$table = &YCTable::getTable();
 		if(!$table->isHeadEnd)
 		{
 			echo '</thead>';

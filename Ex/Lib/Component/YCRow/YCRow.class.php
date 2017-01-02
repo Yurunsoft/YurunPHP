@@ -13,7 +13,7 @@ class YCRow extends YCBase
 	public function prepareView()
 	{
 		parent::prepareView();
-		$this->table = &HtmlTable::getTable();
+		$this->table = &YCTable::getTable();
 	}
 	/**
 	 * 渲染控件

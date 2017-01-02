@@ -7,11 +7,11 @@ abstract class YCCheckRadioBase extends YCBase
 	 */
 	protected $attrsDefault = array(
 		'text'			=> '',
-		'text_align'		=> 'right',
+		'text_align'	=> 'right',
 		'text_field'	=> 'text',
 		'value_field'	=> 'value',
 		'checked_field'	=> 'checked',
-		'theme'			=> 'default'
+		'theme'			=> 'default',
 	);
 	/**
 	 * 构造方法

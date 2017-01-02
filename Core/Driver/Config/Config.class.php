@@ -157,7 +157,7 @@ abstract class Config extends Driver
 			// 删除数据
 			$first = array_shift($names);
 			$obj = self::getObj($first);
-			return $obj->remove($names);
+			return $obj->remove($name);
 		}
 		else
 		{
