@@ -3,7 +3,7 @@ return array (
 		// 核心配置，擅改或覆盖同名配置项可能会造成网站无法访问
 		'CORE_CLASSES' => array ('Control','Model','View',		// 核心类
 		'ArrayData','Lang','Driver','Dispatch','Request','Event','Validator','Response','Cookie','Session'),
-		'CORE_REQUIRE' => array ('ArrayData','Control','Dispatch','Request','Driver'),		// 必须加载的核心类
+		'CORE_REQUIRE' => array ('ArrayData','Control','Dispatch','Request','Driver','Task'),		// 必须加载的核心类
 		'CORE_DRIVER_CLASSES' => array ('Cache','Config','Db','Log'),
 		'CORE_DRIVER_REQUIRE' => array (
 				'Config/ConfigBase',		// 核心驱动类
