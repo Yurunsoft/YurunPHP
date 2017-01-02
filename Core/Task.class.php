@@ -69,12 +69,16 @@ class Task
 		{
 			return false;
 		}
+		$onlyOnce = Config::get('Task.OnlyOnce');
 		foreach(self::$tasks as $name => $task)
 		{
 			if(self::taskCanExec($task))
 			{
 				self::execTask($name,$task);
-				break;
+				if($onlyOnce)
+				{
+					break;
+				}
 			}
 		}
 		self::$isExeced = true;

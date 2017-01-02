@@ -259,6 +259,8 @@ Event::trigger('YURUN_FRAMEWORK_LOAD_COMPLETE');
 Dispatch::initRouteRules();
 // 调度解析
 Dispatch::resolve();
+// 定时任务
+Task::init();
 // 调度
 Dispatch::exec();
 function yurunAutoload($class)

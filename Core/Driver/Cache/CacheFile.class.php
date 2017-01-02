@@ -119,6 +119,11 @@ class CacheFile extends CacheBase
 					// 返回源数据
 					return $data;
 				}
+				else if($isRaw)
+				{
+					// 返回源数据
+					return $data;
+				}
 				else
 				{
 					// 返回源数据
