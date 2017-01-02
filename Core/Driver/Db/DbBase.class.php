@@ -23,9 +23,11 @@ abstract class DbBase
 	protected $lastSql = '';
 	// 是否启用参数标识
 	public $isUseParamFlag = true;
+	public $tablePrefix = 'tb_';
 	public function __construct($config = array())
 	{
 		$this->config = $config;
+		$this->tablePrefix = $config['prefix'];
 		$this->connect();
 	}
 	/**

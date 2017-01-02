@@ -1,5 +1,9 @@
-<?php
-foreach($this->dataset as $value)
-{
-	YurunComponent::radio(array('theme'=>$this->theme,'dataset'=>$value,'checked_value'=>$this->checked_value,'text_align'=>$this->text_align,'text_field'=>$this->text_field,'value_field'=>$this->value_field,'checked_field'=>$this->checked_field,'name'=>$this->name));
-}
+<ul class="yp-radio-group <?php echo $this->class;?>">
+	<?php foreach($this->dataset as $value){?>
+		<li>
+			<?php
+			YurunComponent::radio(array('theme'=>$this->theme,'dataset'=>$value,'checked_value'=>$this->checked_value,'text_align'=>$this->text_align,'text_field'=>$this->text_field,'value_field'=>$this->value_field,'checked_field'=>$this->checked_field,'name'=>$this->name));
+			?>
+		</li>
+	<?php }?>
+</ul>

@@ -28,7 +28,9 @@ return array (
 		'ACTION_DEFAULT' => 'index',		// 默认参数名
 		                             
 		// 模型
-		'MODEL_FOLDER' => 'Model',		// 模型文件夹名称
+		'MODEL_FOLDER'			=> 'Model',		// 模型文件夹名称
+		'MODEL_AUTO_FIELDS'		=>	true,		// 模型是否自动获取字段信息
+		'MODEL_FIELDS_CACHE'	=>	true,		// 是否对模型字段缓存
 		                           
 		// 模版
 		'TEMPLATE_FOLDER' => 'Template',		// 模版文件夹名称
@@ -88,6 +90,7 @@ return array (
 		'URL_PARSE_ON'				=>	true,			// 是否开启URL路由解析支持，需要伪静态规则支持。格式：/Module/Control/action
 		'QUERY_PATHINFO_ON'			=>	true,			// 是否开启支持参数传入URL路由解析。
 		'PATHINFO_QUERY_NAME'		=>	'i',			// 持参数传入URL路由解析查询参数名。格式：i=Module/Control/action
+		'FILTER_DOMAIN'				=>	false,			// 是否过滤非DOMAIN配置项域名的访问，如果DOMAIN不配置或为空则本项无效
 		
 		// 控制器returnData方法默认返回数据格式类型
 		'CONTROL_RETURN_TYPE'		=>	'json',

@@ -80,7 +80,7 @@ class Request
 	public static function getHome($path = '')
 	{
 		$domain=Config::get('@.DOMAIN');
-		if(false===$domain)
+		if(empty($domain))
 		{
 			$domain=$_SERVER['HTTP_HOST'];
 		}

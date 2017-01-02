@@ -416,9 +416,21 @@ SQL
 		}
 		else
 		{
-			arrayColumnToKey($result,'name');
+			$fields = array ();
+			// 处理数据
+			foreach($result as $item)
+			{
+				$fields[$item['name']] = array(
+					'name'			=>	$item['name'],
+					'type'			=>	$item['type'],
+					'null'			=>	1 == $item['null'],
+					'default'		=>	$item['COLUMN_DEFAULT'],
+					'pk'			=>	1 == $item['Key'],
+					'is_auto_inc'	=>	1 == $item['IsIdentity'],
+				);
+			}
 			// 返回结果
-			return $result;
+			return $fields;
 		}
 	}
 	/**

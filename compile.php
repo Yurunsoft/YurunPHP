@@ -39,7 +39,7 @@ $fc = strip_whitespace(file_get_contents('Yurun.php'));
 $fc = substr($fc, 5);
 $fc = "<?php define('IS_COMPILED',true);{$fc}";
 // 写出文件
-file_put_contents('Yurun-min.php', str_replace('// {compile}', $result, $fc));
+file_put_contents('Yurun-min.php', str_replace('// {compile}', $result, $fc),LOCK_EX);
 header('Content-type: text/html; charset=utf-8');
 echo '生成成功！';
 /**

@@ -28,6 +28,7 @@ class Dispatch
 	{
 		// 路由解析
 		self::parseRoute();
+		$mca = explode('/',self::$currFileCfg['default_mca']);
 		// 模块
 		if (Config::get('@.MODULE_ON'))
 		{
@@ -41,13 +42,13 @@ class Dispatch
 				else 
 				{
 					// 判断使用绑定模块还是默认模块
-					if(isset($dmc[0]))
+					if(empty($mca[0]))
 					{
-						self::$module = $dmc[0];
+						self::$module = Config::get('@.MODULE_DEFAULT', '');
 					}
 					else
 					{
-						self::$module = Config::get('@.MODULE_DEFAULT', '');
+						self::$module = $mca[0];
 					}
 				}
 			}
@@ -67,9 +68,9 @@ class Dispatch
 			else
 			{
 				// 判断使用绑定控制器还是默认控制器
-				if(isset($dmc[1]))
+				if(isset($mca[1]))
 				{
-					self::$control = $dmc[1];
+					self::$control = $mca[1];
 				}
 				else
 				{
@@ -81,9 +82,17 @@ class Dispatch
 		if(empty(self::$action))
 		{
 			self::$action = Request::get(Config::get('@.ACTION_NAME'), false);
-			if (! self::$action)
+			if (!self::$action)
 			{
-				self::$action = Config::get('@.ACTION_DEFAULT');
+				// 判断使用绑定控制器还是默认控制器
+				if(isset($mca[2]))
+				{
+					self::$action = $mca[2];
+				}
+				else
+				{
+					self::$action = Config::get('@.CONTROL_DEFAULT');
+				}
 			}
 		}
 		if((null === self::$checkAuth && !self::checkAuth()) || false === self::$checkAuth)
@@ -136,7 +145,7 @@ class Dispatch
 					},
 					addcslashes($rule,'/.'),
 					-1);
-			self::$routeRules[$rule] = array('rule' => $tRule,'url' => $url, 'fields' => $fields, 'filename' => $fileName);
+			self::$routeRules[] = array('rule_alias'=>$rule,'rule' => $tRule,'url' => $url, 'fields' => $fields, 'filename' => $fileName);
 		}
 		// 当前访问的文件名
 		self::$currFileName = basename($_SERVER['SCRIPT_FILENAME']);
@@ -178,18 +187,18 @@ class Dispatch
 		{
 			$requestURI = Request::get(Config::get('@.PATHINFO_QUERY_NAME'),'');
 		}
+		if('' == $requestURI)
+		{
+			$requestURI = $_SERVER['REQUEST_URI'];
+		}
 		// 防止前面带/
 		if(isset($requestURI[0]) && '/' === $requestURI[0])
 		{
 			$requestURI = substr($requestURI,1);
 		}
-		// 防止后面带/
-		if('/' === substr($requestURI,-1))
+		foreach(self::$routeRules as $cfg)
 		{
-			$requestURI = substr($requestURI,0,-1);
-		}
-		foreach(self::$routeRules as $rule => $cfg)
-		{
+			$rule = $cfg['rule_alias'];
 			if(($cfg['filename'] === self::$currFileName || '' === $cfg['filename']) && preg_match('/^' . $cfg['rule'] . '$/i',('/' === $rule[0] ? '/' : '') . $requestURI,$matches)>0)
 			{
 				$url = preg_replace_callback(
@@ -249,33 +258,6 @@ class Dispatch
 			self::$module = ucfirst($mca[0]);
 			self::$control = ucfirst($mca[1]);
 			self::$action = $mca[2];
-		}
-		else
-		{
-			if(isset($mca[1])) // 2个成员
-			{
-				self::$control = ucfirst($mca[0]);
-				self::$action = $mca[1];
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
-			else if(isset($mca[0])) // 1个成员
-			{
-				self::$action = $mca[0];
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module,self::$control) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
-			else
-			{
-				if(isset(self::$currFileCfg['default_mca']))
-				{
-					list(self::$module,self::$control,self::$action) = explode('/',self::$currFileCfg['default_mca']);
-				}
-			}
 		}
 	}
 	public static function checkAuth()
@@ -345,7 +327,7 @@ class Dispatch
 	 */
 	private static function checkDeny($rule)
 	{
-		foreach($cfg['deny'] as $item)
+		foreach($rule as $item)
 		{
 			$mca = explode('/',$item);
 			if(!isset($mca[2]))
@@ -404,11 +386,31 @@ class Dispatch
 			// 载入模块配置
 			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
 		}
-		if(false===self::call() && $pageNotFound)
+		if(
+				// 判断域名是否有权限访问
+				!self::checkDomain()
+				||
+				// 判断是否执行成功
+				(false===self::call() && $pageNotFound))
 		{
 			// 页面不存在
-			Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+			$continue = true;
+			$params = array('continue'=>&$continue);
+			Event::trigger('YURUN_MCA_NOT_FOUND',$params);
+			if($continue)
+			{
+				Response::msg(Lang::get('PAGE_NOT_FOUND'), null, 404);
+			}
 		}
+	}
+	/**
+	 * 判断域名是否有权限访问
+	 * @return type
+	 */
+	public static function checkDomain()
+	{
+		$domain = Config::get('@.DOMAIN');
+		return empty($domain) || !Config::get('@.FILTER_DOMAIN') || $domain === Request::server('HTTP_HOST');
 	}
 	/**
 	 * 准备调用的数据
@@ -455,7 +457,7 @@ class Dispatch
 				$reflection = new ReflectionMethod($yurunControl, self::$action);
 				self::prepareData($reflection->getParameters());
 				unset($reflection);
-				call_user_func_array(array(&$yurunControl,self::$action),self::$data);
+				$returnResult = call_user_func_array(array(&$yurunControl,self::$action),self::$data);
 			}
 			else
 			{
@@ -465,7 +467,7 @@ class Dispatch
 					$reflection = new ReflectionMethod($yurunControl, $action);
 					self::prepareData($reflection->getParameters());
 					unset($reflection);
-					call_user_func_array(array(&$yurunControl,$action),self::$data);
+					$returnResult = call_user_func_array(array(&$yurunControl,$action),self::$data);
 				}
 				else
 				{
@@ -477,6 +479,8 @@ class Dispatch
 		{
 			return false;
 		}
+		$param = array('returnResult'=>$returnResult);
+		Event::trigger('YURUN_CONTROL_EXEC_COMPLETE',$param);
 		return true;
 	}
 	/**
@@ -498,6 +502,10 @@ class Dispatch
 		else if(is_string($param))
 		{
 			parse_str($param, $param);
+		}
+		if(empty($rule))
+		{
+			$rule = self::$module . '/' . self::$control . '/' . self::$action;
 		}
 		if(!$noEvent)
 		{
@@ -651,8 +659,9 @@ class Dispatch
 	{
 		$tParam = $param;
 		$pathMCA = explode('/',$path);
-		foreach(self::$routeRules as $rule => $cfg)
+		foreach(self::$routeRules as $cfg)
 		{
+			$rule = $cfg['rule_alias'];
 			// 变量出现在【模块控制器动作】中
 			if(isset($cfg['url'][0]) && '>' !== $cfg['url'][0] && false !== strpos($cfg['url'],'$'))
 			{

@@ -40,7 +40,7 @@ class Control
 		}
 		else
 		{
-			$eventData = array($data,$returnType);
+			$eventData = array('data'=>$data,'returnType'=>$returnType,'option'=>$option);
 			Event::trigger('YURUN_RETURN_DATA',$eventData);
 		}
 	}

@@ -20,5 +20,25 @@ class Db extends Driver
 	 * @var int
 	 */
 	const RETURN_INSERT_ID = 2;
+	/**
+	 * 获得数据库对象实例
+	 * @param string $name
+	 * @return DbBase
+	 */
+	public static function get($name = null)
+	{
+		if(empty($name))
+		{
+			// 默认数据库配置名
+			$name = Config::get('@.DEFAULT_DB');
+		}
+		$obj = self::getObj($name);
+		if(null !== $obj)
+		{
+			return $obj;
+		}
+		$option = Config::get('@.DB.' . $name);
+		return Db::create($option['type'], $name, $option);
+	}
 }
 Db::init();

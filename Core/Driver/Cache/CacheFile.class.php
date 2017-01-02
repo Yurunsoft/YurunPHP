@@ -62,20 +62,15 @@ class CacheFile extends CacheBase
 					// 写入序列化后的值
 					fwrite($fp, serialize($value));
 				}
-				// 解锁
-				flock($fp, LOCK_UN);
-				// 关闭文件
-				fclose($fp);
-				return true;
+				$result = true;
 			}
 			else
 			{
-				// 解锁
-				flock($fp, LOCK_UN);
-				// 关闭文件
-				fclose($fp);
-				return false;
+				$result = false;
 			}
+			// 关闭文件
+			fclose($fp);
+			return $result;
 		}
 	}
 	
@@ -90,13 +85,13 @@ class CacheFile extends CacheBase
 		$fileName = $this->getFileName($alias);
 		if (! is_file($fileName))
 		{
-			return $default;
+			return $this->parseDefault($default);
 		}
 		// 打开或创建缓存文件
 		$fp = fopen($fileName, 'r');
 		if (false === $fp)
 		{
-			return $default;
+			return $this->parseDefault($default);
 		}
 		else
 		{
@@ -107,8 +102,6 @@ class CacheFile extends CacheBase
 				{
 					$data .= fread($fp, 4096);
 				}
-				// 解锁
-				flock($fp, LOCK_UN);
 				// 关闭文件
 				fclose($fp);
 				// 获取缓存有效时间
@@ -119,7 +112,7 @@ class CacheFile extends CacheBase
 				{
 					// 过期删除
 					unlink($fileName);
-					return $default;
+					return $this->parseDefault($default);
 				}
 				else if($isRaw)
 				{
@@ -134,15 +127,23 @@ class CacheFile extends CacheBase
 			}
 			else
 			{
-				// 解锁
-				flock($fp, LOCK_UN);
 				// 关闭文件
 				fclose($fp);
-				return $default;
+				return $this->parseDefault($default);
 			}
 		}
 	}
-	
+	private function parseDefault($default)
+	{
+		if(is_callable($default))
+		{
+			return $default();
+		}
+		else
+		{
+			return $default;
+		}
+	}
 	/**
 	 * 删除缓存
 	 *

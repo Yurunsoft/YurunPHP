@@ -343,14 +343,14 @@ function &autoLoadControl($control,$action)
  * @param unknown $group
  * @return multitype:NULL
  */
-function &getDataByGroup($group)
+function &getDataByGroup($group,$method = 'all')
 {
-	$fields = getFieldsByGroup($group);
+	$fields = getFieldsByGroup($group,$method);
 	$data = array();
 	// 遍历取出字段对应的数据
 	foreach($fields as $key => $field)
 	{
-		$data[$field] = Request::all($key);
+		$data[$field] = Request::$method($key);
 	}
 	return $data;
 }
@@ -359,14 +359,14 @@ function &getDataByGroup($group)
  * @param unknown $group
  * @return Ambigous <multitype:multitype: , unknown>
  */
-function &getDataArrayByGroup($group)
+function &getDataArrayByGroup($group,$method = 'all')
 {
-	$fields = getFieldsByGroup($group);
+	$fields = getFieldsByGroup($group,$method);
 	$data = array();
 	// 遍历取出字段对应的数据
 	foreach($fields as $key => $field)
 	{
-		$arr = Request::all($key,array());
+		$arr = Request::$method($key,array());
 		$s = count($arr);
 		for($i=0;$i<$s;++$i)
 		{
@@ -384,15 +384,16 @@ function &getDataArrayByGroup($group)
  * @param unknown $group
  * @return multitype:multitype:unknown
  */
-function &getFieldsByGroup($group)
+function &getFieldsByGroup($group,$method = 'all')
 {
-	$group = $group . '_';
+	$isGroup = '' !== $group && null !== $group;
+	$group = $isGroup ? ($group . '_') : '';
 	$groupLen = strlen($group);
 	$fields = array();
-	$data = Request::all();
+	$data = Request::$method();
 	foreach($data as $key=>$value)
 	{
-		if(substr($key,0,$groupLen)===$group)
+		if(!$isGroup || substr($key,0,$groupLen)===$group)
 		{
 			$fieldKey = substr($key,$groupLen);
 			$fields[$key] = $fieldKey;
@@ -471,4 +472,14 @@ function removeArrayKeyNumeric(&$array)
 	{
 		unset($array[$i]);
 	}
+}
+/**
+ * 处理多行文本，替换使用指定换行符换行
+ * @param type $text
+ * @param type $newLineSplit
+ * @return type
+ */
+function parseMuiltLine($text,$newLineSplit = PHP_EOL)
+{
+	return str_replace("\n",PHP_EOL,str_replace("\n\n", "\n", str_replace("\r", "\n", $text)));
 }
