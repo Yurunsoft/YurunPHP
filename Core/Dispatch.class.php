@@ -27,7 +27,14 @@ class Dispatch
 	public static function resolve()
 	{
 		// 路由解析
-		self::parseRoute();
+		if(IS_CLI)
+		{
+			self::parseCLIRoute();
+		}
+		else
+		{
+			self::parseRoute();
+		}
 		$mca = explode('/',self::$currFileCfg['default_mca']);
 		// 模块
 		if (Config::get('@.MODULE_ON'))
@@ -258,6 +265,38 @@ class Dispatch
 			self::$module = ucfirst($mca[0]);
 			self::$control = ucfirst($mca[1]);
 			self::$action = $mca[2];
+		}
+	}
+	/**
+	 * 处理CLI的路由
+	 * @return string|unknown
+	 */
+	private static function parseCLIRoute()
+	{
+		$mca = explode('/',Request::all(1,''));
+		if(isset($mca[2]))
+		{
+			self::$module = ucfirst($mca[0]);
+			self::$control = ucfirst($mca[1]);
+			self::$action = $mca[2];
+		}
+		else if(isset($mca[1]))
+		{
+			self::$module = '';
+			self::$control = ucfirst($mca[0]);
+			self::$action = ucfirst($mca[1]);
+		}
+		else if(isset($mca[0]) && '' !== $mca[0])
+		{
+			self::$module = '';
+			self::$control = '';
+			self::$action = ucfirst($mca[0]);
+		}
+		else
+		{
+			self::$module = '';
+			self::$control = '';
+			self::$action = '';
 		}
 	}
 	public static function checkAuth()

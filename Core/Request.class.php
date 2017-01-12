@@ -6,6 +6,11 @@
 class Request
 {
 	/**
+	 * CLI模式下的参数数组
+	 * @var type 
+	 */
+	public static $cliArgs = array();
+	/**
 	 * 判断是否为https方式访问
 	 *
 	 * @return boolean
@@ -112,6 +117,21 @@ class Request
 	public static function exists($arrName, $name)
 	{
 		$arrName = strtolower($arrName);
+		if(IS_CLI)
+		{
+			if(is_integer($name))
+			{
+				return isset($_SERVER['argv'][$name]);
+			}
+			else
+			{
+				if(empty(self::$cliArgs))
+				{
+					self::parseCliArgs();
+				}
+				return isset(self::$cliArgs[$name]);
+			}
+		}
 		if('get' === $arrName)
 		{
 			return isset($_GET[$name]);
@@ -145,25 +165,43 @@ class Request
 	public static function getAll($arrName, $name = '', $default = false, $filter = false)
 	{
 		$arrName = strtolower($arrName);
-		if('get' === $arrName)
-		{
-			$data = &$_GET;
-		}
-		else if('post' === $arrName)
-		{
-			$data = &$_POST;
-		}
-		else if('cookie' === $arrName)
-		{
-			$data = &$_COOKIE;
-		}
-		else if('server' === $arrName)
+		if('server' === $arrName)
 		{
 			$data = &$_SERVER;
 		}
+		else if(IS_CLI)
+		{
+			if(is_integer($name))
+			{
+				$data = &$_SERVER['argv'];
+			}
+			else
+			{
+				if(empty(self::$cliArgs))
+				{
+					self::parseCliArgs();
+				}
+				$data = &self::$cliArgs;
+			}
+		}
 		else
 		{
-			$data = &$_REQUEST;
+			if('get' === $arrName)
+			{
+				$data = &$_GET;
+			}
+			else if('post' === $arrName)
+			{
+				$data = &$_POST;
+			}
+			else if('cookie' === $arrName)
+			{
+				$data = &$_COOKIE;
+			}
+			else
+			{
+				$data = &$_REQUEST;
+			}
 		}
 		if ('' === $name)
 		{
@@ -194,6 +232,31 @@ class Request
 		else 
 		{
 			return execFilter($value, $filter);
+		}
+	}
+	private static function parseCliArgs()
+	{
+		self::$cliArgs = array();
+		$keyName = null;
+		for($i = 2; $i < $_SERVER['argc']; ++$i)
+		{
+			if(isset($_SERVER['argv'][$i][0]) && '-' === $_SERVER['argv'][$i][0])
+			{
+				$keyName = substr($_SERVER['argv'][$i],1);
+				self::$cliArgs[$keyName] = true;
+			}
+			else
+			{
+				if(null === $keyName)
+				{
+					self::$cliArgs[$_SERVER['argv'][$i]] = true;
+				}
+				else
+				{
+					self::$cliArgs[$keyName] = $_SERVER['argv'][$i];
+					$keyName = null;
+				}
+			}
 		}
 	}
 	/**

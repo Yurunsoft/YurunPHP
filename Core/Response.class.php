@@ -52,48 +52,54 @@ class Response
 	 */
 	public static function msg($msg, $url = null, $status = 200)
 	{
-		ob_end_clean();
-		$ext = Config::get('@.TEMPLATE_EXT');
-		// 项目模版目录下对应http状态的模版文件
-		$file = APP_TEMPLATE . '_Msg/' . $status . $ext;
-		// 设置http状态码
-		self::status($status);
-		if (is_file($file))
+		if(IS_CLI)
 		{
-			include $file;
+			echo $msg;
 		}
 		else
 		{
-			// 项目模版目录下公用消息模版
-			$file = APP_TEMPLATE . '_Msg/public' . $ext;
+			ob_end_clean();
+			$ext = Config::get('@.TEMPLATE_EXT');
+			// 项目模版目录下对应http状态的模版文件
+			$file = APP_TEMPLATE . '_Msg/' . $status . $ext;
+			// 设置http状态码
+			self::status($status);
 			if (is_file($file))
 			{
 				include $file;
 			}
 			else
 			{
-				// 框架模版
-				$file=PATH_TEMPLATE . '_Msg/public' . $ext;
-				if(is_file($file))
+				// 项目模版目录下公用消息模版
+				$file = APP_TEMPLATE . '_Msg/public' . $ext;
+				if (is_file($file))
 				{
 					include $file;
 				}
 				else
-				{// 所有模版都不存在，只能手动输出默认的啦
-					// 设定utf-8编码，防止乱码
-					header('Content-type: text/html; charset=utf-8');
-					if(empty($url))
+				{
+					// 框架模版
+					$file=PATH_TEMPLATE . '_Msg/public' . $ext;
+					if(is_file($file))
 					{
-						// 页面后退
-						$js='history.go(-1);';
+						include $file;
 					}
 					else
-					{
-						// 跳转
-						$js='location=\'' . $url . '\';';
-					}
-					// 输出并结束脚本
-					echo
+					{// 所有模版都不存在，只能手动输出默认的啦
+						// 设定utf-8编码，防止乱码
+						header('Content-type: text/html; charset=utf-8');
+						if(empty($url))
+						{
+							// 页面后退
+							$js='history.go(-1);';
+						}
+						else
+						{
+							// 跳转
+							$js='location=\'' . $url . '\';';
+						}
+						// 输出并结束脚本
+						echo
 <<<JS
 {$msg}
 <script>
@@ -104,6 +110,7 @@ function redirect()
 setTimeout('redirect()',1000);
 </script>
 JS;
+					}
 				}
 			}
 		}

@@ -13,6 +13,8 @@ if (PHP_VERSION < 5.3)
 define('YURUN_VERSION', '1.3');
 // 版本声明，请勿去除或擅改，否则将在法律范围内不保证贵站能安全运行！
 header('X-Powered-By:YurunPHP ' . YURUN_VERSION);
+// 是否命令行CLI模式下运行
+define('IS_CLI', 'cli' === PHP_SAPI);
 // 是否开启调试
 defined('IS_DEBUG') or define('IS_DEBUG', true);
 // 框架根目录
@@ -49,7 +51,7 @@ if('/' === $webroot || '\\' === $webroot)
 {
 	$webroot = '';
 }
-define('WEBROOT',(isset($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']) ? 'https://' : 'http://') . $_SERVER['HTTP_HOST'] . $webroot);
+define('WEBROOT',(isset($_SERVER['HTTPS']) && 'off' !== strtolower($_SERVER['HTTPS']) ? 'https://' : 'http://') . (isset($_SERVER['HTTP_HOST']) ? $_SERVER['HTTP_HOST'] : '') . $webroot);
 unset($webroot);
 if (defined('IS_COMPILED'))
 {
@@ -171,25 +173,34 @@ function printError($err)
 		unset($GLOBALS['debug']['lastsql']);
 	}
 	ob_end_clean();
-	header('HTTP/1.1 500 Internal Server Error');
-	header('Status:500 Internal Server Error');
-	if(IS_DEBUG)
+	if(IS_CLI)
 	{
-		include Config::get('@.ERROR_DEBUG_TEMPLATE');
+		print_r('Error!');
+		print_r($error);
+		exit;
 	}
 	else
 	{
-		$url=Config::get('@.ERROR_URL');
-		if(empty($url))
+		header('HTTP/1.1 500 Internal Server Error');
+		header('Status:500 Internal Server Error');
+		if(IS_DEBUG)
 		{
-			include Config::get('@.ERROR_RELEASE_TEMPLATE');
+			include Config::get('@.ERROR_DEBUG_TEMPLATE');
 		}
 		else
 		{
-			header('Location:' .$url);
+			$url=Config::get('@.ERROR_URL');
+			if(empty($url))
+			{
+				include Config::get('@.ERROR_RELEASE_TEMPLATE');
+			}
+			else
+			{
+				header('Location:' .$url);
+			}
 		}
+		exit(str_repeat(' ', 1024));
 	}
-	exit(str_repeat(' ', 1024));
 }
 register_shutdown_function(function(){
 	if ($e = error_get_last())
