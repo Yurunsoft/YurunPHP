@@ -70,18 +70,21 @@ class Model extends ArrayData
 			$this->dbAlias = $dbAlias;
 		}
 		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
-		if(null !== $this->dbAlias)
+		$this->db = Db::get($this->dbAlias);
+		if(false !== $this->db)
 		{
-			$this->db = Db::get($this->dbAlias);
-			if(false!==$this->db && !$this->db->isConnect())
+			if($this->db->isConnect())
+			{
+				// 表前缀
+				$this->prefix = $this->db->tablePrefix;
+				if($this->autoFields && $this->table != '')
+				{
+					$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+				}
+			}
+			else
 			{
 				throw new Exception($this->db->getError());
-			}
-			// 表前缀
-			$this->prefix = $this->db->tablePrefix;
-			if($this->autoFields && $this->table != '')
-			{
-				$this->loadFields($this->fields,$this->fieldNames,$this->pk);
 			}
 		}
 	}

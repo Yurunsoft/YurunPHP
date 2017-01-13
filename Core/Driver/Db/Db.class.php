@@ -38,7 +38,14 @@ class Db extends Driver
 			return $obj;
 		}
 		$option = Config::get('@.DB.' . $name);
-		return Db::create($option['type'], $name, $option);
+		if(false === $option)
+		{
+			return false;
+		}
+		else
+		{
+			return Db::create($option['type'], $name, $option);
+		}
 	}
 }
 Db::init();
