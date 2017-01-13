@@ -266,6 +266,18 @@ class Dispatch
 			self::$control = ucfirst($mca[1]);
 			self::$action = $mca[2];
 		}
+		else if(isset($mca[1])) // 2个成员
+		{
+			self::$module = '';
+			self::$control = ucfirst($mca[0]);
+			self::$action = $mca[1];
+		}
+		else if(isset($mca[0])) // 1个成员
+		{
+			self::$module = '';
+			self::$control = '';
+			self::$action = $mca[0];
+		}
 	}
 	/**
 	 * 处理CLI的路由
