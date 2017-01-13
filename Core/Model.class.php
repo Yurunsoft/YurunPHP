@@ -144,10 +144,18 @@ class Model extends ArrayData
 	 * 分页查询，获取总记录数
 	 * @param unknown $recordCount
 	 */
-	public function &selectPage($page = 1,$show = 10,&$recordCount = 0)
+	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
 		$option = $this->options;
-		$recordCount = $this->count();
+		if(null === $recordCount)
+		{
+			// 去除排序，提高效率
+			if(isset($this->options['order']))
+			{
+				unset($this->options['order']);
+			}
+			$recordCount = $this->count();
+		}
 		$this->options = $option;
 		$data = $this->db->select($this->page($page,$show)->getOption(), false);
 		$this->parseTotal($data,$option);
