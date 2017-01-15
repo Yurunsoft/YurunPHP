@@ -6,11 +6,11 @@
 class Dispatch
 {
 	// 模块名
-	private static $module = '';
+	private static $module = null;
 	// 控制器名
-	private static $control = '';
+	private static $control = null;
 	// 动作名
-	private static $action = '';
+	private static $action = null;
 	// 给action传的参数
 	private static $data = array();
 	// 处理后的路由规则
@@ -39,7 +39,7 @@ class Dispatch
 		// 模块
 		if (Config::get('@.MODULE_ON'))
 		{
-			if(empty(self::$module))
+			if(null === self::$module)
 			{
 				self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
 				if (self::$module)
@@ -65,7 +65,7 @@ class Dispatch
 			self::$module = '';
 		}
 		// 控制器
-		if(empty(self::$control))
+		if(null === self::$control)
 		{
 			self::$control = Request::get(Config::get('@.CONTROL_NAME'), false);
 			if (self::$control)
@@ -81,12 +81,12 @@ class Dispatch
 				}
 				else
 				{
-					self::$control = Config::get('@.CONTROL_DEFAULT');
+					self::$control = Config::get('@.CONTROL_DEFAULT', '');
 				}
 			}
 		}
 		// 动作
-		if(empty(self::$action))
+		if(null === self::$action)
 		{
 			self::$action = Request::get(Config::get('@.ACTION_NAME'), false);
 			if (!self::$action)
@@ -98,7 +98,7 @@ class Dispatch
 				}
 				else
 				{
-					self::$action = Config::get('@.CONTROL_DEFAULT');
+					self::$action = Config::get('@.ACTION_DEFAULT', '');
 				}
 			}
 		}
@@ -268,14 +268,14 @@ class Dispatch
 		}
 		else if(isset($mca[1])) // 2个成员
 		{
-			self::$module = '';
+			self::$module = null;
 			self::$control = ucfirst($mca[0]);
 			self::$action = $mca[1];
 		}
 		else if(isset($mca[0])) // 1个成员
 		{
-			self::$module = '';
-			self::$control = '';
+			self::$module = null;
+			self::$control = null;
 			self::$action = $mca[0];
 		}
 	}
@@ -294,21 +294,21 @@ class Dispatch
 		}
 		else if(isset($mca[1]))
 		{
-			self::$module = '';
+			self::$module = null;
 			self::$control = ucfirst($mca[0]);
 			self::$action = ucfirst($mca[1]);
 		}
 		else if(isset($mca[0]) && '' !== $mca[0])
 		{
-			self::$module = '';
-			self::$control = '';
+			self::$module = null;
+			self::$control = null;
 			self::$action = ucfirst($mca[0]);
 		}
 		else
 		{
-			self::$module = '';
-			self::$control = '';
-			self::$action = '';
+			self::$module = null;
+			self::$control = null;
+			self::$action = null;
 		}
 	}
 	public static function checkAuth()
