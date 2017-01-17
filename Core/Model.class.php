@@ -471,15 +471,25 @@ class Model extends ArrayData
 				break;
 			}
 		}
+		// 判断记录是否存在，来决定$isEdit的值
 		if($isEdit)
 		{
 			$option = $this->options;
 			$isEdit = $this->wherePk($data,$table)->count() > 0;
 			$this->options = $option;
 		}
+		// 2个if不要合并！
 		if($isEdit)
 		{
-			return $this->wherePk($data,$table)->edit($data,$return);
+			$result = $this->wherePk($data,$table)->edit($data,$return);
+			if(Db::RETURN_INSERT_ID === $result)
+			{
+				return $pk[0];
+			}
+			else
+			{
+				return $result;
+			}
 		}
 		else
 		{
@@ -1049,7 +1059,7 @@ class Model extends ArrayData
 		}
 		else
 		{
-			$where = array($tableAlias . '.' . $pk=>$pkData);
+			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
 	}
