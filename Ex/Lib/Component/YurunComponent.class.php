@@ -32,50 +32,6 @@ class YurunComponent
 			$obj->end();
 		}
 	}
-	public static function arrayToStr(&$attrs)
-	{
-		$keys = array_keys($attrs);
-		$result = '';
-		foreach($keys as $key)
-		{
-			if('<?php '===substr($attrs[$key],0,6) && '?>'===substr($attrs[$key],-2))
-			{
-				$attrs[$key] = substr($attrs[$key],6,-2);
-			}
-			else if(self::$tagLeft . 'php' . self::$tagRight ===substr($attrs[$key],0,5) && self::$tagLeft . '/php' . self::$tagRight === substr($attrs[$key],-6))
-			{
-				$attrs[$key] = substr($attrs[$key],5,-6);
-			}
-			else if(false!==stripos($attrs[$key],'<?php'))
-			{
-				$attrs[$key] = preg_replace_callback(
-						'/\?>([^<]*)\<\?php/is',
-						function($matches) {
-							return '.\''.addcslashes($matches[1],'\'').'\'.';
-						},
-						'?>' . $attrs[$key] . '<?php',
-						-1);
-				$attrs[$key] = '\'' . substr($attrs[$key],2,-2) . '\'';
-			}
-			else if(false!==stripos($attrs[$key],'<php>'))
-			{
-				$attrs[$key] = preg_replace_callback(
-						'/' . self::$tagLeft . '\/php' . self::$tagRight . '([^' . self::$tagLeft . ']*)<php>/is',
-						function($matches) {
-							return '.\''.addcslashes($matches[1],'\'').'\'.';
-						},
-						self::$tagLeft . '/php' . self::$tagRight . $attrs[$key] . self::$tagLeft . 'php' . self::$tagRight,
-						-1);
-				$attrs[$key] = '\'' . substr($attrs[$key],2,-2) . '\'';
-			}
-			else
-			{
-				$attrs[$key] = '\'' . addcslashes($attrs[$key],'\'') . '\'';
-			}
-			$result .= "'{$key}'=>{$attrs[$key]},";
-		}
-		return 'array('.substr($result,0,-1).')';
-	}
 	function parseValues($str,$arr)
 	{
 		return preg_replace_callback(

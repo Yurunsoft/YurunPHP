@@ -15,6 +15,7 @@ class YurunTPEView
 		'js',
 		'css',
 		'image',
+		'origin'
 	);
 	private static $controlsPatterns1,$controlsPatterns2;
 	private static $tagsPatterns1,$tagsPatterns2;
@@ -150,18 +151,8 @@ class YurunTPEView
 			}
 			if(isset($attrs['id']))
 			{
-				$id = str_ireplace(
-						array(
-							self::$tagLeft . 'php' . self::$tagRight,
-							self::$tagLeft . '/php' . self::$tagRight
-						),
-						array(
-							'{',
-							'}'
-						)
-						,$attrs['id']);
 				$argPreName = '$c' .str_replace('.','',uniqid('',true));
-				$argPre = "{$argPreName} = \"{$id}\";";
+				$argPre = "{$argPreName} = \"{$attrs['id']}\";";
 				$id = $argPreName;
 			}
 			else
@@ -170,7 +161,7 @@ class YurunTPEView
 			}
 			$argName = '$'.$id;
 			$attrs['innerHtml'] = base64_encode($inner);
-			$attrsStr = YurunComponent::arrayToStr($attrs);
+			$attrsStr = self::arrayToOutStr($attrs);
 			$php = <<<PHP
 <?php {$argPre}{$argName}=YurunComponent::get{$tag}($attrsStr);if(false!=={$argName}->begin()):?>{$inner}<?php endif;{$argName}->end();?>
 PHP
@@ -321,8 +312,8 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['name']))
 		{
-			$quot = '$'===substr($attrs['name'],0,1)?'':'\'';
-			return '<?php $this->include('.$quot.$attrs['name']."{$quot});?>";
+			self::parseArgValueOut($attrs['name']);
+			return '<?php $this->include(' . $attrs['name'] . ');?>';
 		}
 		else
 		{
@@ -334,8 +325,16 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = parseStatic($attrs['src']);
-			return "<script src=\"{$src}\" type=\"text/javascript\"></script>";
+			$src = $attrs['src'];
+			if(self::parseArgValueOut($src))
+			{
+				return '<script src="<?php echo parseStatic(' . $src . ');?>" type="text/javascript"></script>';
+			}
+			else
+			{
+				$src = parseStatic($attrs['src']);
+				return "<script src=\"{$src}\" type=\"text/javascript\"></script>";
+			}
 		}
 		else 
 		{
@@ -347,8 +346,16 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = parseStatic($attrs['src']);
-			return "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$src}\"/>";
+			$src = $attrs['src'];
+			if(self::parseArgValueOut($src))
+			{
+				return "<link rel=\"stylesheet\" type=\"text/css\" href=\"<?php echo parseStatic({$src});?>\"/>";
+			}
+			else
+			{
+				$src = parseStatic($attrs['src']);
+				return "<link rel=\"stylesheet\" type=\"text/css\" href=\"{$src}\"/>";
+			}
 		}
 		else
 		{
@@ -360,15 +367,28 @@ PHP
 		$attrs = $this->parseAttrs($attrs);
 		if(isset($attrs['src']))
 		{
-			$src = parseStatic($attrs['src']);
+			$srcOrigin = $attrs['src'];
 			unset($attrs['src']);
 			$attrs = $this->parseAttrs($attrs);
-			return "<img src=\"{$src}\"{$attrs}/>";
+			$src = $srcOrigin;
+			if(self::parseArgValueOut($src))
+			{
+				return "<img src=\"<?php echo parseStatic({$src});?>\"{$attrs}/>";
+			}
+			else
+			{
+				$src = parseStatic($srcOrigin);
+				return "<img src=\"{$src}\"{$attrs}/>";
+			}
 		}
 		else
 		{
 			return false;
 		}
+	}
+	public function _origin($attrs,$inner)
+	{
+		return $inner;
 	}
 	public function parseUrl(&$html)
 	{
@@ -395,6 +415,9 @@ PHP
 			'__MODULE__'	=>	Dispatch::module(),		// 当前模块名
 			'__CONTROL__'	=>	Dispatch::control(),	// 当前控制器名
 			'__ACTION__'	=>	Dispatch::action(),		// 当前动作名
+			'__DYNAMIC_MODULE__'	=>	'Dispatch::module()',		// 当前模块名
+			'__DYNAMIC_CONTROL__'	=>	'Dispatch::control()',	// 当前控制器名
+			'__DYNAMIC_ACTION__'	=>	'Dispatch::action()',		// 当前动作名
 			'__WEBROOT__'	=>	WEBROOT,				// 站点根目录
 			'__STATIC__'	=>	STATIC_PATH,			// 静态文件目录
 			'__THEME__'		=>	Config::get('@.THEME')	// 当前主题名
@@ -411,6 +434,42 @@ PHP
 	{
 		// 预定义常量
 		$html = str_replace(self::$constsKey,self::$constsValue,$html);
+	}
+	public static function arrayToOutStr(&$attrs)
+	{
+		$keys = array_keys($attrs);
+		$result = '';
+		foreach($keys as $key)
+		{
+			if(isset($attrs[$key][0]) && '#' === $attrs[$key][0])
+			{
+				$attrs[$key] = substr($attrs[$key],1);
+			}
+			else
+			{
+				$attrs[$key] = '\'' . addcslashes($attrs[$key],'\'') . '\'';
+			}
+			$result .= "'{$key}'=>{$attrs[$key]},";
+		}
+		return 'array('.substr($result,0,-1).')';
+	}
+	/**
+	 * 处理输出参数。PHP语句返回true，否则false
+	 * @param type $value
+	 * @return boolean
+	 */
+	public static function parseArgValueOut(&$value)
+	{
+		if(isset($value[0]) && '#' === $value[0])
+		{
+			$value = substr($value,1);
+			return true;
+		}
+		else
+		{
+			$value = '\'' . addcslashes($value,'\'') . '\'';
+			return false;
+		}
 	}
 }
 YurunTPEView::init();
