@@ -119,16 +119,11 @@ class Page
 	 */
 	public function setRule($rule)
 	{
-		if(null===$rule)
+		if(null === $rule)
 		{
-			$rule='';
-			if (Config::get('@.MODULE_ON'))
-			{
-				$rule=Dispatch::module().'/';
-			}
-			$rule.=Dispatch::control().'/'.Dispatch::action();
+			$rule = Dispatch::module() . '/' . Dispatch::control() . '/' . Dispatch::action();
 		}
-		$this->rule=$rule;
+		$this->rule = $rule;
 	}
 
 	/**

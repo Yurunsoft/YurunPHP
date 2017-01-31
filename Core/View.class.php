@@ -85,15 +85,7 @@ class View extends ArrayData
 				// 模块模版目录
 				else if (false !== stripos($template, '@m/'))
 				{
-					if(Config::get('@.MODULE_ON'))
-					{
-						$template = str_replace('@m/', 
-								APP_MODULE . Dispatch::module() . '/' . Config::get('@.TEMPLATE_FOLDER').'/', $template);
-					}
-					else
-					{
-						$template = str_replace('@m/',APP_TEMPLATE, $template);
-					}
+					$template = str_replace('@m/', APP_MODULE . Dispatch::module() . '/' . Config::get('@.TEMPLATE_PATH').'/', $template);
 				}
 				else 
 				{
@@ -152,20 +144,13 @@ class View extends ArrayData
 					{
 						$action = Dispatch::action();
 					}
-					if(Config::get('@.MODULE_ON'))
+					if(Config::get('@.MODULE_TEMPLATE'))
 					{
-						if(Config::get('@.MODULE_TEMPLATE'))
-						{
-							$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_FOLDER')."/{$themeName}/{$control}/{$action}";
-						}
-						else
-						{
-							$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
-						}
+						$template=APP_MODULE."{$module}/".Config::get('@.TEMPLATE_PATH')."/{$themeName}/{$control}/{$action}";
 					}
 					else
 					{
-						$template=APP_TEMPLATE."{$themeName}/{$control}/{$action}";
+						$template=APP_TEMPLATE."{$themeName}/{$module}/{$control}/{$action}";
 					}
 				}
 			}
@@ -269,7 +254,7 @@ class View extends ArrayData
 		{
 			$cacheFileName = 'Template/' . md5($file);
 			// 启用模版引擎
-			$cacheFile = Cache::getObj('File')->getFileName($cacheFileName);
+			$cacheFile = Cache::getInstance('DefaultFile')->getFileName($cacheFileName);
 			if($this->cacheIsExpired($cacheFile))
 			{
 				// 判断模版缓存是否存在

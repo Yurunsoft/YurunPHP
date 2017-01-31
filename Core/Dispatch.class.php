@@ -37,32 +37,25 @@ class Dispatch
 		}
 		$mca = explode('/',self::$currFileCfg['default_mca']);
 		// 模块
-		if (Config::get('@.MODULE_ON'))
+		if(null === self::$module)
 		{
-			if(null === self::$module)
+			self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
+			if (self::$module)
 			{
-				self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
-				if (self::$module)
+				self::$module=ucfirst(self::$module);
+			}
+			else 
+			{
+				// 判断使用绑定模块还是默认模块
+				if(empty($mca[0]))
 				{
-					self::$module=ucfirst(self::$module);
+					self::$module = Config::get('@.MODULE_DEFAULT', '');
 				}
-				else 
+				else
 				{
-					// 判断使用绑定模块还是默认模块
-					if(empty($mca[0]))
-					{
-						self::$module = Config::get('@.MODULE_DEFAULT', '');
-					}
-					else
-					{
-						self::$module = $mca[0];
-					}
+					self::$module = $mca[0];
 				}
 			}
-		}
-		else
-		{
-			self::$module = '';
 		}
 		// 控制器
 		if(null === self::$control)
@@ -114,7 +107,7 @@ class Dispatch
 	 */
 	public static function initRouteRules()
 	{
-		Config::create('app_route', 'php', APP_CONFIG . 'route.php');
+//		Config::create('app_route', 'php', APP_CONFIG . 'route.php');
 		self::$routeRules = array();
 		$rules = Config::get('@.route.rules');
 		foreach($rules as $rule => $url)
@@ -272,7 +265,7 @@ class Dispatch
 			self::$control = ucfirst($mca[0]);
 			self::$action = $mca[1];
 		}
-		else if(isset($mca[0])) // 1个成员
+		else if(isset($mca[0]) && '' !== $mca[0]) // 1个成员
 		{
 			self::$module = null;
 			self::$control = null;
@@ -400,7 +393,7 @@ class Dispatch
 		}
 		return false;
 	}
-	public static function switchMCA($rule)
+	public static function switchMCA($rule = null)
 	{
 		if (! empty($rule))
 		{
@@ -432,11 +425,14 @@ class Dispatch
 	public static function exec($rule = null, $pageNotFound = true)
 	{
 		self::switchMCA($rule);
-		if (Config::get('@.MODULE_ON'))
-		{
-			// 载入模块配置
-			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
-		}
+		// 载入模块配置
+		Config::removeInstance('Module');
+		Config::create(array(
+			'type'	=>	'php',
+			'option'	=>	array(
+				'filename'	=>	APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php',
+			)
+		), 'Module');
 		if(
 				// 判断域名是否有权限访问
 				!self::checkDomain()

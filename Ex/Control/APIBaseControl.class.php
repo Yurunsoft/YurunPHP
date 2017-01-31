@@ -27,7 +27,7 @@ class APIBaseControl extends Control
 	}
 	public function parseException($exception)
 	{
-		if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
+		if(Config::get('@.LOG_ERROR'))
 		{
 			Log::add(Dispatch::module().'/'.Dispatch::control().'/'.Dispatch::action().'错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
 		}

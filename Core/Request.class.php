@@ -78,27 +78,26 @@ class Request
 	}
 	/**
 	 * 获取站点地址
-	 *
-	 * @param string $path        	
+	 * @param string $path
 	 * @return string
 	 */
 	public static function getHome($path = '')
 	{
-		$domain=Config::get('@.DOMAIN');
+		$domain = Config::get('@.DOMAIN');
 		if(empty($domain))
 		{
-			$domain=$_SERVER['HTTP_HOST'];
+			$domain = $_SERVER['HTTP_HOST'];
 		}
-		if(''===$path || '/'===$path[0])
+		if('' === $path || '/' === $path[0])
 		{
-			return self::getProtocol().$domain.$path;
+			return self::getProtocol() . $domain . $path;
 		}
 		else
 		{
-			$dir=dirname($_SERVER['SCRIPT_NAME']);
-			if('\\'===$dir)
+			$dir = dirname($_SERVER['SCRIPT_NAME']);
+			if('\\' === $dir)
 			{
-				$dir='';
+				$dir = '';
 			}
 			return self::getProtocol()."{$domain}{$dir}/{$path}";
 		}

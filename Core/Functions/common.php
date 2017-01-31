@@ -310,16 +310,16 @@ function &parseCfgName($name)
  */
 function &autoLoadControl($control,$action)
 {
-	$currModulePath = APP_MODULE . Dispatch::module() . '/' . Config::get('@.CONTROL_FOLDER') . '/';
+	$currModulePath = APP_MODULE . Dispatch::module() . '/Control/';
 	$controlFile = $control . 'Control.class.php';
 	$actionFile =  $control . '/' . $action . '.php';
 	if (require_once_multi(array (
 				$currModulePath . $actionFile,			// 模块控制器动作目录
 				$currModulePath . $controlFile,			// 模块控制器目录
-				APP_CONTROL . $actionFile,				// 项目控制器动作目录
-				APP_CONTROL . $controlFile,				// 项目控制器目录
-				PATH_EX_CONTROL . '/' . $actionFile, 	// 框架控制器动作扩展目录
-				PATH_EX_CONTROL . '/' . $controlFile 	// 框架控制器扩展目录
+				APP_LIB . 'Control/' . $actionFile,				// 项目控制器动作目录
+				APP_LIB . 'Control/' . $controlFile,				// 项目控制器目录
+				ROOT_PATH . 'Ex/Lib/' . $actionFile, 	// 框架控制器动作扩展目录
+				ROOT_PATH . 'Ex/Lib/' . $controlFile 	// 框架控制器扩展目录
 			),false))
 	{
 		$r = new ReflectionClass($control . 'Control');

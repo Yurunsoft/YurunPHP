@@ -11,7 +11,8 @@ class Cookie
 	public static $domain;
 	// 规定是否通过安全的 HTTPS 连接来传输cookie
 	public static $secure;
-	
+	// 是否已初始化
+	private static $isInit = false;
 	/**
 	 * 初始化Cookie配置
 	 */
@@ -20,6 +21,7 @@ class Cookie
 		self::$path = Config::get('@.COOKIE_PATH', '/');
 		self::$domain = Config::get('@.COOKIE_DOMAIN', '');
 		self::$secure = Config::get('@.COOKIE_SECURE', 0);
+		self::$isInit = true;
 	}
 	
 	/**
@@ -36,6 +38,10 @@ class Cookie
 	 */
 	public static function set($name, $value, $expire = 0, $path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		return setcookie($name, $value, is_numeric($expire) ? $expire : self::$expire, '' == $path ? self::$path : $path, '' == $domain ? self::$domain : $domain, '' == $secure ? self::$secure : $secure);
 	}
 	
@@ -91,9 +97,13 @@ class Cookie
 	 */
 	public static function delete($name,$path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		if(!is_array($name))
 		{
-			$name=func_get_args();
+			$name = array($name);
 		}
 		foreach ($name as $val)
 		{
@@ -111,10 +121,13 @@ class Cookie
 	 */
 	public static function clear($path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		foreach ($_COOKIE as $key => $v)
 		{
 			self::delete($key, $path, $domain, $secure);
 		}
 	}
 }
-Cookie::init();

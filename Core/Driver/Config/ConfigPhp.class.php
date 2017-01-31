@@ -3,23 +3,8 @@
  * PHP数组配置驱动
  * @author Yurun <admin@yurunsoft.com>
  */
-class ConfigPhp extends ConfigBase
+class ConfigPhp extends ConfigFileBase
 {
-	/**
-	 * 构造方法
-	 *
-	 * @param type $p1        	
-	 */
-	public function __construct($p1 = null)
-	{
-		parent::__construct($p1);
-		if (is_string($p1))
-		{
-			// 传入文件名，把该文件内数据，初始化实例
-			$this->fromFile($p1);
-		}
-	}
-	
 	/**
 	 * 将文件转换为数据
 	 *

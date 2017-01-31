@@ -5,54 +5,38 @@
  */
 abstract class Cache extends Driver
 {
+	/**
+	 * 当前驱动名称
+	 * @var type 
+	 */
+	public static $driverName = '';
 	protected static $pageCacheName;
-	/**
-	 * 初始化
-	 */
-	public static function init()
-	{
-		parent::init();
-		if (null === self::$pageCacheName)
-		{
-			self::$pageCacheName = urlencode($_SERVER['HTTP_HOST'] . '#' . $_SERVER['REQUEST_URI']) . serialize($_REQUEST);
-		}
-		self::create('file', null, Config::get('@.CACHE_FILE', array ()));
-	}
 	
-	/**
-	 * 添加缓存项
-	 *
-	 * @param string $type        	
-	 * @param string $name        	
-	 * @param array $data        	
-	 * @return boolean
-	 */
-	public static function create($type = 'file', $name = null, $data = array())
+	protected static function __initBefore()
 	{
-		if (null === $name)
-		{
-			// 当别名留空，默认使用首字母大写的缓存类型名称
-			$name = ucfirst($type);
-		}
-		return ! self::exists($name) && false !== parent::create($type, $name, $data);
+		static::$driverName = 'Cache';
 	}
-	
+	protected static function __onAppLoadBefore()
+	{
+		// 项目缓存文件目录
+		defined('APP_CACHE') or define('APP_CACHE', APP_PATH . Config::get('@.CACHE_PATH') . DIRECTORY_SEPARATOR);
+	}
 	/**
 	 * 设置缓存
 	 *
-	 * @param type $alias        	
+	 * @param type $cacheName        	
 	 * @param type $value        	
-	 * @param array $config        	
-	 * @param string $name
+	 * @param array $option        	
+	 * @param string $alias
 	 *        	缓存类型
 	 * @return boolean
 	 */
-	public static function set($alias, $value = null, $config = array(), $name = 'File')
+	public static function set($cacheName, $value = null, $option = array(), $alias = null)
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($alias);
 		if ($obj)
 		{
-			return $obj->set($alias, $value, $config);
+			return $obj->set($cacheName, $value, $option);
 		}
 		else
 		{
@@ -63,16 +47,16 @@ abstract class Cache extends Driver
 	/**
 	 * 获取缓存
 	 *
-	 * @param string $name        	
+	 * @param string $alias        	
 	 * @param mixed $default        	
 	 * @return mixed
 	 */
-	public static function get($alias, $default = false, $config = array(), $name = 'File')
+	public static function get($cacheName, $default = false, $option = array(), $alias = null)
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($alias);
 		if ($obj)
 		{
-			return $obj->get($alias, $default, $config);
+			return $obj->get($cacheName, $default, $option);
 		}
 		else
 		{
@@ -83,15 +67,15 @@ abstract class Cache extends Driver
 	/**
 	 * 删除数据
 	 *
-	 * @param string $name        	
+	 * @param string $alias        	
 	 * @return boolean
 	 */
-	public static function remove($alias, $config = array(), $name = 'File')
+	public static function remove($cacheName, $option = array(), $alias = null)
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($alias);
 		if ($obj)
 		{
-			return $obj->remove($alias, $config);
+			return $obj->remove($cacheName, $option);
 		}
 		else
 		{
@@ -102,9 +86,9 @@ abstract class Cache extends Driver
 	/**
 	 * 清空数据
 	 */
-	public static function clear($name = 'File')
+	public static function clear($alias = null)
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($alias);
 		if ($obj)
 		{
 			return $obj->clear();
@@ -114,12 +98,12 @@ abstract class Cache extends Driver
 			return false;
 		}
 	}
-	public static function cacheExists($alias, $config = array(), $name = 'File')
+	public static function cacheExists($cacheName, $option = array(), $alias = null)
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($alias);
 		if ($obj)
 		{
-			return $obj->exists($alias, $config);
+			return $obj->exists($cacheName, $option);
 		}
 		else
 		{
@@ -134,7 +118,10 @@ abstract class Cache extends Driver
 	 */
 	public static function pageCacheName()
 	{
+		if (null === self::$pageCacheName)
+		{
+			self::$pageCacheName = urlencode($_SERVER['HTTP_HOST'] . '#' . $_SERVER['REQUEST_URI']) . serialize($_REQUEST);
+		}
 		return self::$pageCacheName;
 	}
 }
-Cache::init();

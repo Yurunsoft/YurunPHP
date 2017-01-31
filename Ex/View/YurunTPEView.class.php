@@ -15,6 +15,7 @@ class YurunTPEView
 		'js',
 		'css',
 		'image',
+		'origin'
 	);
 	private static $controlsPatterns1,$controlsPatterns2;
 	private static $tagsPatterns1,$tagsPatterns2;
@@ -150,19 +151,20 @@ class YurunTPEView
 			}
 			if(isset($attrs['id']))
 			{
-				$id = str_ireplace(
-						array(
-							self::$tagLeft . 'php' . self::$tagRight,
-							self::$tagLeft . '/php' . self::$tagRight
-						),
-						array(
-							'{',
-							'}'
-						)
-						,$attrs['id']);
-				$argPreName = '$c' .str_replace('.','',uniqid('',true));
-				$argPre = "{$argPreName} = \"{$id}\";";
-				$id = $argPreName;
+//				$id = str_ireplace(
+//						array(
+//							self::$tagLeft . 'php' . self::$tagRight,
+//							self::$tagLeft . '/php' . self::$tagRight
+//						),
+//						array(
+//							'{',
+//							'}'
+//						)
+//						,$attrs['id']);
+//				$argPreName = '$c' .str_replace('.','',uniqid('',true));
+//				$argPre = "{$argPreName} = \"{$id}\";";
+//				$id = $argPreName;
+				$id = $attrs['id'];
 			}
 			else
 			{
@@ -370,6 +372,10 @@ PHP
 			return false;
 		}
 	}
+	public function _origin($attrs,$inner)
+	{
+		return $inner;
+	}
 	public function parseUrl(&$html)
 	{
 		$html = preg_replace(
@@ -395,7 +401,10 @@ PHP
 			'__MODULE__'	=>	Dispatch::module(),		// 当前模块名
 			'__CONTROL__'	=>	Dispatch::control(),	// 当前控制器名
 			'__ACTION__'	=>	Dispatch::action(),		// 当前动作名
-			'__WEBROOT__'	=>	WEBROOT,				// 站点根目录
+			'__DYNAMIC_MODULE__'	=>	'Dispatch::module()',		// 当前模块名
+			'__DYNAMIC_CONTROL__'	=>	'Dispatch::control()',	// 当前控制器名
+			'__DYNAMIC_ACTION__'	=>	'Dispatch::action()',		// 当前动作名
+			'__WEBROOT__'	=>	Request::getHome(),				// 站点根目录
 			'__STATIC__'	=>	STATIC_PATH,			// 静态文件目录
 			'__THEME__'		=>	Config::get('@.THEME')	// 当前主题名
 		);

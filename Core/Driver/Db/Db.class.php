@@ -6,6 +6,11 @@
 class Db extends Driver
 {
 	/**
+	 * 当前驱动名称
+	 * @var type 
+	 */
+	public static $driverName = '';
+	/**
 	 * 返回操作是否执行成功
 	 * @var int
 	 */
@@ -20,6 +25,11 @@ class Db extends Driver
 	 * @var int
 	 */
 	const RETURN_INSERT_ID = 2;
+	
+	protected static function __initBefore()
+	{
+		static::$driverName = 'Db';
+	}
 	/**
 	 * 获得数据库对象实例
 	 * @param string $name
@@ -32,7 +42,7 @@ class Db extends Driver
 			// 默认数据库配置名
 			$name = Config::get('@.DEFAULT_DB');
 		}
-		$obj = self::getObj($name);
+		$obj = self::getInstance($name);
 		if(null !== $obj)
 		{
 			return $obj;
@@ -44,8 +54,7 @@ class Db extends Driver
 		}
 		else
 		{
-			return Db::create($option['type'], $name, $option);
+			return Db::create($option,$name);
 		}
 	}
 }
-Db::init();

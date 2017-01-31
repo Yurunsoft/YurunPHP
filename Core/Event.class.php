@@ -6,22 +6,7 @@
 class Event
 {
 	// 事件绑定记录
-	private static $events;
-	/**
-	 * 初始化
-	 */
-	public static function init()
-	{
-		self::$events = array ();
-		// 获取插件列表
-		$data = Config::get('Plugin');
-		// 加载插件
-		foreach ($data as $value)
-		{
-			include_once APP_PLUGIN . "{$value}/{$value}.php";
-		}
-		return true;
-	}
+	private static $events = array();
 	
 	/**
 	 * 注册事件

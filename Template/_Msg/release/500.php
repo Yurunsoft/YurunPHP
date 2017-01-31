@@ -1,4 +1,4 @@
-<?php defined('YURUN_VERSION') or exit;?>
+<?php defined('YURUN_START') or exit;?>
 <!DOCTYPE>
 <html>
 <head>
@@ -8,6 +8,6 @@
 
 <body>
 	<h1>不好意思，网站出错啦！</h1>
-	<p>YurunPHP <?php echo YURUN_VERSION;?></p>
+	<p>YurunPHP <?php echo Yurun::YURUN_VERSION;?></p>
 </body>
 </html>

@@ -6,81 +6,73 @@
 abstract class Config extends Driver
 {
 	/**
-	 * 初始化
+	 * 当前驱动名称
+	 * @var type 
 	 */
-	public static function init()
+	public static $driverName = '';
+	/**
+	 * 默认配置实例
+	 * @var type 
+	 */
+	private static $defaultObject = null;
+	/**
+	 * 初始化前
+	 */
+	protected static function __initBefore()
 	{
-		parent::init();
-		// 添加公共配置组
-		self::create('@');
-		// 载入框架配置
-		self::create('Core', 'php', PATH_CONFIG . 'config.php');
+		static::$driverName = 'Config';
 	}
 	/**
-	 * 创建配置项
-	 *
-	 * @param string $name        	
-	 * @param string $type        	
-	 * @param bool $merge
-	 * @return boolean
+	 * 初始化后
 	 */
-	public static function create($name, $type = 'php', $file = '', $merge = true)
+	protected static function __initAfter()
 	{
-		if (self::exists($name))
+		// 添加公共配置组
+		self::$defaultObject = self::create(array('type'=>'Php'),'@');
+	}
+	/**
+	 * 项目初始化前
+	 */
+	public static function __onAppLoadBefore()
+	{
+		// 项目配置文件目录
+		defined('APP_CONFIG') or define('APP_CONFIG', APP_PATH . Yurun::$config['CONFIG_PATH'] . DIRECTORY_SEPARATOR);
+	}
+	/**
+	 * 创建实例后
+	 * @param type $option
+	 * @param type $alias
+	 * @param type $object
+	 */
+	protected static function __createAfter(&$option,$alias,&$object)
+	{
+		if ('@' !== $alias && $object->merge && null !== self::$defaultObject)
 		{
-			return false;
+			// 将数据合并到公用项
+			self::$defaultObject->set($object->get());
 		}
-		else
+		$data = $object->get('CONFIGS');
+		if(is_array($data))
 		{
-			$args = func_get_args();
-			if (isset($args[1]))
+			// 循环加载配置文件中的配置文件
+			foreach($data as $name => $option)
 			{
-				$t = $args[0];
-				$args[0] = $args[1];
-				$args[1] = $t;
-			}
-			else
-			{
-				$args[1] = $args[0];
-				$args[0] = $type;
-			}
-			$obj = call_user_func_array(array ('parent','create'), $args);
-			$data=$obj->get('CONFIGS');
-			if(is_array($data))
-			{
-				foreach($data as $val)
-				{
-					call_user_func_array(array ('Config','create'), $val);
-				}
-			}
-			if (false !== $obj && '@' !== $name)
-			{
-				if($merge)
-				{
-					// 将数据合并到公用项
-					self::getObj('@')->set($obj->get());
-				}
-				return true;
-			}
-			else
-			{
-				return false;
+				self::create($option,$name);
 			}
 		}
 	}
 	/**
 	 * 保存配置
-	 *
-	 * @access public static
-	 * @param string $name        	
-	 * @param string $fileName        	
+	 * @param type $name
+	 * @param type $option
+	 * @return boolean
 	 */
-	public static function save($name, $fileName = null)
+	public static function save($name, $option = array())
 	{
-		$obj = self::getObj($name);
+		$obj = self::getInstance($name);
 		if ($obj)
 		{
-			return $obj->save($fileName);
+			return $obj->save($option);
 		}
 		else
 		{
@@ -89,9 +81,8 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 设置数据
-	 *
-	 * @param type $name        	
-	 * @param type $value        	
+	 * @param type $name
+	 * @param type $value
 	 * @return boolean
 	 */
 	public static function set($name, $value = null)
@@ -100,7 +91,7 @@ abstract class Config extends Driver
 		if (isset($names[0]))
 		{
 			$first = array_shift($names);
-			$obj = self::getObj($first);
+			$obj = self::getInstance($first);
 			if ($obj)
 			{
 				return $obj->setVal($names, $value);
@@ -117,18 +108,17 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 获取数据
-	 *
-	 * @param string $name        	
-	 * @param mixed $default        	
-	 * @return mixed
+	 * @param type $name
+	 * @param type $default
+	 * @return type
 	 */
-	public static function get($name, $default = false)
+	public static function get($name = '@', $default = false)
 	{
 		$names = parseCfgName($name);
 		if (isset($names[0]))
 		{
 			$first = array_shift($names);
-			$obj = self::getObj($first);
+			$obj = self::getInstance($first);
 			if ($obj)
 			{
 				return $obj->get($names, $default);
@@ -145,8 +135,7 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 删除数据
-	 *
-	 * @param string $name        	
+	 * @param type $name
 	 * @return boolean
 	 */
 	public static function remove($name)
@@ -156,13 +145,13 @@ abstract class Config extends Driver
 		{
 			// 删除数据
 			$first = array_shift($names);
-			$obj = self::getObj($first);
+			$obj = self::getInstance($first);
 			return $obj->remove($name);
 		}
 		else
 		{
 			// 删除配置分组
-			unset(self::$instance['Config'][$name]);
+			unset(self::$instances['Config'][$name]);
 			return true;
 		}
 	}
@@ -171,25 +160,9 @@ abstract class Config extends Driver
 	 */
 	public static function clear()
 	{
-		self::init();
-	}
-	/**
-	 * 获取配置项数据数量
-	 *
-	 * @param string $name        	
-	 * @return int
-	 */
-	public static function count($name)
-	{
-		$name = self::$configs[$name];
-		if (isset(self::$instance[$name]))
-		{
-			return count(self::$instance[$name]);
-		}
-		else
-		{
-			return 0;
-		}
+		self::$defaultObject->clear();
+		self::$instances['Config'] = array(
+			'@'	=>	self::$defaultObject
+		);
 	}
 }
-Config::init();

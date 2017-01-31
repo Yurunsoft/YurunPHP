@@ -296,11 +296,11 @@ class YCBase extends ArrayData
 		}
 		else if(!empty($this->sql))
 		{
-			$db = Db::getObj();
+			$db = Db::getInstance();
 			if(null === $db)
 			{
 				new Model;
-				$db = Db::getObj();
+				$db = Db::getInstance();
 			}
 			if(null !== $db)
 			{
@@ -321,11 +321,11 @@ class YCBase extends ArrayData
 			{
 				$params = array();
 			}
-			$db = Db::getObj();
+			$db = Db::getInstance();
 			if(null === $db)
 			{
 				new Model;
-				$db = Db::getObj();
+				$db = Db::getInstance();
 			}
 			if(null !== $db)
 			{

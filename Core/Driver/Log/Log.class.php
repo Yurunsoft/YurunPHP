@@ -5,23 +5,34 @@
  */
 abstract class Log extends Driver
 {
-	private static $obj;
-	private static $data=array();
 	/**
-	 * 初始化
+	 * 当前驱动名称
+	 * @var type 
 	 */
-	public static function init()
+	public static $driverName = '';
+	protected static function __initBefore()
 	{
-		parent::init();
-		self::$obj=self::create(Config::get('@.LOG_TYPE', array ()));
+		static::$driverName = 'Log';
 	}
-	public static function add($content)
+	protected static function __initAppBefore()
 	{
-		self::$data[]=array('content'=>$content,'time'=>date(Config::get('@.LOG_DATE_FORMAT')));
+		// 项目配置文件目录
+		defined('APP_LOG') or define('APP_LOG', APP_PATH . Config::get('@.LOG_PATH') . DIRECTORY_SEPARATOR);
+	}
+	public static function add($content, $option = array() , $alias = null)
+	{
+		$object = self::getInstance($alias);
+		if($object)
+		{
+			$object->add($content, $option);
+		}
 	}
 	public static function save()
 	{
-		self::$obj->save(self::$data);
+		foreach(self::$instances['Log'] as $instance)
+		{
+			$instance->save();
+			$instance->data = array();
+		}
 	}
 }
-Log::init();

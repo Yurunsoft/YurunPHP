@@ -36,7 +36,7 @@ class Model extends ArrayData
 	// 从表单创建数据并验证的规则
 	public $rules = array ();
 	// 是否自动加载字段信息
-	public $autoFields = true;
+	public $autoFields = null;
 	// 字段名数组
 	public $fieldNames = array();
 	// 字段所有属性数组
@@ -69,7 +69,10 @@ class Model extends ArrayData
 		{
 			$this->dbAlias = $dbAlias;
 		}
-		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
+		if(null === $this->autoFields)
+		{
+			$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
+		}
 		$this->db = Db::get($this->dbAlias);
 		if(false !== $this->db)
 		{
@@ -471,15 +474,25 @@ class Model extends ArrayData
 				break;
 			}
 		}
+		// 判断记录是否存在，来决定$isEdit的值
 		if($isEdit)
 		{
 			$option = $this->options;
 			$isEdit = $this->wherePk($data,$table)->count() > 0;
 			$this->options = $option;
 		}
+		// 2个if不要合并！
 		if($isEdit)
 		{
-			return $this->wherePk($data,$table)->edit($data,$return);
+			$result = $this->wherePk($data,$table)->edit($data,$return);
+			if(Db::RETURN_INSERT_ID === $result)
+			{
+				return $pk[0];
+			}
+			else
+			{
+				return $result;
+			}
 		}
 		else
 		{
@@ -1049,7 +1062,7 @@ class Model extends ArrayData
 		}
 		else
 		{
-			$where = array($tableAlias . '.' . $pk=>$pkData);
+			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
 	}

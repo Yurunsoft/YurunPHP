@@ -46,7 +46,13 @@ class Task
 	 */
 	public static function init()
 	{
-		Config::create('Task', 'php', APP_CONFIG . 'task.php');
+//		Config::create('Task', 'php', APP_CONFIG . 'task.php');
+		Config::create(array(
+			'type'	=>	'Php',
+			'option'=>	array(
+				'filename'	=>	APP_CONFIG . 'task.php'
+			)
+		), 'Task');
 		// 获取插件列表
 		self::$tasks = Config::get('Task.List',array());
 		define('APP_TASK', APP_PATH . 'Task/');

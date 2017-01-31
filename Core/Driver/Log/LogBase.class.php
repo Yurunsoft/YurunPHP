@@ -5,19 +5,16 @@
  */
 abstract class LogBase
 {
+	public $data = array();
 	/**
-	 * 构造方法
+	 * 添加日志
+	 * @param string $content
+	 * @param array $option
 	 */
-	public function __construct()
-	{
-	}
+	public abstract function add($content, $option = array());
 
 	/**
 	 * 保存方法，需要实现
-	 * @param array $data
 	 */
-	public function save($data)
-	{
-		
-	}
+	public abstract function save();
 }
