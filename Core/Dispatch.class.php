@@ -107,7 +107,6 @@ class Dispatch
 	 */
 	public static function initRouteRules()
 	{
-//		Config::create('app_route', 'php', APP_CONFIG . 'route.php');
 		self::$routeRules = array();
 		$rules = Config::get('@.route.rules');
 		foreach($rules as $rule => $url)
@@ -162,34 +161,13 @@ class Dispatch
 		{
 			$requestURI = $_SERVER['PATH_INFO'];
 		}
-		else if(Config::get('@.URL_PARSE_ON')) // URL路由解析
+		if('' == $requestURI && Config::get('@.URL_PARSE_ON')) // URL路由解析
 		{
 			list($requestURI) = explode('&',$_SERVER['QUERY_STRING']);
-			if(false !== strpos($requestURI,'='))
-			{
-				$requestURI = '';
-			}
-			if(false === strpos($requestURI,'.'))
-			{
-				$trequestURI = $requestURI;
-			}
-			else
-			{
-				$trequestURI = str_replace('.','_',$requestURI);
-			}
-			if(isset($_GET[$trequestURI],$_REQUEST[$trequestURI]))
-			{
-				unset($_GET[$trequestURI],$_REQUEST[$trequestURI]);
-			}
-			unset($trequestURI);
 		}
 		if('' == $requestURI && Config::get('@.QUERY_PATHINFO_ON')) // 参数传入URL路由解析
 		{
 			$requestURI = Request::get(Config::get('@.PATHINFO_QUERY_NAME'),'');
-		}
-		if('' == $requestURI)
-		{
-			$requestURI = $_SERVER['REQUEST_URI'];
 		}
 		// 防止前面带/
 		if(isset($requestURI[0]) && '/' === $requestURI[0])
@@ -430,7 +408,7 @@ class Dispatch
 		Config::create(array(
 			'type'	=>	'php',
 			'option'	=>	array(
-				'filename'	=>	APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php',
+				'filename'	=>	APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_PATH') . '/config.php',
 			)
 		), 'Module');
 		if(

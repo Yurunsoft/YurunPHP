@@ -38,13 +38,22 @@ function require_once_multi($files, $all = true)
 	}
 }
 /**
- * 获取规范的类命名第一段
+ * 获取第一个单词
  * @param type $str        	
  * @return type
  */
-function getClassFirst($str)
+function getFirstWord($str)
 {
-	preg_match_all('/^([A-Z]{1}[^A-Z]*)\S*/', $str, $out);
+	$count = preg_match_all('/^([A-Z]{1}[^A-Z]*)|([A-Z]+)[A-Z]([^A-Z]*)\S*/', $str, $out);
+	return $out[0][0] . $out[2][$count - 1];
+}
+/**
+ * 获取最后一个单词
+ * @param type $str
+ */
+function getLastWord($str)
+{
+	preg_match_all('/^\S*([A-Z]{1}[^A-Z]*)/', $str, $out);
 	return $out[1][0];
 }
 function enumFiles($path, $event)
@@ -482,4 +491,15 @@ function removeArrayKeyNumeric(&$array)
 function parseMuiltLine($text,$newLineSplit = PHP_EOL)
 {
 	return str_replace("\n",PHP_EOL,str_replace("\n\n", "\n", str_replace("\r", "\n", $text)));
+}
+/**
+ * 处理自动加载路径
+ * @param type $rule
+ * @param type $class
+ * @param type $word
+ * @return type
+ */
+function parseAutoloadPath($rule,$class = '',$word = '')
+{
+	return str_replace('%word', $word, str_replace('%class', $class, $rule));
 }

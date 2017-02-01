@@ -181,7 +181,7 @@ class YCBase extends ArrayData
 			$file = '/Component/YC' . $tagName . '/tpl/' . $fileName.Config::get('@.COMPONENT_EXT');
 		}
 		// 模块扩展目录
-		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_FOLDER') . $file;
+		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_PATH') . $file;
 		if(is_file($filename))
 		{
 			return $filename;
@@ -193,7 +193,7 @@ class YCBase extends ArrayData
 			return $filename;
 		}
 		// 框架扩展目录
-		$filename = PATH_EX_LIB . $file;
+		$filename = ROOT_PATH . 'Ex' . $file;
 		if(is_file($filename))
 		{
 			return $filename;
@@ -201,7 +201,7 @@ class YCBase extends ArrayData
 		// 默认模版
 		$file = '/Component/YCBase/tpl/_Default' . Config::get('@.COMPONENT_EXT');
 		// 模块扩展目录
-		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_FOLDER') . $file;
+		$filename = APP_MODULE . Dispatch::module() . '/' . Config::get('@.LIB_PATH') . $file;
 		if(is_file($filename))
 		{
 			return $filename;
@@ -213,7 +213,7 @@ class YCBase extends ArrayData
 			return $filename;
 		}
 		// 框架扩展目录
-		$filename = PATH_EX_LIB . $file;
+		$filename = ROOT_PATH . 'Ex' . $file;
 		if(is_file($filename))
 		{
 			return $filename;

@@ -31,6 +31,21 @@ return array (
 		'Control'
 	),
 	
+	// 插件驱动配置（配置驱动）
+	'PLUGIN_OPTION'	=>	array(
+		'type'		=>	'Php',
+		'option'	=>	array(
+			'filename'	=>	'plugin.php',
+		),
+	),
+	
+	// 自动加载规则
+	'AUTOLOAD_RULES'	=>	array(
+		array('type'=>'FirstWord','word'=>'YC','path'=>'Ex/Component/%class'),
+		array('type'=>'LastWord','word'=>'Component','path'=>'Ex/Component'),
+		array('type'=>'Path','path'=>'Lib'),
+	),
+	
 	// 模块
 	'MODULE_ON' => true,		// 是否开启模块功能
 	'MODULE_NAME' => 'm',		// 模块参数名
@@ -68,7 +83,7 @@ return array (
 	'LIB_DRIVER_FOLDER' => 'Driver',		// 驱动扩展文件夹名称
 
 	// 配置
-	'CONFIG_FOLDER' => 'Config',		// 配置文件夹名称
+	'CONFIG_PATH' => 'Config',		// 配置文件夹名称
 
 	// 缓存
 	'CACHE_PATH' => 'Cache',		// 缓存文件夹路径
@@ -91,7 +106,7 @@ return array (
 	'DEFAULT_FILTER' => 'htmlspecialchars',		// 默认过滤方法，支持数组实现多个
 	'DEFAULT_LANG' => 'zh-cn',		// 默认语言
 
-	'PLUGIN_FOLDER' => 'Plugin',		// 插件目录
+	'PLUGIN_PATH' => 'Plugin',		// 插件目录
 
 	'TIMEZONE' => 'Asia/Shanghai',		// 时区设置
 

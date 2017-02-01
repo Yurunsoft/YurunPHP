@@ -32,7 +32,6 @@ class YCTextbox extends YCBase
 			$this->getTextFromDataset();
 		}
 		$this->value = $this->text;
-		$this->popup_type = $this->popup_type;
 		if($this->muiltline)
 		{
 			$text = $this->data['text'];

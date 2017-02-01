@@ -71,6 +71,12 @@ class Yurun
 	}
 	public static function exec()
 	{
+		// 加载项目初始化处理文件
+		$file = APP_LIB . 'init.php';
+		if(is_file($file))
+		{
+			include $file;
+		}
 		// 项目加载事件
 		Event::trigger('YURUN_APP_ONLOAD');
 		// 设置时区
@@ -79,6 +85,8 @@ class Yurun
 		self::$isAppLoaded = true;
 		// 项目加载事件
 		Event::trigger('YURUN_APP_LOAD_COMPLETE');
+		// 初始化路由规则
+		Dispatch::initRouteRules();
 		Dispatch::resolve();
 		Dispatch::exec();
 	}
@@ -101,6 +109,8 @@ class Yurun
 	{
 		// 项目模块目录
 		defined('APP_MODULE') or define('APP_MODULE', APP_PATH . Config::get('@.MODULE_PATH') . '/');
+		// 项目配置目录
+		defined('APP_CONFIG') or define('APP_CONFIG', APP_PATH . Config::get('@.CONFIG_PATH') . '/');
 		// 项目类库目录
 		defined('APP_LIB') or define('APP_LIB', APP_PATH . Config::get('@.LIB_PATH') . '/');
 		// 框架模版目录
@@ -111,18 +121,21 @@ class Yurun
 	public static function autoload($class)
 	{
 		$file = $class . '.class.php';
+		$firstWord = getFirstWord($class);
+		$lastWord = getLastWord($class);
 		if(self::$isFrameworkLoaded)
 		{
-			$currModulePath = APP_MODULE . Dispatch::module() . '/';
-			// 自定义分层支持
+			// 当前模块路径
+			$currModulePath = APP_MODULE . Dispatch::module() . DIRECTORY_SEPARATOR;
+			// 自定义分层加载支持
 			$layers = Config::get('@.YURUN_LAYERS');
 			$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
 			$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
 			foreach($layers as $layer)
 			{
-				if ($layer === substr($class, - strlen($layer)))
+				if ($layer === $lastWord)
 				{
-					$filePath = $layer . '/' . $file;
+					$filePath = $layer . DIRECTORY_SEPARATOR . $file;
 					if (require_once_multi(array (
 								$layerModulePath . $filePath,	// 模块分层目录
 								$layerAppPath . $filePath,		// 项目分层目录
@@ -134,16 +147,53 @@ class Yurun
 					}
 				}
 			}
-		}
-		
-		$classFirst = getClassFirst($class);
-		$index = array_search($classFirst, self::$config['CORE_DRIVER_CLASSES']);
-		if(false !== $index)
-		{
-			include_once ROOT_PATH . 'Core/Driver/' . $classFirst . '/' . $file;
-			if($classFirst === $class)
+			// 自动加载配置支持
+			$rules = Config::get('@.AUTOLOAD_RULES');
+			foreach($rules as $rule)
 			{
-				$classFirst::init();
+				switch($rule['type'])
+				{
+					case 'FirstWord':
+						if($firstWord === $rule['word'])
+						{
+							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
+							if(require_once_multi(
+								array (
+									$currModulePath . $filePath,	// 模块目录
+									APP_PATH . $filePath,			// 项目目录
+									ROOT_PATH . $filePath			// 框架目录
+								)
+							))
+							{
+								return;
+							}
+						}
+						break;
+					case 'LastWord':
+						if($lastWord === $rule['word'])
+						{
+							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
+							if(require_once_multi(
+								array (
+									$currModulePath . $filePath,	// 模块目录
+									APP_PATH . $filePath,			// 项目目录
+									ROOT_PATH . $filePath			// 框架目录
+								)
+							))
+							{
+								return;
+							}
+						}
+						break;
+				}
+			}
+		}
+		if(in_array($firstWord, self::$config['CORE_DRIVER_CLASSES']))
+		{
+			include_once ROOT_PATH . 'Core/Driver/' . $firstWord . DIRECTORY_SEPARATOR . $file;
+			if($firstWord === $class)
+			{
+				$firstWord::init();
 			}
 			return;
 		}
@@ -152,6 +202,14 @@ class Yurun
 			include_once ROOT_PATH . 'Core' . DIRECTORY_SEPARATOR . $file;
 			return;
 		}
+		$paths = array();
+		if(self::$isFrameworkLoaded)
+		{
+			$paths[] = $currModulePath . 'Lib/' . $file;
+			$paths[] = APP_PATH . 'Lib/' . $file;
+		}
+		$paths[] = ROOT_PATH . 'Ex/Lib/' . $file;
+		require_once_multi($paths);
 	}
 	public static function onShutdown()
 	{
