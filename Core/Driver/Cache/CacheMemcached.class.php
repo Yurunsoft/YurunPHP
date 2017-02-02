@@ -45,4 +45,8 @@ class CacheMemcached extends CacheBase
 		$expire = isset($config['expire']) ? $config['expire'] : 0;
 		return $this->cache->set($alias,$value,$expire);
 	}
+	public function exists($alias, $config = array())
+	{
+		return false !== $this->cache->get($alias,isset($config['cache_cb']) ? $config['cache_cb'] : null,isset($config['cas_token']) ? $config['cas_token'] : null);
+	}
 }

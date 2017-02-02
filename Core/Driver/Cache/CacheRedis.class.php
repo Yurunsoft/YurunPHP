@@ -1,5 +1,5 @@
 <?php
-class CacheMemcache extends CacheBase
+class CacheRedis extends CacheBase
 {
 	/**
 	 * 构造方法
@@ -8,10 +8,10 @@ class CacheMemcache extends CacheBase
 	{
 		parent::__construct($option);
 		$host = isset($option['host']) ? $option['host'] : '127.0.0.1';
-		$port = isset($option['port']) ? $option['port'] : 11211;
-		$timeout = isset($option['timeout']) ? $option['timeout'] : 1;
+		$port = isset($option['port']) ? $option['port'] : 6379;
+		$timeout = isset($option['timeout']) ? $option['timeout'] : 0;
 		$pconnect = isset($option['pconnect']) ? $option['pconnect'] : false;
-		$this->cache = new Memcache;
+		$this->cache = new Redis;
 		if($pconnect)
 		{
 			$this->cache->pconnect($host, $port, $timeout);
@@ -24,12 +24,12 @@ class CacheMemcache extends CacheBase
 	
 	public function clear()
 	{
-		return $this->cache->flush();
+		return $this->cache->flushDB();
 	}
 
 	public function get($alias, $default = false, $config = array())
 	{
-		$result = $this->cache->get($alias,$config);
+		$result = $this->cache->get($alias);
 		if(false === $result)
 		{
 			return $this->parseDefault($default);
@@ -42,19 +42,24 @@ class CacheMemcache extends CacheBase
 
 	public function remove($alias, $config = array())
 	{
-		$timeout = isset($config['timeout']) ? $config['timeout'] : 0;
-		return $this->cache->delete($alias,$timeout);
+		return $this->cache->delete($alias);
 	}
 
 	public function set($alias, $value, $config = array())
 	{
-		$flag = isset($config['flag']) ? $config['flag'] : 0;
 		$expire = isset($config['expire']) ? $config['expire'] : 0;
-		return $this->cache->set($alias,$value,$flag,$expire);
+		if($expire > 0)
+		{
+			return $this->cache->setex($alias,$expire,$value);
+		}
+		else
+		{
+			return $this->cache->set($alias,$value);
+		}
 	}
 
 	public function exists($alias, $config = array())
 	{
-		return false !== $this->cache->get($alias,$config);
+		return $this->cache->exists($alias,$config);
 	}
 }

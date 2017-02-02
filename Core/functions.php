@@ -44,8 +44,8 @@ function require_once_multi($files, $all = true)
  */
 function getFirstWord($str)
 {
-	$count = preg_match_all('/^([A-Z]{1}[^A-Z]*)|([A-Z]+)[A-Z]([^A-Z]*)\S*/', $str, $out);
-	return $out[0][0] . $out[2][$count - 1];
+	preg_match_all('/^(([A-Z]*)[A-Z][^A-Z]*|([A-Z][^A-Z]*))\S*/', $str, $out);
+	return '' === $out[2][0] ? $out[1][0] : $out[2][0];
 }
 /**
  * 获取最后一个单词

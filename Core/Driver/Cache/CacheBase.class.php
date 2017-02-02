@@ -47,6 +47,11 @@ abstract class CacheBase
 	abstract public function clear();
 	
 	/**
+	 * 缓存是否存在
+	 */
+	abstract function exists($alias, $config = array());
+	
+	/**
 	 * 缓存是否过期。根据缓存写入时间和有效期限判断。
 	 *
 	 * @param int $startTime        	
