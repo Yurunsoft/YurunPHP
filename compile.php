@@ -3,45 +3,40 @@
  * YurunPHP 开发框架 编译代码
  * @author Yurun <admin@yurunsoft.com>
  */
-// 定义编译状态
-define('COMPILE', true);
-// 引入框架
-require_once 'Yurun.php';
 $result = '';
-// 引入核心重要文件
-foreach ($GLOBALS['cfg']['CORE_REQUIRE'] as $value)
-{
-	$result .= includeFile(PATH_CORE . "{$value}.class.php");
-}
-$arr = array_diff($GLOBALS['cfg']['CORE_CLASSES'], $GLOBALS['cfg']['CORE_REQUIRE']);
-// 公共函数库
-$result .= includeFile(PATH_CORE . 'Functions/common.php');
-// 引入核心驱动
-$result .= includeFile(PATH_CORE_DRIVER . "Config/ConfigBase.class.php");
-$result .= includeFile(PATH_CORE_DRIVER . 'Config/ConfigPhp.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Config/Config.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . "Cache/CacheBase.class.php");
-$result .= includeFile(PATH_CORE_DRIVER . 'Cache/CacheFile.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Cache/Cache.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Log/LogBase.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Log/LogFile.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Log/Log.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . "Db/DbBase.class.php");
-$result .= includeFile(PATH_CORE_DRIVER . 'Db/DbMysql.class.php');
-$result .= includeFile(PATH_CORE_DRIVER . 'Db/Db.class.php');
-// 引入核心其它文件
-foreach ($arr as $value)
-{
-	$result .= includeFile(PATH_CORE . "{$value}.class.php");
-}
-// 定义已编译状态
-$fc = strip_whitespace(file_get_contents('Yurun.php'));
-$fc = substr($fc, 5);
-$fc = "<?php define('IS_COMPILED',true);{$fc}";
-// 写出文件
-file_put_contents('Yurun-min.php', str_replace('// {compile}', $result, $fc),LOCK_EX);
+enumFiles(__DIR__ . '/Core/',function($fileName)use(&$result){
+	$result .= includeFile($fileName);
+});
+$yurunContent = strip_whitespace(file_get_contents('Yurun.php'));
+$yurunContent = substr($yurunContent, 5);
+$result = '<?php define(\'IS_COMPILE\',true);' . $result . $yurunContent;
+file_put_contents('Yurun-min.php', $result,LOCK_EX);
 header('Content-type: text/html; charset=utf-8');
 echo '生成成功！';
+function enumFiles($path, $event)
+{
+	if ('/' !== substr(strtr($path, '\\', '/'), '-1', 1))
+	{
+		$path .= '/';
+	}
+	$dir = dir($path);
+	while (false !== ($file = $dir->read()))
+	{
+		if ('.' !== $file && '..' !== $file)
+		{
+			$fileName = $path . $file;
+			if (is_dir($fileName))
+			{
+				enumFiles($fileName, $event);
+			}
+			else
+			{
+				call_user_func_array($event, array ($fileName));
+			}
+		}
+	}
+	$dir->close();
+}
 /**
  * 将PHP文件读入并去除空格和注释
  *
@@ -80,10 +75,6 @@ function strip_whitespace($content)
 				// 过滤各种PHP注释
 				case T_COMMENT :
 				case T_DOC_COMMENT :
-					if (stripos($tokens[$i][1], '{compile}') !== false)
-					{
-						$stripStr .= "// {compile}\n";
-					}
 					break;
 				// 过滤空格
 				case T_WHITESPACE :
@@ -97,19 +88,7 @@ function strip_whitespace($content)
 					$stripStr .= "<<<YURUN\n";
 					break;
 				case T_END_HEREDOC :
-					$stripStr .= "YURUN;\n";
-					for ($k = $i + 1; $k < $j; $k ++)
-					{
-						if (is_string($tokens[$k]) && $tokens[$k] === ';')
-						{
-							$i = $k;
-							break;
-						}
-						else if ($tokens[$k][0] === T_CLOSE_TAG)
-						{
-							break;
-						}
-					}
+					$stripStr .= "YURUN\n";
 					break;
 				default :
 					$last_space = false;

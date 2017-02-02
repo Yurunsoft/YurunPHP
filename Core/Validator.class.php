@@ -21,15 +21,6 @@ class Validator
 	protected $result = array ();
 	
 	/**
-	 * 初始化
-	 */
-	public static function init()
-	{
-		// 反射
-		self::$ref = new ReflectionClass(get_called_class());
-	}
-	
-	/**
 	 * 构造方法
 	 *
 	 * @param type $data        	
@@ -222,6 +213,10 @@ class Validator
 	}
 	public static function check($value, $type)
 	{
+		if(null === self::$ref)
+		{
+			self::$ref = new ReflectionClass(get_called_class());
+		}
 		$args = func_get_args();
 		unset($args[1]);
 		if (isset(self::$checkTypes[$type]))
@@ -764,4 +759,3 @@ class Validator
 		}
 	}
 }
-Validator::init();

@@ -1,13 +1,6 @@
 <?php
 class YurunComponent
 {
-	private static $tagLeft;
-	private static $tagRight;
-	public static function init()
-	{
-		self::$tagLeft = Config::get('@.TEMPLATE_TAG_LEFT');
-		self::$tagRight = Config::get('@.TEMPLATE_TAG_RIGHT');
-	}
 	public static function __callstatic($name, $arguments)
 	{
 		$args = isset($arguments[0]) && is_array($arguments[0]) ? $arguments[0] : array();
@@ -97,4 +90,3 @@ class YurunComponent
 		return $class::__getTemplatePHP($php);
 	}
 }
-YurunComponent::init();

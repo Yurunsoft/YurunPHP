@@ -10,10 +10,11 @@ class Session
 	 * @var string
 	 */
 	private static $prefix;
+	
 	/**
-	 * 初始化Session
+	 * 开始Session
 	 */
-	public static function init()
+	public static function start()
 	{
 		self::name(Config::get('@.SESSION_NAME', null));
 		self::savePath(Config::get('@.SESSION_SAVEPATH', null));
@@ -23,13 +24,6 @@ class Session
 		self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
 		self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
 		self::prefix(Config::get('@.SESSION_PREFIX', ''));
-	}
-	
-	/**
-	 * 开始Session
-	 */
-	public static function start()
-	{
 		session_start();
 	}
 	
@@ -271,5 +265,3 @@ class Session
 		return self::$prefix;
 	}
 }
-Session::init();
-Session::start();

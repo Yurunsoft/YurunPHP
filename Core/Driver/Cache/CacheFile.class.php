@@ -133,17 +133,6 @@ class CacheFile extends CacheBase
 			}
 		}
 	}
-	private function parseDefault($default)
-	{
-		if(is_callable($default))
-		{
-			return $default();
-		}
-		else
-		{
-			return $default;
-		}
-	}
 	/**
 	 * 删除缓存
 	 *

@@ -6,9 +6,14 @@
 abstract class CacheBase
 {
 	/**
+	 * 缓存操作对象
+	 * @var type 
+	 */
+	public $cache;
+	/**
 	 * 构造方法
 	 */
-	public function __construct()
+	public function __construct($option = array())
 	{
 	}
 	
@@ -62,5 +67,16 @@ abstract class CacheBase
 	protected static function isExpired2($endTime)
 	{
 		return $endTime != 0 && $endTime < $_SERVER['REQUEST_TIME'];
+	}
+	protected function parseDefault($default)
+	{
+		if(is_callable($default))
+		{
+			return $default();
+		}
+		else
+		{
+			return $default;
+		}
 	}
 }

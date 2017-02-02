@@ -46,6 +46,8 @@ return array (
 		array('type'=>'Path','path'=>'Lib'),
 	),
 	
+	'SESSION_AUTO_OPEN'	=>	true,
+	
 	// 模块
 	'MODULE_ON' => true,		// 是否开启模块功能
 	'MODULE_NAME' => 'm',		// 模块参数名

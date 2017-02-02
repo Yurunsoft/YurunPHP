@@ -23,10 +23,11 @@ abstract class Driver
 		static::__initBefore();
 		self::$instances[static::$driverName] = array();
 		static::__initAfter();
+		$key = 'CORE_' . strtoupper(static::$driverName);
 		// 加载框架内置配置
-		if(isset(Yurun::$config['CORE_' . strtoupper(static::$driverName)]))
+		if(isset(Yurun::$config[$key]))
 		{
-			foreach(Yurun::$config['CORE_' . strtoupper(static::$driverName)] as $name => $option)
+			foreach(Yurun::$config[$key] as $name => $option)
 			{
 				self::create($option,$name);
 			}
@@ -54,6 +55,10 @@ abstract class Driver
 	 */
 	public static function onAppLoad()
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		static::__onAppLoadBefore();
 		// 加载项目驱动
 		$configs = Config::get('@.APP_' . strtoupper(static::$driverName),array());
@@ -84,6 +89,10 @@ abstract class Driver
 	 */
 	public static function create($option = array(), $alias = null)
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		if(isset(self::$instances[static::$driverName][$alias]))
 		{
 			return self::$instances[static::$driverName][$alias];
@@ -121,6 +130,10 @@ abstract class Driver
 	 */
 	public static function getInstance($alias = null)
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		if(null === $alias)
 		{
 			$alias = self::defaultAlias();
@@ -149,6 +162,10 @@ abstract class Driver
 	 */
 	public static function removeInstance($alias = null)
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		if(null === $alias)
 		{
 			$alias = self::defaultAlias();
@@ -164,6 +181,10 @@ abstract class Driver
 	 */
 	public static function clearInstance()
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		self::$instances[static::$driverName] = array();
 	}
 	
@@ -174,6 +195,10 @@ abstract class Driver
 	 */
 	public static function instanceExists($alias = null)
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		return isset(self::$instances[static::$driverName][null === $alias ? self::defaultAlias() : $alias]);
 	}
 	
@@ -193,6 +218,10 @@ abstract class Driver
 	 */
 	public static function defaultAlias()
 	{
+		if('' === static::$driverName)
+		{
+			static::init();
+		}
 		return Config::get('@.DEFAULT_' . strtoupper(static::$driverName));
 	}
 }
