@@ -48,7 +48,7 @@ class Task
 	{
 //		Config::create('Task', 'php', APP_CONFIG . 'task.php');
 		Config::create(array(
-			'type'	=>	'Php',
+			'type'	=>	'PHP',
 			'option'=>	array(
 				'filename'	=>	APP_CONFIG . 'task.php'
 			)

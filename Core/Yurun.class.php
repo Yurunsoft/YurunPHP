@@ -176,18 +176,13 @@ class Yurun
 			}
 		}
 		
-		static $paths;
 		if(self::$isFrameworkLoaded)
 		{
-			if(null === $paths)
-			{
-				$paths = array(
-					$currModulePath . 'Lib/' . $file,
-					APP_PATH . 'Lib/' . $file,
-					ROOT_PATH . 'Ex/Lib/' . $file
-				);
-			}
-			require_once_multi($paths);
+			require_once_multi(array(
+				$currModulePath . 'Lib/' . $file,
+				APP_PATH . 'Lib/' . $file,
+				ROOT_PATH . 'Ex/Lib/' . $file
+			));
 		}
 		else
 		{

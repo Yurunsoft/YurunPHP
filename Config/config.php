@@ -2,21 +2,21 @@
 return array (
 	'APP_CONFIG'	=>	array(
 		'App'	=>	array(
-			'type'		=>	'Php',
+			'type'		=>	'PHP',
 			'option'	=>	array(
 				'filename'	=>	'config.php',
 			),
 			'autoload'	=>	true,
 		),
 		'AppRuntime'	=>	array(
-			'type'		=>	'Php',
+			'type'		=>	'PHP',
 			'option'	=>	array(
 				'filename'	=>	'' . (IS_DEBUG ? 'debug.php' : 'release.php'),
 			),
 			'autoload'	=>	true,
 		),
 		'Route'	=>	array(
-			'type'		=>	'Php',
+			'type'		=>	'PHP',
 			'option'	=>	array(
 				'filename'	=>	'route.php',
 			),
@@ -33,7 +33,7 @@ return array (
 	
 	// 插件驱动配置（配置驱动）
 	'PLUGIN_OPTION'	=>	array(
-		'type'		=>	'Php',
+		'type'		=>	'PHP',
 		'option'	=>	array(
 			'filename'	=>	'plugin.php',
 		),

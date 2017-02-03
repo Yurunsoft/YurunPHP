@@ -32,7 +32,7 @@ return array(
 	// 核心配置驱动配置
 	'CORE_CONFIG' => array(
 		'Core' => array(
-			'type' => 'Php',
+			'type' => 'PHP',
 			'option' => array(
 				'filename' => ROOT_PATH . 'Config/config.php',
 			)
