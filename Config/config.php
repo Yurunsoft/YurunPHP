@@ -47,6 +47,7 @@ return array (
 	),
 	
 	'SESSION_AUTO_OPEN'	=>	true,
+	'SESSION_SAVE_HANDLER'	=>	'files',
 	
 	// 模块
 	'MODULE_ON' => true,		// 是否开启模块功能

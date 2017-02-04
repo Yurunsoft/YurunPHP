@@ -19,7 +19,10 @@ class Plugin
 		// 加载插件
 		foreach ($plugins as $plugin)
 		{
-			include_once $pluginPath . "{$plugin['name']}/{$plugin['name']}.php";
+			if($plugin['is_open'])
+			{
+				include_once $pluginPath . "{$plugin['name']}/{$plugin['name']}.php";
+			}
 		}
 	}
 	/**

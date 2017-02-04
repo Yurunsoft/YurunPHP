@@ -24,6 +24,7 @@ class Session
 		self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
 		self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
 		self::prefix(Config::get('@.SESSION_PREFIX', ''));
+		self::saveHandler(Config::get('@.SESSION_SAVE_HANDLER', 'files'));
 		session_start();
 	}
 	
@@ -249,7 +250,7 @@ class Session
 	 */
 	public static function maxLifetime($maxLifetime = null)
 	{
-		return null === $maxLifetime ? ini_get('session.gc_maxlifetime') : ini_set('session.gc_maxlifetime', $$maxLifetime);
+		return null === $maxLifetime ? ini_get('session.gc_maxlifetime') : ini_set('session.gc_maxlifetime', $maxLifetime);
 	}
 	/**
 	 * SESSION前缀
@@ -263,5 +264,14 @@ class Session
 			self::$prefix = $prefix;
 		}
 		return self::$prefix;
+	}
+	/**
+	 * Session的save_handler
+	 * @param type $saveHandler
+	 */
+	public static function saveHandler($saveHandler = null)
+	{
+		var_dump($saveHandler);
+		return null === $saveHandler ? ini_get('session.save_handler') : ini_set('session.save_handler', $saveHandler);
 	}
 }

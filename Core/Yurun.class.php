@@ -73,14 +73,14 @@ class Yurun
 		}
 		// 静态文件目录
 		define('STATIC_PATH',$staticPath);
+		self::$isAppLoaded = true;
+		// 项目加载完成事件
+		Event::trigger('YURUN_APP_LOAD_COMPLETE');
 		// 自动启动session
 		if(Config::get('@.SESSION_AUTO_OPEN'))
 		{
 			Session::start();
 		}
-		self::$isAppLoaded = true;
-		// 项目加载完成事件
-		Event::trigger('YURUN_APP_LOAD_COMPLETE');
 		// 初始化路由规则
 		Dispatch::initRouteRules();
 		Dispatch::resolve();
@@ -103,26 +103,8 @@ class Yurun
 				$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
 				$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
 			}
-			// 自定义分层加载支持
-			$layers = Config::get('@.YURUN_LAYERS');
-			foreach($layers as $layer)
-			{
-				if ($layer === $lastWord)
-				{
-					$filePath = $layer . DIRECTORY_SEPARATOR . $file;
-					if (require_once_multi(array (
-								$layerModulePath . $filePath,	// 模块分层目录
-								$layerAppPath . $filePath,		// 项目分层目录
-								ROOT_PATH . 'Ex/' . $filePath	// 框架分层目录
-							),
-							false))
-					{
-						return;
-					}
-				}
-			}
 			// 自动加载配置支持
-			$rules = Config::get('@.AUTOLOAD_RULES');
+			$rules = Config::get('@.AUTOLOAD_RULES',array());
 			foreach($rules as $rule)
 			{
 				switch($rule['type'])
@@ -161,6 +143,38 @@ class Yurun
 						break;
 				}
 			}
+			// 自定义分层加载支持
+			$layers = Config::get('@.YURUN_LAYERS',array());
+			if(in_array($lastWord,$layers))
+			{
+				$filePath = $lastWord . DIRECTORY_SEPARATOR . $file;
+				if (require_once_multi(array (
+							$layerModulePath . $filePath,	// 模块分层目录
+							$layerAppPath . $filePath,		// 项目分层目录
+							ROOT_PATH . 'Ex/' . $filePath	// 框架分层目录
+						),
+						false))
+				{
+					return;
+				}
+			}
+			if(require_once_multi(array(
+				$currModulePath . 'Lib/' . $file,
+				APP_PATH . 'Lib/' . $file,
+				ROOT_PATH . 'Ex/Lib/' . $file
+			)))
+			{
+				return;
+			}
+		}
+		else
+		{
+			$filePath = ROOT_PATH . 'Ex/Lib/' . $file;
+			if(is_file($filePath))
+			{
+				require_once $filePath;
+				return;
+			}
 		}
 		if(!IS_COMPILE)
 		{
@@ -174,19 +188,6 @@ class Yurun
 				include_once ROOT_PATH . 'Core' . DIRECTORY_SEPARATOR . $file;
 				return;
 			}
-		}
-		
-		if(self::$isFrameworkLoaded)
-		{
-			require_once_multi(array(
-				$currModulePath . 'Lib/' . $file,
-				APP_PATH . 'Lib/' . $file,
-				ROOT_PATH . 'Ex/Lib/' . $file
-			));
-		}
-		else
-		{
-			require_once ROOT_PATH . 'Ex/Lib/' . $file;
 		}
 	}
 	public static function onShutdown()
