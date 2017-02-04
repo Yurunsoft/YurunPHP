@@ -24,7 +24,12 @@ class Session
 		self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
 		self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
 		self::prefix(Config::get('@.SESSION_PREFIX', ''));
-		self::saveHandler(Config::get('@.SESSION_SAVE_HANDLER', 'files'));
+		$saveHandler = Config::get('@.SESSION_SAVE_HANDLER', 'files');
+		self::saveHandler($saveHandler);
+		if('user' === $saveHandler)
+		{
+			self::userSaveHandler(Config::get('@.SESSION_USER_SAVE_HANDLER'));
+		}
 		session_start();
 	}
 	
@@ -271,7 +276,30 @@ class Session
 	 */
 	public static function saveHandler($saveHandler = null)
 	{
-		var_dump($saveHandler);
 		return null === $saveHandler ? ini_get('session.save_handler') : ini_set('session.save_handler', $saveHandler);
+	}
+	/**
+	 * 设置用户自定义Session存储方式的处理类
+	 * @param type $className
+	 */
+	public static function userSaveHandler($userSaveHandler)
+	{
+		if(PHP_VERSION >= 5.4)
+		{
+			return session_set_save_handler(new $userSaveHandler,true);
+		}
+		else
+		{
+			register_shutdown_function('session_write_close');
+			$handler = new $userSaveHandler;
+			return session_set_save_handler(
+					array($handler,'open'),
+					array($handler,'close'),
+					array($handler,'read'),
+					array($handler,'write'),
+					array($handler,'destroy'),
+					array($handler,'gc')
+			,true);
+		}
 	}
 }

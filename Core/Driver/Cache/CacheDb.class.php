@@ -123,7 +123,7 @@ SQL
 		$tableName = $this->cache->parseField($this->tableName);
 		$expireField = $this->cache->parseField('expire');
 		$time = time();
-		return 0 < $this->cache->execute(<<<SQL
+		return $this->cache->execute(<<<SQL
 delete from {$tableName} where {$expireField} <> 0 and {$expireField} < {$time}
 SQL
 );
