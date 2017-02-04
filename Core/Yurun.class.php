@@ -41,14 +41,14 @@ class Yurun
 		defined('APP_PATH') or define('APP_PATH', dirname($_SERVER['SCRIPT_FILENAME']) . DIRECTORY_SEPARATOR);
 		// 项目模块目录
 		defined('APP_MODULE') or define('APP_MODULE', APP_PATH . Config::get('@.MODULE_PATH') . '/');
-		// 项目配置目录
-		defined('APP_CONFIG') or define('APP_CONFIG', APP_PATH . Config::get('@.CONFIG_PATH') . '/');
 		// 项目类库目录
 		defined('APP_LIB') or define('APP_LIB', APP_PATH . Config::get('@.LIB_PATH') . '/');
 		// 框架模版目录
 		defined('PATH_TEMPLATE') or define('PATH_TEMPLATE', ROOT_PATH . Config::get('@.TEMPLATE_PATH') . '/');
 		// 项目模版目录
 		defined('APP_TEMPLATE') or define('APP_TEMPLATE', APP_PATH . Config::get('@.TEMPLATE_PATH') . '/');
+		// 项目语言包目录
+		defined('APP_LANG') or define('APP_LANG', APP_PATH . Config::get('@.LANG_PATH') . '/');
 		// 错误异常处理
 		register_shutdown_function('Yurun::onShutdown');
 		set_error_handler('Yurun::onError');
@@ -96,6 +96,7 @@ class Yurun
 		$lastWord = getLastWord($class);
 		if(self::$isFrameworkLoaded)
 		{
+			$libPath = Config::get('@.LIB_PATH');
 			if(null === $currModulePath)
 			{
 				// 当前模块路径
@@ -159,8 +160,8 @@ class Yurun
 				}
 			}
 			if(require_once_multi(array(
-				$currModulePath . 'Lib/' . $file,
-				APP_PATH . 'Lib/' . $file,
+				$currModulePath . $libPath . '/' . $file,
+				APP_PATH . $libPath . '/' . $file,
 				ROOT_PATH . 'Ex/Lib/' . $file
 			)))
 			{

@@ -14,7 +14,7 @@ class Lang
 	public static function init()
 	{
 		// 默认语言包名
-		$default = Config::get('@.DEFAULT_LANG');
+		$default = Config::get('@.LANG_DEFAULT');
 		// 加载默认语言包
 		self::$list = self::loadLang($default);
 		// 判断是否自动判断浏览器语言

@@ -27,7 +27,7 @@ abstract class DbBase
 	public function __construct($config = array())
 	{
 		$this->config = $config;
-		$this->tablePrefix = $config['prefix'];
+		$this->tablePrefix = isset($config['prefix']) ? $config['prefix'] : Config::get('@.DB_PREFIX');
 		$this->connect();
 	}
 	/**

@@ -23,10 +23,6 @@ return array(
 		'Db',
 		'Log'
 	),
-	// 核心函数库们
-	'CORE_FUNCTIONS' => array(
-		'common'
-	),
 	// 配置文件夹路径
 	'CONFIG_PATH' => 'Config',
 	// 核心配置驱动配置

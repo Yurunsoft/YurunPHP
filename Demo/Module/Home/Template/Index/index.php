@@ -1,3 +1,3 @@
-<p><%=$msg%></p>
-<textbox runat="server" text="#$time"/>
-<p><%=microtime(true) - YURUN_START%></p>
+<p>msg:<%=$msg%></p>
+内存占用：<textbox runat="server" text="#$memory"/>kb
+<p>脚本执行时间:<%=$time%>ms</p>
