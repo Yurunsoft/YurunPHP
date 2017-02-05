@@ -13,6 +13,7 @@ return array(
 		'Request',
 		'Response',
 		'Session',
+		'Task',
 		'Validator',
 		'View',
 	),
