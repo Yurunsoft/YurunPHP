@@ -138,9 +138,11 @@ class Dispatch
 			{
 				list($fileName,$rule) = explode('@',$rule,2);
 			}
+			$rule = str_replace('\]','\\rightzkh\\',str_replace('\[','\\leftzkh\\',$rule));
 			$tRule = preg_replace_callback(
 					'/\[([^\]]+)\]/i',
 					function($matches)use(&$fields){
+						$matches[1] = str_replace('\\rightzkh\\',']',str_replace('\\leftzkh\\','[',$matches[1]));
 						if(false !== strpos($matches[1],':'))
 						{
 							try {
