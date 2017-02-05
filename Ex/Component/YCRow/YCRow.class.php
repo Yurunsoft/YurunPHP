@@ -1,4 +1,9 @@
 <?php
+/**
+ * 表格行
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCRow extends YCBase
 {
 	protected $renderMode = self::RENDER_MODE_NONE;

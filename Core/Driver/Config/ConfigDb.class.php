@@ -8,6 +8,7 @@
 		PRIMARY KEY (`key`)
 	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
  * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class ConfigDb extends ConfigBase
 {

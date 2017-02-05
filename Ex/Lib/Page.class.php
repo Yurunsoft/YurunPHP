@@ -1,8 +1,8 @@
 <?php
 /**
  * YurunPHP分页类
- * @copyright 2008-2014 Yurunsoft.com All rights reserved.
- * @author 宇润 (Yurun) <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Page
 {

@@ -1,7 +1,8 @@
 <?php
 /**
  * 文件配置驱动基类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 abstract class ConfigFileBase extends ConfigBase
 {
@@ -10,7 +11,6 @@ abstract class ConfigFileBase extends ConfigBase
 	
 	/**
 	 * 构造方法
-	 *
 	 * @param type $option        	
 	 */
 	public function __construct($option = null)
@@ -28,7 +28,6 @@ abstract class ConfigFileBase extends ConfigBase
 	}
 	/**
 	 * 从文件载入数据，将清空原数据
-	 *
 	 * @param string $fileName        	
 	 */
 	public function fromFile($fileName)
@@ -40,7 +39,6 @@ abstract class ConfigFileBase extends ConfigBase
 	}
 	/**
 	 * 从文件载入数据，将合并覆盖原数据
-	 *
 	 * @param string $fileName        	
 	 */
 	public function fromFileMerge($fileName)
@@ -49,7 +47,6 @@ abstract class ConfigFileBase extends ConfigBase
 	}
 	/**
 	 * 获取配置文件名
-	 *
 	 * @return string
 	 */
 	public function fileName()
@@ -58,11 +55,8 @@ abstract class ConfigFileBase extends ConfigBase
 	}
 	/**
 	 * 将文件转换为数据
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * @param string $fileName  
+	 * @return bool     	
 	 */
 	protected abstract function parseFileToData($fileName);
 }

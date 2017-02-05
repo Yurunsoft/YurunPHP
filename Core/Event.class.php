@@ -1,16 +1,18 @@
 <?php
 /**
  * 事件类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Event
 {
-	// 事件绑定记录
+	/**
+	 * 事件绑定记录
+	 */
 	private static $events = array();
 	
 	/**
 	 * 注册事件
-	 *
 	 * @param string $event
 	 * @param mixed $callback
 	 * @param bool $first 是否优先执行，以靠后设置的为准

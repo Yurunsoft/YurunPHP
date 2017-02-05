@@ -1,9 +1,33 @@
 <?php
+/**
+ * 数据库Session处理类
+	表结构：
+	CREATE TABLE `tb_session` (
+	`session_id` varchar(255) NOT NULL COMMENT 'SessionID',
+	`data` text COMMENT '数据',
+	`update_time` int(11) NOT NULL COMMENT '过期',
+	PRIMARY KEY (`session_id`),
+	KEY `update_time` (`update_time`)
+	) ENGINE=InnoDB DEFAULT CHARSET=utf8;
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class DBSession implements SessionHandlerInterface
 {
+	/**
+	 * 数据库操作对象
+	 */
 	private $db;
+	/**
+	 * 表名
+	 */
 	private $tableName;
-	//打开session的时候会最开始执行这里。  
+	/**
+	 * 打开Session
+	 * @param string $savePath
+	 * @param string $sessionName
+	 * @return bool
+	 */
 	public function open($savePath, $sessionName)
 	{
 		$this->db = Db::getInstance(Config::get('@.SESSION_DB_ALIAS'));
@@ -31,12 +55,20 @@ class DBSession implements SessionHandlerInterface
 		return false;
 	}
 
+	/**
+	 * 关闭Session
+	 * @return bool
+	 */
 	public function close()
 	{
 		return true;
 	}
 
-	//从数据库中读取Session数据  
+	/**
+	 * 读Session
+	 * @param string $id Session ID
+	 * @return mixed
+	 */
 	public function read($id)
 	{
 		$tableName = $this->db->parseField($this->tableName);
@@ -55,36 +87,44 @@ SQL
 		}
 	}
 
-	//用户访问的时候存入新的session,或更新旧的session.  
-	//同时读取session中的userid或adminid写入数据表。  
+	/**
+	 * 写Session
+	 * @param string $id Session ID
+	 * @param string $data 数据
+	 * @return bool
+	 */
 	public function write($id, $data)
 	{
 		$tableName = $this->db->parseField($this->tableName);
 		$sessionIDField = $this->db->parseField('session_id');
 		$dataField = $this->db->parseField('data');
-		$expireField = $this->db->parseField('expire');
+		$updateTimeField = $this->db->parseField('update_time');
 		$result = $this->db->query(<<<SQL
 select * from {$tableName} where {$sessionIDField} = %s
 SQL
 ,array($id));
-		$expire = time() + Session::cacheExpire();
+		$updateTime = time();
 		if(isset($result['session_id']))
 		{
 			return $this->db->execute(<<<SQL
-update {$tableName} set {$dataField} = %s,{$expireField} = %s where {$sessionIDField} = %s
+update {$tableName} set {$dataField} = %s,{$updateTimeField} = %s where {$sessionIDField} = %s
 SQL
-,array($data,$expire,$id));
+,array($data,$updateTime,$id));
 		}
 		else
 		{
 			return $this->db->execute(<<<SQL
-insert into {$tableName}({$sessionIDField},{$dataField},{$expireField}) values(%s,%s,%s)
+insert into {$tableName}({$sessionIDField},{$dataField},{$updateTimeField}) values(%s,%s,%s)
 SQL
-,array($id,$data,$expire));
+,array($id,$data,$updateTime));
 		}
 	}
 
-	//session销毁的时候，从数据表删除。  
+	/**
+	 * 销毁Session
+	 * @param string $id Session ID
+	 * @return bool
+	 */
 	public function destroy($id)
 	{
 		$tableName = $this->db->parseField($this->tableName);
@@ -95,14 +135,18 @@ SQL
 ,array($id));
 	}
 
-	//回收session的时候，让用户下线。记录下线时间。清除超期session。不是每次都会执行。是一个概率问题。可以在php.ini中调节。默认1/100。概率是session.gc_probability/session.gc_divisor。默认情况下，session.gc_probability ＝ 1，session.gc_divisor ＝100，可在php.ini中修改  
+	/**
+	 * 垃圾回收
+	 * @param string $maxlifetime Session有效时间
+	 * @return bool
+	 */
 	public function gc($maxlifetime)
 	{
 		$tableName = $this->db->parseField($this->tableName);
-		$time = time();
-		$expireField = $this->db->parseField('expire');
+		$updateTimeField = $this->db->parseField('updateTime');
+		$time = time() - $maxlifetime;
 		return $this->db->execute(<<<SQL
-delete from {$tableName} where {$expireField} < {$time}
+delete from {$tableName} where {$updateTimeField} < {$time}
 SQL
 );
 	}

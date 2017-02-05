@@ -1,7 +1,8 @@
 <?php
 /**
  * 数据库驱动基类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 abstract class DbBase
 {
@@ -900,4 +901,16 @@ abstract class DbBase
 	 * @param mixed $data
 	 */
 	abstract public function parseOrderField($data);
+	/**
+	 * 开始事务
+	 */
+	abstract public function begin();
+	/**
+	 * 回滚事务
+	 */
+	abstract public function rollback();
+	/**
+	 * 提交事务
+	 */
+	abstract public function commit();
 }

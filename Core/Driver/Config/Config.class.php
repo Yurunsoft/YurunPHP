@@ -1,7 +1,8 @@
 <?php
 /**
  * 配置驱动类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 abstract class Config extends Driver
 {
@@ -40,9 +41,9 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 创建实例后
-	 * @param type $option
-	 * @param type $alias
-	 * @param type $object
+	 * @param array $option
+	 * @param string $alias
+	 * @param mixed $object
 	 */
 	protected static function __createAfter(&$option,$alias,&$object)
 	{
@@ -63,8 +64,8 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 保存配置
-	 * @param type $name
-	 * @param type $option
+	 * @param string $name
+	 * @param array $option
 	 * @return boolean
 	 */
 	public static function save($name, $option = array())
@@ -81,8 +82,8 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 设置数据
-	 * @param type $name
-	 * @param type $value
+	 * @param string $name
+	 * @param mixed $value
 	 * @return boolean
 	 */
 	public static function set($name, $value = null)
@@ -108,9 +109,9 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 获取数据
-	 * @param type $name
-	 * @param type $default
-	 * @return type
+	 * @param string $name
+	 * @param mixed $default
+	 * @return mixed
 	 */
 	public static function get($name = '@', $default = false)
 	{
@@ -135,7 +136,7 @@ abstract class Config extends Driver
 	}
 	/**
 	 * 删除数据
-	 * @param type $name
+	 * @param string $name
 	 * @return boolean
 	 */
 	public static function remove($name)

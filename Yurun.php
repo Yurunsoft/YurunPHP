@@ -1,4 +1,9 @@
 <?php
+/**
+ * YurunPHP 开发框架 入口文件
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 // 记录开始执行时间
 define('YURUN_START', microtime(true));
 // 判断PHP版本

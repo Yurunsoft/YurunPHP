@@ -1,4 +1,9 @@
 <?php
+/**
+ * 单选/选择框控件基类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 abstract class YCCheckRadioBase extends YCBase
 {
 	/**

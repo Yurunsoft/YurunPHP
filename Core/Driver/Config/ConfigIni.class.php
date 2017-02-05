@@ -1,17 +1,15 @@
 <?php
 /**
  * ini配置驱动
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class ConfigIni extends ConfigFileBase
 {
 	/**
 	 * 将文件转换为数据
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * @param string $fileName  
+	 * @return bool     	
 	 */
 	protected function parseFileToData($fileName)
 	{
@@ -20,7 +18,6 @@ class ConfigIni extends ConfigFileBase
 			$file = fopen($fileName,'r');
 			flock($file,LOCK_SH);
 			$this->data = parse_ini_file($fileName,true,INI_SCANNER_RAW);
-			var_dump($this->data);
 			fclose($file);
 			return true;
 		}
@@ -30,12 +27,8 @@ class ConfigIni extends ConfigFileBase
 		}
 	}
 	/**
-	 * 将数据保存至文件
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * 保存数据
+	 * @param array $option 参数
 	 */
 	public function save($fileName = null)
 	{

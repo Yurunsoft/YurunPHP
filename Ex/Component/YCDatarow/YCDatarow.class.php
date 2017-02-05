@@ -1,4 +1,9 @@
 <?php
+/**
+ * 表格数据行
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCDatarow extends YCBase
 {
 	protected $renderMode = self::RENDER_MODE_NONE;

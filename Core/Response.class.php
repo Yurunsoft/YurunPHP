@@ -1,17 +1,16 @@
 <?php
 /**
  * 响应类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Response
 {
 	/**
 	 * 设置HTTP状态码
 	 * 所有消息值和文本均来自于百度百科，HTTP状态码http://baike.baidu.com/view/1790469.htm
-	 *
 	 * @access public static
-	 * @param int $status
-	 *        	状态码值，如：301
+	 * @param int $status 状态码值，如：301
 	 * @return string
 	 */
 	public static function status($status, $msg = null)
@@ -46,7 +45,6 @@ class Response
 	
 	/**
 	 * 输出消息，支持模版和设置http状态码
-	 *
 	 * @param string $msg        	
 	 * @param int $status        	
 	 */

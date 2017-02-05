@@ -1,4 +1,9 @@
 <?php
+/**
+ * 控件基类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCBase extends ArrayData
 {
 	/**

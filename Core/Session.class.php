@@ -1,7 +1,8 @@
 <?php
 /**
  * Session操作类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Session
 {
@@ -52,7 +53,6 @@ class Session
 	
 	/**
 	 * 设置Session值
-	 *
 	 * @param string $name        	
 	 * @param mixed $value        	
 	 */
@@ -76,7 +76,6 @@ class Session
 	
 	/**
 	 * 获取Session值
-	 *
 	 * @param string $name        	
 	 * @param mixed $default        	
 	 * @return mixed
@@ -105,7 +104,6 @@ class Session
 	
 	/**
 	 * 删除Session值
-	 *
 	 * @param string $name        	
 	 */
 	public static function delete($name)
@@ -130,7 +128,6 @@ class Session
 	
 	/**
 	 * 清空所有Session
-	 *
 	 * @param string $name        	
 	 */
 	public static function clear()
@@ -140,7 +137,6 @@ class Session
 	
 	/**
 	 * Session值是否存在
-	 *
 	 * @param string $name        	
 	 */
 	public static function exists($name)
@@ -167,9 +163,7 @@ class Session
 	
 	/**
 	 * Session会话名称
-	 *
-	 * @param string $name
-	 *        	留空为取值
+	 * @param string $name 留空为取值
 	 * @return mixed 值/修改前的值
 	 */
 	public static function name($name = null)
@@ -180,8 +174,7 @@ class Session
 	/**
 	 * Session保存路径
 	 *
-	 * @param string $savePath
-	 *        	留空为取值
+	 * @param string $savePath 留空为取值
 	 * @return mixed 值/修改前的值
 	 */
 	public static function savePath($savePath = null)
@@ -191,9 +184,7 @@ class Session
 	
 	/**
 	 * Session使用Cookie
-	 *
-	 * @param string $use
-	 *        	留空为取值
+	 * @param string $use 留空为取值
 	 * @return mixed 值/修改前的值
 	 */
 	public static function useCookies($use = null)
@@ -203,9 +194,7 @@ class Session
 	
 	/**
 	 * 在客户端的缓存时间
-	 *
-	 * @param int $expire
-	 *        	留空为取值
+	 * @param int $expire 留空为取值
 	 * @return mixed 值/修改前的值
 	 */
 	public static function cacheExpire($expire = null)
@@ -215,9 +204,7 @@ class Session
 	
 	/**
 	 * 在客户端的缓存方式
-	 *
-	 * @param string $limiter
-	 *        	留空为取值
+	 * @param string $limiter 留空为取值
 	 * @return mixed 值/修改前的值
 	 */
 	public static function cacheLimiter($limiter = null)
@@ -227,9 +214,7 @@ class Session
 	
 	/**
 	 * 每个请求触发session垃圾回收的概率
-	 *
-	 * @param float $probability
-	 *        	取值范围：0.0-1.0
+	 * @param float $probability 取值范围：0.0-1.0
 	 * @return mixed 值
 	 */
 	public static function gcProbability($probability = null)
@@ -248,9 +233,7 @@ class Session
 	
 	/**
 	 * session在服务端最长存储时间
-	 *
-	 * @param int $maxLifetime
-	 *        	秒
+	 * @param int $maxLifetime 秒
 	 * @return mixed 值
 	 */
 	public static function maxLifetime($maxLifetime = null)

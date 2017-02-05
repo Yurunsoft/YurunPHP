@@ -1,4 +1,9 @@
 <?php
+/**
+ * 表格列
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCCol extends YCBase
 {
 	private $_table;

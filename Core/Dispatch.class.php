@@ -1,25 +1,42 @@
 <?php
 /**
- * 调度类
- * @author Yurun <admin@yurunsoft.com>
+ * 路由+调度类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Dispatch
 {
-	// 模块名
+	/**
+	 * 模块名
+	 */
 	private static $module = null;
-	// 控制器名
+	/**
+	 * 控制器名
+	 */
 	private static $control = null;
-	// 动作名
+	/**
+	 * 动作名
+	 */
 	private static $action = null;
-	// 给action传的参数
+	/**
+	 * 给action传的参数
+	 */
 	private static $data = array();
-	// 处理后的路由规则
+	/**
+	 * 处理后的路由规则
+	 */
 	private static $routeRules = array();
-	// 当前文件的配置
+	/**
+	 * 当前文件的配置
+	 */
 	private static $currFileCfg;
-	// 权限判断结果
+	/**
+	 * 权限判断结果
+	 */
 	private static $checkAuth;
-	// 当前访问的文件名
+	/**
+	 * 当前访问的文件名
+	 */
 	private static $currFileName;
 	/**
 	 * 解析

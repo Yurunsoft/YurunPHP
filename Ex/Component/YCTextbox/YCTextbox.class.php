@@ -1,4 +1,9 @@
 <?php
+/**
+ * 文本框控件
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCTextbox extends YCBase
 {
 	/**

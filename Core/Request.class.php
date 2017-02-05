@@ -1,7 +1,8 @@
 <?php
 /**
  * 请求获取类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Request
 {
@@ -12,7 +13,6 @@ class Request
 	public static $cliArgs = array();
 	/**
 	 * 判断是否为https方式访问
-	 *
 	 * @return boolean
 	 */
 	public static function isHttps()
@@ -21,7 +21,6 @@ class Request
 	}
 	/**
 	 * 获取当前协议，http://或https://
-	 *
 	 * @return string
 	 */
 	public static function getProtocol()
@@ -30,9 +29,7 @@ class Request
 	}
 	/**
 	 * 获取或判断当前请求方式
-	 *
-	 * @param string $compare
-	 *        	比较的请求方式
+	 * @param string $compare 比较的请求方式
 	 * @return mixed
 	 */
 	public static function method($compare = null)
@@ -50,7 +47,6 @@ class Request
 	}
 	/**
 	 * 获取当前来路页面
-	 *
 	 * @param boolean $emptyDomain        	
 	 * @return string
 	 */
@@ -104,15 +100,20 @@ class Request
 	}
 	/**
 	 * 魔术方法
-	 *
-	 * @param type $name        	
-	 * @param type $arguments        	
-	 * @return type
+	 * @param string $name        	
+	 * @param array $arguments        	
+	 * @return mixed
 	 */
 	public static function __callStatic($name, $arguments)
 	{
 		return call_user_func_array('self::getAll', array_merge(array ($name), $arguments));
 	}
+	/**
+	 * 指定数据是否存在
+	 * @param string $arrName        	
+	 * @param string $name        	
+	 * @return bool
+	 */
 	public static function exists($arrName, $name)
 	{
 		$arrName = strtolower($arrName);
@@ -154,7 +155,6 @@ class Request
 	}
 	/**
 	 * 获取超全局变量值
-	 *
 	 * @param string $arrName        	
 	 * @param string $name        	
 	 * @param mixed $default        	
@@ -233,6 +233,9 @@ class Request
 			return execFilter($value, $filter);
 		}
 	}
+	/**
+	 * 处理cli参数
+	 */
 	private static function parseCliArgs()
 	{
 		self::$cliArgs = array();

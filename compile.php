@@ -1,7 +1,7 @@
 <?php
 /**
  * YurunPHP 开发框架 编译代码
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
  */
 $result = '';
 enumFiles(__DIR__ . '/Core/',function($fileName)use(&$result){

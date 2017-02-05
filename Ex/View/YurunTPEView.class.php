@@ -1,4 +1,9 @@
 <?php
+/**
+ * YurunPHP模版引擎
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YurunTPEView
 {
 	private static $tags = array(
@@ -151,19 +156,6 @@ class YurunTPEView
 			}
 			if(isset($attrs['id']))
 			{
-//				$id = str_ireplace(
-//						array(
-//							self::$tagLeft . 'php' . self::$tagRight,
-//							self::$tagLeft . '/php' . self::$tagRight
-//						),
-//						array(
-//							'{',
-//							'}'
-//						)
-//						,$attrs['id']);
-//				$argPreName = '$c' .str_replace('.','',uniqid('',true));
-//				$argPre = "{$argPreName} = \"{$id}\";";
-//				$id = $argPreName;
 				$id = $attrs['id'];
 			}
 			else

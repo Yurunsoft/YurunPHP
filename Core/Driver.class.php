@@ -1,18 +1,17 @@
 <?php
 /**
  * 驱动基类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 abstract class Driver
 {
 	/**
 	 * 当前驱动名称
-	 * @var type 
 	 */
 	public static $driverName = '';
 	/**
 	 * 所有驱动和实例
-	 * @var type 
 	 */
 	public static $instances = array();
 	/**
@@ -42,10 +41,16 @@ abstract class Driver
 			Event::register('YURUN_APP_LOAD_COMPLETE', static::$driverName . '::onAppLoad');
 		}
 	}
+	/**
+	 * 初始化前置操作
+	 */
 	protected static function __initBefore()
 	{
 		
 	}
+	/**
+	 * 初始化后置操作
+	 */
 	protected static function __initAfter()
 	{
 		
@@ -71,17 +76,22 @@ abstract class Driver
 		}
 		static::__onAppLoadAfter();
 	}
+	/**
+	 * 项目加载前置操作
+	 */
 	protected static function __onAppLoadBefore()
 	{
 		
 	}
+	/**
+	 * 项目加载后置操作
+	 */
 	protected static function __onAppLoadAfter()
 	{
 		
 	}
 	/**
 	 * 创建驱动实例
-	 *
 	 * @param string $name        	
 	 * @param string $alias        	
 	 * @param array $args        	
@@ -114,18 +124,23 @@ abstract class Driver
 			return $object;
 		}
 	}
+	/**
+	 * 创建驱动实例前置操作
+	 */
 	protected static function __createBefore(&$option,$alias)
 	{
 		
 	}
+	/**
+	 * 创建驱动实例后置操作
+	 */
 	protected static function __createAfter(&$option,$alias,&$object)
 	{
 		
 	}
 	/**
 	 * 获得驱动实例，不存在返回null
-	 *
-	 * @param type $name        	
+	 * @param string $name        	
 	 * @return mixed
 	 */
 	public static function getInstance($alias = null)
@@ -158,7 +173,7 @@ abstract class Driver
 	
 	/**
 	 * 删除驱动实例
-	 * @param type $alias
+	 * @param string $alias
 	 */
 	public static function removeInstance($alias = null)
 	{
@@ -190,8 +205,8 @@ abstract class Driver
 	
 	/**
 	 * 驱动实例是否存在
-	 * @param type $alias
-	 * @return type
+	 * @param string $alias
+	 * @return bool
 	 */
 	public static function instanceExists($alias = null)
 	{
@@ -204,7 +219,6 @@ abstract class Driver
 	
 	/**
 	 * 获取驱动实例数量
-	 *
 	 * @return int
 	 */
 	public static function instanceCount($alias)
@@ -214,7 +228,7 @@ abstract class Driver
 	
 	/**
 	 * 获取驱动默认实例名称
-	 * @return type
+	 * @return string
 	 */
 	public static function defaultAlias()
 	{

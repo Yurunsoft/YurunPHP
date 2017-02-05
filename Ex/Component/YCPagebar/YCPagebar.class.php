@@ -1,4 +1,9 @@
 <?php
+/**
+ * 分页条
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCPagebar extends YCBase
 {
 	protected static $_count = 0;

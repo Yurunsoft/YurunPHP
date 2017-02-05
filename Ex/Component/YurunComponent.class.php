@@ -1,4 +1,9 @@
 <?php
+/**
+ * YurunPHP控件类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YurunComponent
 {
 	public static function __callstatic($name, $arguments)

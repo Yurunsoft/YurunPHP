@@ -1,20 +1,34 @@
 <?php
 /**
  * 视图类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class View extends ArrayData
 {
-	// 是否使用主题
+	/**
+	 * 是否使用主题
+	 */
 	protected $theme;
-	// 内容类型
+	/**
+	 * 内容类型
+	 */
 	protected $contentType='text/html';
-	// 对应的控制器
+	/**
+	 * 对应的控制器
+	 */
 	protected $control;
+	/**
+	 * 路径栈
+	 */
 	protected $pathStack=array();
-	// 用于include的临时theme变量
+	/**
+	 * 用于include的临时theme变量
+	 */
 	protected $themeStack=array();
-	// 模版引擎对象
+	/**
+	 * 模版引擎对象
+	 */
 	protected $engine;
 	function __construct($theme = null,$control=null)
 	{
@@ -35,7 +49,6 @@ class View extends ArrayData
 
 	/**
 	 * 获取模版文件名，可能返回文本或文本数组
-	 *
 	 * @param string $template        	
 	 * @param string $theme        	
 	 * @return string
@@ -161,7 +174,6 @@ class View extends ArrayData
 	
 	/**
 	 * 获取主题名称
-	 *
 	 * @param string $theme        	
 	 * @return mixed
 	 */
@@ -193,7 +205,6 @@ class View extends ArrayData
 	
 	/**
 	 * 显示模版内容
-	 *
 	 * @param string $template        	
 	 * @param mixed $theme        	
 	 */
@@ -210,6 +221,12 @@ class View extends ArrayData
 		array_pop($this->themeStack);
 	}
 	
+	/**
+	 * 获取模版处理后的内容
+	 * @param string $template        	
+	 * @param mixed $theme     
+	 * @return string   	
+	 */
 	public function getHtml($template = null, $theme = null)
 	{
 		// 解析出模版文件名
@@ -227,11 +244,23 @@ class View extends ArrayData
 		return ob_get_clean();
 	}
 	
+
+	/**
+	 * 包含模版
+	 * @param string $template        	
+	 * @param mixed $theme        	
+	 */
 	public function _R_include($template = null, $theme = null)
 	{
 		$this->showTemplate($template,$theme);
 	}
 	
+
+	/**
+	 * 显示模版内容
+	 * @param string $template        	
+	 * @param mixed $theme        	
+	 */
 	private function showTemplate($template = null, $theme = null)
 	{
 		// 解析出模版文件名
@@ -247,7 +276,11 @@ class View extends ArrayData
 		fclose($fp);
 		array_pop($this->pathStack);
 	}
-	
+	/**
+	 * 使用模版引擎处理
+	 * @param string $file
+	 * @return string
+	 */
 	private function templateEngineParse($file)
 	{
 		if (Config::get('@.TEMPLATE_ENGINE_ON'))
@@ -270,6 +303,12 @@ class View extends ArrayData
 			return $file;
 		}
 	}
+	
+	/**
+	 * 模版缓存是否过期
+	 * @param string $file
+	 * @return bool
+	 */
 	private function cacheIsExpired($file)
 	{
 		if(Config::get('@.TEMPLATE_CACHE_ON') && is_file($file))
@@ -283,8 +322,8 @@ class View extends ArrayData
 	}
 	/**
 	 * 解析模版，返回解析后内容
-	 *
-	 * @param string $file        	
+	 * @param string $file
+	 * @return string
 	 */
 	public function parseTemplate($file)
 	{
@@ -303,7 +342,6 @@ class View extends ArrayData
 	
 	/**
 	 * 获取主题
-	 *
 	 * @return string
 	 */
 	public function getTheme()
@@ -329,13 +367,17 @@ class View extends ArrayData
 		return $this->control;
 	}
 
-	// 设置内容类型
+	/**
+	 * 设置内容类型
+	 */
 	public function setContentType($contentType)
 	{
 		$this->contentType=$contentType;
 	}
 
-	// 获取内容类型
+	/**
+	 * 获取内容类型
+	 */
 	public function getContentType()
 	{
 		return $this->contentType;

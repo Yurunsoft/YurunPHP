@@ -1,7 +1,8 @@
 <?php
 /**
  * 数据库驱动类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Db extends Driver
 {

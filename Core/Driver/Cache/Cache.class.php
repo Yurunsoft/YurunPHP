@@ -1,21 +1,30 @@
 <?php
 /**
  * 缓存驱动类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 abstract class Cache extends Driver
 {
 	/**
 	 * 当前驱动名称
-	 * @var type 
 	 */
 	public static $driverName = '';
+	/**
+	 * 当前页面缓存名称
+	 */
 	protected static $pageCacheName;
 	
+	/**
+	 * 初始化前置操作
+	 */
 	protected static function __initBefore()
 	{
 		static::$driverName = 'Cache';
 	}
+	/**
+	 * 项目加载前置操作
+	 */
 	protected static function __onAppLoadBefore()
 	{
 		// 项目缓存文件目录
@@ -23,12 +32,10 @@ abstract class Cache extends Driver
 	}
 	/**
 	 * 设置缓存
-	 *
-	 * @param type $cacheName        	
-	 * @param type $value        	
+	 * @param string $cacheName        	
+	 * @param mixed $value        	
 	 * @param array $option        	
-	 * @param string $alias
-	 *        	缓存类型
+	 * @param string $alias 缓存类型
 	 * @return boolean
 	 */
 	public static function set($cacheName, $value = null, $option = array(), $alias = null)
@@ -46,7 +53,6 @@ abstract class Cache extends Driver
 	
 	/**
 	 * 获取缓存
-	 *
 	 * @param string $alias        	
 	 * @param mixed $default        	
 	 * @return mixed
@@ -66,8 +72,7 @@ abstract class Cache extends Driver
 	
 	/**
 	 * 删除数据
-	 *
-	 * @param string $alias        	
+	 * @param string $alias
 	 * @return boolean
 	 */
 	public static function remove($cacheName, $option = array(), $alias = null)
@@ -85,6 +90,7 @@ abstract class Cache extends Driver
 	
 	/**
 	 * 清空数据
+	 * @param string $alias
 	 */
 	public static function clear($alias = null)
 	{
@@ -98,6 +104,12 @@ abstract class Cache extends Driver
 			return false;
 		}
 	}
+	/**
+	 * 缓存是否存在
+	 * @param string $cacheName
+	 * @param array $option
+	 * @param string $alias
+	 */
 	public static function cacheExists($cacheName, $option = array(), $alias = null)
 	{
 		$obj = self::getInstance($alias);
@@ -113,8 +125,7 @@ abstract class Cache extends Driver
 	
 	/**
 	 * 获取当前访问的缓存名
-	 *
-	 * @return type
+	 * @return string
 	 */
 	public static function pageCacheName()
 	{

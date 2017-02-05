@@ -1,7 +1,8 @@
 <?php
 /**
  * 公共函数集
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 /**
  * 引入多个文件
@@ -39,8 +40,8 @@ function require_once_multi($files, $all = true)
 }
 /**
  * 获取第一个单词
- * @param type $str        	
- * @return type
+ * @param string $str        	
+ * @return string
  */
 function getFirstWord($str)
 {
@@ -49,13 +50,19 @@ function getFirstWord($str)
 }
 /**
  * 获取最后一个单词
- * @param type $str
+ * @param string $str
+ * @return string
  */
 function getLastWord($str)
 {
 	preg_match_all('/^\S*([A-Z]{1}[^A-Z]*)/', $str, $out);
 	return $out[1][0];
 }
+/**
+ * 枚举文件
+ * @param string $path 路径
+ * @param callback $event 枚举文件回调。参数：$fileName
+ */
 function enumFiles($path, $event)
 {
 	if ('/' !== substr(strtr($path, '\\', '/'), '-1', 1))
@@ -134,11 +141,12 @@ function randomNums($min, $max, $num, $re = false)
 	while ($i < $num);
 	return $arr;
 }
-/**
- * boolval函数
- */
-if (!function_exists('boolval'))
+if (PHP_VERSION < 5.5)
 {
+	/**
+	* boolval函数
+	* @return bool
+	*/
 	function boolval($val)
 	{
 		return (bool) $val;
@@ -157,7 +165,7 @@ function getImages($str)
 /**
  * 将数据查询结果自动编号
  * @param array $arr
- * @param name $name
+ * @param string $name
  * @return array
  */
 function autoNumber(&$arr,$name)
@@ -184,6 +192,7 @@ function &arrayRefer(&$array)
 }
 /**
  * 多维数组递归合并
+ * @return array
  */
 function multimerge()
 {
@@ -220,8 +229,8 @@ function multimerge()
 }
 /**
  * 将二维数组第二纬某key变为一维的key
- * @param unknown $array
- * @param unknown $column
+ * @param array $array
+ * @param string $column
  * @param string $keepOld
  */
 function arrayColumnToKey(&$array,$column,$keepOld = false)
@@ -236,6 +245,13 @@ function arrayColumnToKey(&$array,$column,$keepOld = false)
 		}
 	}
 }
+/**
+ * 将类型转换为正则表达式
+ * @param string $type 类型
+ * @param int $lengthStart 长度开始
+ * @param int $lengthEnd 长度结束
+ * @return string
+ */
 function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 {
 	$result = null;
@@ -293,13 +309,21 @@ function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 	}
 	return $result;
 }
+/**
+ * 将类型转换为正则表达式后检测值是否正确
+ * @param string $type 类型
+ * @param int $lengthStart 长度开始
+ * @param int $lengthEnd 长度结束
+ * @param mixed $value 值
+ * @return bool
+ */
 function checkRegexTypeValue($type,$lengthStart = null,$lengthEnd = null,$value)
 {
 	return preg_match('/^' . convertToRegexType($type,$lengthStart,$lengthEnd) . '$/i',$value) > 0;
 }
 /**
  * 处理name按.分隔，支持\.转义不分隔
- * @param unknown $name
+ * @param string $name
  */
 function &parseCfgName($name)
 {
@@ -314,8 +338,8 @@ function &parseCfgName($name)
 }
 /**
  * 根据控制器名和动作自动加载并实例化
- * @param unknown $control
- * @param unknown $action
+ * @param string $control
+ * @param string $action
  */
 function &autoLoadControl($control,$action)
 {
@@ -349,8 +373,8 @@ function &autoLoadControl($control,$action)
 }
 /**
  * 根据组名获取数据值，比如<input type="text" name="group.title"/>，传入group
- * @param unknown $group
- * @return multitype:NULL
+ * @param string $group
+ * @return array
  */
 function &getDataByGroup($group,$method = 'all')
 {
@@ -365,8 +389,8 @@ function &getDataByGroup($group,$method = 'all')
 }
 /**
  * 根据组名获取数据值，比如<input type="text" name="group.title[]"/>，传入group
- * @param unknown $group
- * @return Ambigous <multitype:multitype: , unknown>
+ * @param string $group
+ * @return array
  */
 function &getDataArrayByGroup($group,$method = 'all')
 {
@@ -390,8 +414,8 @@ function &getDataArrayByGroup($group,$method = 'all')
 }
 /**
  * 根据组名获取字段们
- * @param unknown $group
- * @return multitype:multitype:unknown
+ * @param string $group
+ * @return array
  */
 function &getFieldsByGroup($group,$method = 'all')
 {
@@ -412,7 +436,7 @@ function &getFieldsByGroup($group,$method = 'all')
 }
 /**
  * 将parse_url结果组合成为字符串
- * @param unknown $parsed_url
+ * @param string $parsed_url
  * @return string
  */
 function unparse_url($parsed_url)
@@ -430,8 +454,8 @@ function unparse_url($parsed_url)
 }
 /**
  * 获取静态文件绝对路径
- * @param unknown $src
- * @return unknown|string
+ * @param string $src
+ * @return string
  */
 function parseStatic($src)
 {
@@ -462,17 +486,8 @@ function parseStatic($src)
 	}
 }
 /**
- * xml转数组
- * @param unknown $xmlstring
- * @return mixed
- */
-function xmlToArray($xmlstring)
-{
-	return json_decode(json_encode((array)simplexml_load_string($xmlstring)), true);
-}
-/**
  * 移出数组中数字键的成员
- * @param unknown $array
+ * @param array &$array
  */
 function removeArrayKeyNumeric(&$array)
 {
@@ -484,9 +499,9 @@ function removeArrayKeyNumeric(&$array)
 }
 /**
  * 处理多行文本，替换使用指定换行符换行
- * @param type $text
- * @param type $newLineSplit
- * @return type
+ * @param string $text
+ * @param string $newLineSplit
+ * @return string
  */
 function parseMuiltLine($text,$newLineSplit = PHP_EOL)
 {
@@ -494,10 +509,10 @@ function parseMuiltLine($text,$newLineSplit = PHP_EOL)
 }
 /**
  * 处理自动加载路径
- * @param type $rule
- * @param type $class
- * @param type $word
- * @return type
+ * @param string $rule
+ * @param string $class
+ * @param string $word
+ * @return string
  */
 function parseAutoloadPath($rule,$class = '',$word = '')
 {

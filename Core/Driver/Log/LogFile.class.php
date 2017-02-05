@@ -1,7 +1,8 @@
 <?php
 /**
  * 文件日志驱动
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class LogFile extends LogBase
 {
@@ -44,8 +45,8 @@ class LogFile extends LogBase
 	}
 	/**
 	 * 添加日志
-	 * @param type $content
-	 * @param type $option
+	 * @param string $content
+	 * @param array $option
 	 */
 	public function add($content, $option = array())
 	{
@@ -58,6 +59,7 @@ class LogFile extends LogBase
 	/**
 	 * 保存
 	 * @param array $data
+	 * @return bool
 	 */
 	public function save()
 	{

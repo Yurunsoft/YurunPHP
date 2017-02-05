@@ -1,17 +1,15 @@
 <?php
 /**
  * JSON配置驱动
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class ConfigJSON extends ConfigFileBase
 {
 	/**
 	 * 将文件转换为数据
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * @param string $fileName  
+	 * @return bool     	
 	 */
 	protected function parseFileToData($fileName)
 	{
@@ -29,12 +27,8 @@ class ConfigJSON extends ConfigFileBase
 		}
 	}
 	/**
-	 * 将数据保存至文件
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * 保存数据
+	 * @param array $option 参数
 	 */
 	public function save($fileName = null)
 	{

@@ -1,4 +1,9 @@
 <?php
+/**
+ * 下拉框控件
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class YCSelect extends YCBase
 {
 	/**
@@ -64,7 +69,6 @@ class YCSelect extends YCBase
 				}
 			}
 			$this->dataset = $dataset;
-//			var_dump($this->dataset);
 		}
 	}
 	protected function renderOption()

@@ -1,4 +1,9 @@
 <?php
+/**
+ * 一个封装的非标准API控制器
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class APIBaseControl extends Control
 {
 	public $dataFormat,$dataFormatOption;

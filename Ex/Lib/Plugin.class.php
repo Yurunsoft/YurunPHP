@@ -1,4 +1,9 @@
 <?php
+/**
+ * YurunPHP插件类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class Plugin
 {
 	private static $config;

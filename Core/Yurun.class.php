@@ -1,7 +1,8 @@
 <?php
 /**
- * YurunPHP 开发框架 入口文件
- * @author Yurun <admin@yurunsoft.com>
+ * YurunPHP 开发框架 主处理类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Yurun
 {
@@ -24,6 +25,9 @@ class Yurun
 	 * @var type 
 	 */
 	public static $isAppLoaded = false;
+	/**
+	 * 框架入口执行
+	 */
 	public static function exec()
 	{
 		// 框架版本声明
@@ -53,6 +57,7 @@ class Yurun
 		register_shutdown_function('Yurun::onShutdown');
 		set_error_handler('Yurun::onError');
 		set_exception_handler('Yurun::onException');
+		// 语言包初始化
 		Lang::init();
 		self::$isFrameworkLoaded = true;
 		// 加载项目初始化处理文件
@@ -90,16 +95,22 @@ class Yurun
 	}
 	public static function autoload($class)
 	{
+		// 当前模块路径、模块分层路径、项目分层路径
 		static $currModulePath,$layerModulePath,$layerAppPath;
+		// 文件名
 		$file = $class . '.class.php';
+		// 第一个单词
 		$firstWord = getFirstWord($class);
+		// 最后一个单词
 		$lastWord = getLastWord($class);
+		// 框架加载完成才执行
 		if(self::$isFrameworkLoaded)
 		{
+			// 类库目录
 			$libPath = Config::get('@.LIB_PATH');
 			if(null === $currModulePath)
 			{
-				// 当前模块路径
+				// 设置当前模块路径
 				$currModulePath = APP_MODULE . Dispatch::module() . DIRECTORY_SEPARATOR;
 				$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
 				$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
@@ -159,6 +170,7 @@ class Yurun
 					return;
 				}
 			}
+			// 模块、项目、框架类库目录尝试加载
 			if(require_once_multi(array(
 				$currModulePath . $libPath . '/' . $file,
 				APP_PATH . $libPath . '/' . $file,
@@ -170,6 +182,7 @@ class Yurun
 		}
 		else
 		{
+			// 框架没加载完，只从框架类库目录尝试加载
 			$filePath = ROOT_PATH . 'Ex/Lib/' . $file;
 			if(is_file($filePath))
 			{
@@ -177,6 +190,7 @@ class Yurun
 				return;
 			}
 		}
+		// 没编译时需要从核心类中加载
 		if(!IS_COMPILE)
 		{
 			if(in_array($firstWord, self::$config['CORE_DRIVER_CLASSES']))
@@ -191,6 +205,9 @@ class Yurun
 			}
 		}
 	}
+	/**
+	 * 脚本执行完毕时触发
+	 */
 	public static function onShutdown()
 	{
 		if ($e = error_get_last() && in_array($e['type'],array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR)))
@@ -207,6 +224,9 @@ class Yurun
 			Log::save();
 		}
 	}
+	/**
+	 * 发生错误时触发
+	 */
 	public static function onError($errno, $errstr, $errfile, $errline)
 	{
 		if(in_array($errno,array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR)))
@@ -224,6 +244,9 @@ class Yurun
 			self::printError($error);
 		}
 	}
+	/**
+	 * 出现异常时触发
+	 */
 	public static function onException($exception)
 	{
 		if(Config::get('@.LOG_ERROR'))
@@ -233,7 +256,6 @@ class Yurun
 		ob_end_clean();
 		self::printError($exception);
 	}
-	
 	/**
 	 * 输出错误提示
 	 * @param mixed $err

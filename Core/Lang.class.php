@@ -1,11 +1,14 @@
 <?php
 /**
  * 语言类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Lang
 {
-	// 语言数据
+	/**
+	 * 语言数据
+	 */
 	protected static $list;
 	
 	/**
@@ -29,6 +32,11 @@ class Lang
 			}
 		}
 	}
+	/**
+	 * 取数据
+	 * @param string $name
+	 * @return string
+	 */
 	public static function get($name)
 	{
 		$args = func_get_args();
@@ -49,8 +57,7 @@ class Lang
 	
 	/**
 	 * 获取浏览器head头传入的语言名
-	 *
-	 * @return boolean
+	 * @return mixed
 	 */
 	public static function getlang()
 	{
@@ -66,7 +73,6 @@ class Lang
 	
 	/**
 	 * 载入语言包数据
-	 *
 	 * @param string $lang        	
 	 * @return array
 	 */

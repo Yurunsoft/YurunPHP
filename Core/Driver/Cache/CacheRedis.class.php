@@ -1,4 +1,10 @@
 <?php
+/**
+ * Redis缓存驱动类
+ * 需要Redis扩展支持
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class CacheRedis extends CacheBase
 {
 	/**
@@ -22,11 +28,22 @@ class CacheRedis extends CacheBase
 		}
 	}
 	
+	/**
+	 * 清空缓存
+	 * @return bool
+	 */
 	public function clear()
 	{
 		return $this->cache->flushDB();
 	}
 
+	/**
+	 * 获取缓存内容
+	 * @param string $alias 别名
+	 * @param mixed $default 默认值或者回调
+	 * @param array $config 配置
+	 * @return mixed
+	 */
 	public function get($alias, $default = false, $config = array())
 	{
 		$result = $this->cache->get($alias);
@@ -40,11 +57,24 @@ class CacheRedis extends CacheBase
 		}
 	}
 
+	/**
+	 * 删除缓存
+	 * @param string $alias 别名
+	 * @param array $config 配置
+	 * @return bool
+	 */
 	public function remove($alias, $config = array())
 	{
 		return $this->cache->delete($alias);
 	}
 
+	/**
+	 * 设置缓存
+	 * @param string $alias 别名
+	 * @param string $value 缓存内容
+	 * @param array $config 配置
+	 * @return bool
+	 */
 	public function set($alias, $value, $config = array())
 	{
 		$expire = isset($config['expire']) ? $config['expire'] : 0;
@@ -58,6 +88,12 @@ class CacheRedis extends CacheBase
 		}
 	}
 
+	/**
+	 * 缓存是否存在
+	 * @param string $alias 别名
+	 * @param array $config 配置
+	 * @return bool
+	 */
 	public function exists($alias, $config = array())
 	{
 		return $this->cache->exists($alias,$config);
