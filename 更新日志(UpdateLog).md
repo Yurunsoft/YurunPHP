@@ -21,7 +21,7 @@ v2.0.0 Beta 2017.02.06
 
 新增日志驱动：Db
 
-新增数据库Session类
+新增数据库Session类，支持将Session保存至数据库
 
 新增一个XML转换类
 
