@@ -69,6 +69,9 @@ class Yurun
 		include $file;
 		// 项目开始加载事件
 		Event::trigger('YURUN_APP_ONLOAD');
+		self::$isAppLoaded = true;
+		// 项目加载完成事件
+		Event::trigger('YURUN_APP_LOAD_COMPLETE');
 		// 设置时区
 		date_default_timezone_set(Config::get('@.TIMEZONE'));
 		// 静态文件目录
@@ -82,9 +85,6 @@ class Yurun
 		}
 		// 静态文件目录
 		define('STATIC_PATH',$staticPath);
-		self::$isAppLoaded = true;
-		// 项目加载完成事件
-		Event::trigger('YURUN_APP_LOAD_COMPLETE');
 		// 自动启动session
 		if(Config::get('@.SESSION_AUTO_OPEN'))
 		{
