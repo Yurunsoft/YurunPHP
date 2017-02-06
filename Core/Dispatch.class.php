@@ -183,6 +183,10 @@ class Dispatch
 		if('' == $requestURI && Config::get('@.URL_PARSE_ON')) // URL路由解析
 		{
 			list($requestURI) = explode('&',$_SERVER['QUERY_STRING']);
+			if(false !== strpos($requestURI,'='))
+			{
+				$requestURI = '';
+			}
 		}
 		if('' == $requestURI && Config::get('@.QUERY_PATHINFO_ON')) // 参数传入URL路由解析
 		{
