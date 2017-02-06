@@ -1,8 +1,8 @@
 <?php
 /**
  * YurunPHP分页类
- * @copyright 2008-2014 Yurunsoft.com All rights reserved.
- * @author 宇润 (Yurun) <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Page
 {
@@ -119,16 +119,11 @@ class Page
 	 */
 	public function setRule($rule)
 	{
-		if(null===$rule)
+		if(null === $rule)
 		{
-			$rule='';
-			if (Config::get('@.MODULE_ON'))
-			{
-				$rule=Dispatch::module().'/';
-			}
-			$rule.=Dispatch::control().'/'.Dispatch::action();
+			$rule = Dispatch::module() . '/' . Dispatch::control() . '/' . Dispatch::action();
 		}
-		$this->rule=$rule;
+		$this->rule = $rule;
 	}
 
 	/**

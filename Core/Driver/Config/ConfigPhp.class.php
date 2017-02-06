@@ -1,32 +1,15 @@
 <?php
 /**
  * PHP数组配置驱动
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
-class ConfigPhp extends ConfigBase
+class ConfigPHP extends ConfigFileBase
 {
 	/**
-	 * 构造方法
-	 *
-	 * @param type $p1        	
-	 */
-	public function __construct($p1 = null)
-	{
-		parent::__construct($p1);
-		if (is_string($p1))
-		{
-			// 传入文件名，把该文件内数据，初始化实例
-			$this->fromFile($p1);
-		}
-	}
-	
-	/**
 	 * 将文件转换为数据
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * @param string $fileName  
+	 * @return bool     	
 	 */
 	protected function parseFileToData($fileName)
 	{
@@ -44,12 +27,8 @@ class ConfigPhp extends ConfigBase
 		}
 	}
 	/**
-	 * 将数据保存至文件
-	 *
-	 * @abstract
-	 *
-	 * @access protected
-	 * @param string $fileName        	
+	 * 保存数据
+	 * @param array $option 参数
 	 */
 	public function save($fileName = null)
 	{

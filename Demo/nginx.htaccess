@@ -1,0 +1,6 @@
+if (!-e $request_filename){
+	#pathinfo路由规则
+	rewrite ^/(.*)$ /index.php/$1 last;
+	#参数路由规则
+	rewrite ^/(.*)$ /index.php?i=$1 last;
+}

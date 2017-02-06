@@ -1,13 +1,21 @@
 <?php
 /**
- * 控制器类
- * @author Yurun <admin@yurunsoft.com>
+ * YurunPHP控制器基类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Control
 {
+	/**
+	 * 视图层对象
+	 */
 	protected $view;
+	/**
+	 * 构造方法
+	 */
 	function __construct()
 	{
+		// 实例化视图层对象
 		$this->view = new View(Config::get('@.THEME_ON')?Config::get('@.THEME'):null,$this);
 	}
 	/**

@@ -1,38 +1,37 @@
 <?php
 /**
  * 数据验证类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Validator
 {
-	// 映射已存在的判断方法
+	/**
+	 * 映射已存在的判断方法
+	 */
 	protected static $checkTypes = array ('array' => 'is_array','bool' => 'is_bool','numeric' => 'is_numeric','string' => 'is_string','int' => 'is_integer','long' => 'is_long','float' => 'is_float','double' => 'is_float','obj' => 'is_object','resource' => 'is_resource','null' => 'is_null','dir' => 'is_dir',	// 是否目录
 	'file' => 'is_file',	// 是否文件
 	'nan' => 'is_nan',	// 是否非法数值
 	'scalar' => 'is_scalar'); // 是否标量
-	                          
-	// 反射
-	protected static $ref;
-	// 规则
-	protected $rule = array ();
-	// 数据
-	protected $data = array ();
-	// 验证结果
-	protected $result = array ();
-	
 	/**
-	 * 初始化
+	 * 反射
 	 */
-	public static function init()
-	{
-		// 反射
-		self::$ref = new ReflectionClass(get_called_class());
-	}
-	
+	protected static $ref;
+	/**
+	 * 规则
+	 */
+	protected $rule = array ();
+	/**
+	 * 数据
+	 */
+	protected $data = array ();
+	/**
+	 * 验证结果
+	 */
+	protected $result = array ();
 	/**
 	 * 构造方法
-	 *
-	 * @param type $data        	
+	 * @param array $data        	
 	 */
 	public function __construct($data = array())
 	{
@@ -44,8 +43,7 @@ class Validator
 	
 	/**
 	 * 添加规则
-	 *
-	 * @param type $rule        	
+	 * @param array $rule        	
 	 */
 	public function setRule($rule)
 	{
@@ -57,7 +55,6 @@ class Validator
 	
 	/**
 	 * 设置规则
-	 *
 	 * @param string $name        	
 	 * @param mixed $rule        	
 	 */
@@ -71,7 +68,6 @@ class Validator
 	
 	/**
 	 * 设置数据
-	 *
 	 * @param array $data        	
 	 */
 	public function setData($data)
@@ -81,6 +77,9 @@ class Validator
 			$this->data = $data;
 		}
 	}
+	/**
+	 * 清理数据
+	 */
 	public function clear()
 	{
 		$this->rule = array ();
@@ -90,7 +89,6 @@ class Validator
 	
 	/**
 	 * 验证数据
-	 *
 	 * @param boolean $all        	
 	 * @param array $data        	
 	 * @param array $rules        	
@@ -204,9 +202,8 @@ class Validator
 	
 	/**
 	 * 是否含有指定名称的值
-	 *
-	 * @param string $name        	
-	 * @param mixed $data        	
+	 * @param string $name
+	 * @param mixed $data
 	 * @return boolean
 	 */
 	public function required($name, $data = null)
@@ -220,8 +217,17 @@ class Validator
 			return isset($data[$name]);
 		}
 	}
+	/**
+	 * 验证数据
+	 * @param mixed $value
+	 * @param string $type
+	 */
 	public static function check($value, $type)
 	{
+		if(null === self::$ref)
+		{
+			self::$ref = new ReflectionClass(get_called_class());
+		}
 		$args = func_get_args();
 		unset($args[1]);
 		if (isset(self::$checkTypes[$type]))
@@ -248,7 +254,6 @@ class Validator
 	
 	/**
 	 * 正则验证
-	 *
 	 * @param mixed $value        	
 	 * @param string $rule        	
 	 * @return boolean
@@ -260,7 +265,6 @@ class Validator
 	
 	/**
 	 * 判断文本长度，以字节为单位
-	 *
 	 * @param string $val        	
 	 * @param int $min        	
 	 * @param int $max        	
@@ -273,7 +277,6 @@ class Validator
 	
 	/**
 	 * 判断文本长度，以字符为单位
-	 *
 	 * @param string $val
 	 * @param int $min
 	 * @param int $max
@@ -291,7 +294,6 @@ class Validator
 	}
 	/**
 	 * 判断空文本
-	 *
 	 * @param string $str        	
 	 * @return boolean
 	 */
@@ -302,7 +304,6 @@ class Validator
 	
 	/**
 	 * 判断不为空文本
-	 *
 	 * @param string $str        	
 	 * @return boolean
 	 */
@@ -313,10 +314,8 @@ class Validator
 	
 	/**
 	 * 检测邮箱格式
-	 *
 	 * @access public static
-	 * @param
-	 *        	$email
+	 * @param $email
 	 * @return bool
 	 */
 	public static function email($email)
@@ -383,10 +382,8 @@ class Validator
 	
 	/**
 	 * 检测中国手机号码格式
-	 *
 	 * @access public static
-	 * @param
-	 *        	$str
+	 * @param string $str
 	 * @return bool
 	 */
 	public static function mobile($str)
@@ -396,10 +393,8 @@ class Validator
 	
 	/**
 	 * 检测中国电话号码格式，支持400、800等
-	 *
 	 * @access public static
-	 * @param
-	 *        	$str
+	 * @param string $str
 	 * @return bool
 	 */
 	public static function tel($str)
@@ -418,9 +413,8 @@ class Validator
 	
 	/**
 	 * 检测是否符合中国固话或手机格式，支持400、800等
-	 *
-	 * @param type $str        	
-	 * @return type
+	 * @param string $str        	
+	 * @return string
 	 */
 	public static function phone($str)
 	{
@@ -429,10 +423,8 @@ class Validator
 	
 	/**
 	 * 检测中国邮政编码
-	 *
 	 * @access public static
-	 * @param
-	 *        	$str
+	 * @param string $str
 	 * @return bool
 	 */
 	public static function postcode($str)
@@ -442,10 +434,8 @@ class Validator
 	
 	/**
 	 * 检测URL地址
-	 *
 	 * @access public static
-	 * @param
-	 *        	$str
+	 * @param string $str
 	 * @return bool
 	 */
 	public static function url($str)
@@ -455,10 +445,8 @@ class Validator
 	
 	/**
 	 * 检测QQ号是否符合规则
-	 *
 	 * @access public static
-	 * @param
-	 *        	$str
+	 * @param string $str
 	 * @return bool
 	 */
 	public static function qq($str)
@@ -468,7 +456,6 @@ class Validator
 	
 	/**
 	 * 判断IP地址是否符合IP的格式，ipv4或ipv6
-	 *
 	 * @param string $str        	
 	 * @return boolean
 	 */
@@ -479,9 +466,8 @@ class Validator
 	
 	/**
 	 * 判断IP地址是否是合法的ipv4格式
-	 *
-	 * @param type $str        	
-	 * @return type
+	 * @param string $str        	
+	 * @return boolean
 	 */
 	public static function ipv4($str)
 	{
@@ -490,9 +476,8 @@ class Validator
 	
 	/**
 	 * 判断IP地址是否是合法的ipv6格式
-	 *
-	 * @param type $str        	
-	 * @return type
+	 * @param string $str
+	 * @return boolean
 	 */
 	public static function ipv6($str)
 	{
@@ -530,7 +515,6 @@ class Validator
 	
 	/**
 	 * 在两个数之间，不包含这2个数字
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -542,7 +526,6 @@ class Validator
 	
 	/**
 	 * 在两个数之间，包含这2个数字
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -554,7 +537,6 @@ class Validator
 
 	/**
 	 * 小于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -566,7 +548,6 @@ class Validator
 	
 	/**
 	 * 小于等于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -578,7 +559,6 @@ class Validator
 	
 	/**
 	 * 大于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -590,7 +570,6 @@ class Validator
 	
 	/**
 	 * 大于等于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -602,7 +581,6 @@ class Validator
 	
 	/**
 	 * 等于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -614,7 +592,6 @@ class Validator
 	
 	/**
 	 * 不等于
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -626,7 +603,6 @@ class Validator
 	
 	/**
 	 * 值在范围内
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -642,7 +618,6 @@ class Validator
 	
 	/**
 	 * 值不在范围内
-	 *
 	 * @param numeric $value        	
 	 * @param array $param        	
 	 * @return boolean
@@ -658,20 +633,16 @@ class Validator
 	
 	/**
 	 * 检测中国居民身份证，支持15位和18位
-	 *
 	 * @access public static
-	 * @param
-	 *        	$id_card
+	 * @param string $id_card
 	 * @return bool
 	 */
 	public static function idcard($id_card)
 	{
 		/**
 		 * 计算身份证校验码，根据国家标准GB 11643-1999
-		 *
 		 * @access protected static
-		 * @param
-		 *        	$idcard_base
+		 * @param string $idcard_base
 		 * @return int
 		 */
 		$idcard_verify_number = function () use(&$id_card)
@@ -696,10 +667,8 @@ class Validator
 		};
 		/**
 		 * 18位身份证校验码有效性检查
-		 *
 		 * @access protected static
-		 * @param
-		 *        	$idcard
+		 * @param string $idcard
 		 * @return bool
 		 */
 		$idcard_checksum18 = function () use(&$id_card, $idcard_verify_number)
@@ -721,10 +690,8 @@ class Validator
 		};
 		/**
 		 * 将15位身份证升级到18位
-		 *
 		 * @access protected static
-		 * @param
-		 *        	$idcard
+		 * @param string $idcard
 		 * @return string
 		 */
 		$idcard_15to18 = function () use(&$id_card, $idcard_verify_number)
@@ -764,4 +731,3 @@ class Validator
 		}
 	}
 }
-Validator::init();

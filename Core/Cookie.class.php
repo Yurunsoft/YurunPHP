@@ -1,17 +1,27 @@
 <?php
 /**
  * Cookie操作类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Cookie
 {
-	// cookie的服务器路径,默认为/
+	/**
+	 * cookie的服务器路径,默认为/
+	 */
 	public static $path;
-	// 有效域名，默认为当前域名
+	/**
+	 * 有效域名，默认为当前域名
+	 */
 	public static $domain;
-	// 规定是否通过安全的 HTTPS 连接来传输cookie
+	/**
+	 * 规定是否通过安全的 HTTPS 连接来传输cookie
+	 */
 	public static $secure;
-	
+	/**
+	 * 是否已初始化
+	 */
+	private static $isInit = false;
 	/**
 	 * 初始化Cookie配置
 	 */
@@ -20,28 +30,30 @@ class Cookie
 		self::$path = Config::get('@.COOKIE_PATH', '/');
 		self::$domain = Config::get('@.COOKIE_DOMAIN', '');
 		self::$secure = Config::get('@.COOKIE_SECURE', 0);
+		self::$isInit = true;
 	}
 	
 	/**
 	 * 设置cookie值
-	 *
 	 * @param string $name        	
 	 * @param mixed $value        	
 	 * @param int $expire        	
 	 * @param string $path        	
 	 * @param string $domain        	
-	 * @param int $secure
-	 *        	HTTPS 连接来传输cookie
+	 * @param int $secure HTTPS 连接来传输cookie
 	 * @return boolean
 	 */
 	public static function set($name, $value, $expire = 0, $path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		return setcookie($name, $value, is_numeric($expire) ? $expire : self::$expire, '' == $path ? self::$path : $path, '' == $domain ? self::$domain : $domain, '' == $secure ? self::$secure : $secure);
 	}
 	
 	/**
 	 * 获取cookie值
-	 *
 	 * @param string $name        	
 	 * @param mixed $default        	
 	 * @return mixed
@@ -53,8 +65,8 @@ class Cookie
 
 	/**
 	 * cookie值是否存在
-	 *
 	 * @param string $name
+	 * @return bool
 	 */
 	public static function exists($name)
 	{
@@ -63,7 +75,6 @@ class Cookie
 
 	/**
 	 * 获取cookie值并过滤
-	 *
 	 * @param string $name        	
 	 * @param mixed $default        	
 	 * @return mixed
@@ -82,18 +93,21 @@ class Cookie
 	
 	/**
 	 * 删除cookie
-	 *
 	 * @param string $name        	
 	 * @param string $path        	
 	 * @param string $domain        	
 	 * @param int $secure        	
-	 * @return type
+	 * @return bool
 	 */
 	public static function delete($name,$path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		if(!is_array($name))
 		{
-			$name=func_get_args();
+			$name = array($name);
 		}
 		foreach ($name as $val)
 		{
@@ -104,17 +118,19 @@ class Cookie
 	
 	/**
 	 * 删除所有cookie
-	 *
 	 * @param string $path        	
 	 * @param string $domain        	
 	 * @param int $secure        	
 	 */
 	public static function clear($path = '', $domain = '', $secure = '')
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		foreach ($_COOKIE as $key => $v)
 		{
 			self::delete($key, $path, $domain, $secure);
 		}
 	}
 }
-Cookie::init();

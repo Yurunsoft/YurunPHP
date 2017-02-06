@@ -1,11 +1,14 @@
 <?php
 /**
  * 语言类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Lang
 {
-	// 语言数据
+	/**
+	 * 语言数据
+	 */
 	protected static $list;
 	
 	/**
@@ -14,7 +17,7 @@ class Lang
 	public static function init()
 	{
 		// 默认语言包名
-		$default = Config::get('@.DEFAULT_LANG');
+		$default = Config::get('@.LANG_DEFAULT');
 		// 加载默认语言包
 		self::$list = self::loadLang($default);
 		// 判断是否自动判断浏览器语言
@@ -29,6 +32,11 @@ class Lang
 			}
 		}
 	}
+	/**
+	 * 取数据
+	 * @param string $name
+	 * @return string
+	 */
 	public static function get($name)
 	{
 		$args = func_get_args();
@@ -49,8 +57,7 @@ class Lang
 	
 	/**
 	 * 获取浏览器head头传入的语言名
-	 *
-	 * @return boolean
+	 * @return mixed
 	 */
 	public static function getlang()
 	{
@@ -66,7 +73,6 @@ class Lang
 	
 	/**
 	 * 载入语言包数据
-	 *
 	 * @param string $lang        	
 	 * @return array
 	 */
@@ -74,14 +80,14 @@ class Lang
 	{
 		$list = array ();
 		// 框架语言包
-		$file = PATH_LANG . $lang . '.lang.php';
+		$file = ROOT_PATH . Config::get('@.LANG_PATH') . '/' . $lang . '.lang.php';
 		if (is_file($file))
 		{
 			$data = include $file;
 			$list = array_merge($list, $data);
 		}
 		// 项目语言包
-		$file = APP_LANG . $lang . '.lang.php';
+		$file = APP_LANG . Config::get('@.LANG_PATH') . '/' . $lang . '.lang.php';
 		if (is_file($file))
 		{
 			$data = include $file;
@@ -93,7 +99,7 @@ class Lang
 		if ('' !== $m)
 		{
 			// 模块语言包
-			$file = APP_MODULE . $m . '/' . Config::get('@.LANG_FOLDER') . '/'. $lang .'.lang.php';
+			$file = APP_MODULE . $m . '/' . Config::get('@.LANG_PATH') . '/'. $lang .'.lang.php';
 			if (is_file($file))
 			{
 				$data = include $file;

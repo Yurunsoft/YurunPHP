@@ -1,7 +1,8 @@
 <?php
 /**
  * 定时任务
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Task
 {
@@ -46,8 +47,13 @@ class Task
 	 */
 	public static function init()
 	{
-		Config::create('Task', 'php', APP_CONFIG . 'task.php');
-		// 获取插件列表
+		Config::create(array(
+			'type'	=>	'PHP',
+			'option'=>	array(
+				'filename'	=>	APP_CONFIG . 'task.php'
+			)
+		), 'Task');
+		// 获取任务列表
 		self::$tasks = Config::get('Task.List',array());
 		define('APP_TASK', APP_PATH . 'Task/');
 		self::$lockFileName = APP_CACHE . 'task.lock';
@@ -74,7 +80,7 @@ class Task
 		{
 			if(self::taskCanExec($task))
 			{
-				self::execTask($name,$task);
+				self::execTask($name);
 				if($onlyOnce)
 				{
 					break;
@@ -214,11 +220,10 @@ class Task
 	}
 	/**
 	 * 执行任务
-	 * @param type $name
-	 * @param type $task
+	 * @param string $name
 	 * @return type
 	 */
-	private static function execTask($name,$task)
+	private static function execTask($name)
 	{
 		$file = fopen(self::$lockFileName, 'w+');
 		if(false === $file)

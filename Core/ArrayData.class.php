@@ -1,15 +1,17 @@
 <?php
 /**
- * 数组数据基类
- * @author Yurun <admin@yurunsoft.com>
+ * YurunPHP数组数据基类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class ArrayData implements ArrayAccess
 {
-	// 数据
+	/**
+	 * 数据
+	 */
 	protected $data = array ();
 	/**
 	 * 设置数据
-	 *
 	 * @param string $name        	
 	 * @param mixed $value        	
 	 */
@@ -29,9 +31,8 @@ class ArrayData implements ArrayAccess
 	}
 	/**
 	 * 设置数据
-	 *
-	 * @param type $name        	
-	 * @param type $value        	
+	 * @param string $name        	
+	 * @param mixed $value        	
 	 * @return boolean
 	 */
 	public function setVal($name, $value = null)
@@ -60,7 +61,6 @@ class ArrayData implements ArrayAccess
 	}
 	/**
 	 * 获取数据
-	 *
 	 * @param string $name        	
 	 * @param mixed $default        	
 	 * @return mixed
@@ -124,8 +124,7 @@ class ArrayData implements ArrayAccess
 	}
 	/**
 	 * 删除数据
-	 *
-	 * @param name $name        	
+	 * @param string $name        	
 	 */
 	public function remove($name)
 	{
@@ -166,7 +165,6 @@ class ArrayData implements ArrayAccess
 	}
 	/**
 	 * 获取数据的数量
-	 *
 	 * @return int
 	 */
 	public function length()
@@ -175,7 +173,6 @@ class ArrayData implements ArrayAccess
 	}
 	/**
 	 * 键名对应的值是否存在
-	 *
 	 * @param string $name        	
 	 * @return boolean
 	 */
