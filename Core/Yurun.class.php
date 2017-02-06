@@ -26,6 +26,10 @@ class Yurun
 	 */
 	public static $isAppLoaded = false;
 	/**
+	 * 路由解析完成
+	 */
+	public static $routeResolveComplete = false;
+	/**
 	 * 框架入口执行
 	 */
 	public static function exec()
@@ -89,6 +93,8 @@ class Yurun
 		// 初始化路由规则
 		Dispatch::initRouteRules();
 		Dispatch::resolve();
+		// 路由解析完成
+		self::$routeResolveComplete = true;
 		// 释放变量
 		unset($file,$str,$staticPath);
 		Dispatch::exec();
@@ -108,11 +114,14 @@ class Yurun
 		{
 			// 类库目录
 			$libPath = Config::get('@.LIB_PATH');
-			if(null === $currModulePath)
+			if(null === $currModulePath && self::$routeResolveComplete)
 			{
 				// 设置当前模块路径
 				$currModulePath = APP_MODULE . Dispatch::module() . DIRECTORY_SEPARATOR;
 				$layerModulePath = defined('LAYER_MODULE_PATH') ? LAYER_MODULE_PATH : $currModulePath;
+			}
+			if(null === $layerAppPath)
+			{
 				$layerAppPath = defined('LAYER_APP_PATH') ? LAYER_APP_PATH : APP_PATH;
 			}
 			// 自动加载配置支持
@@ -125,13 +134,22 @@ class Yurun
 						if($firstWord === $rule['word'])
 						{
 							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
-							if(require_once_multi(
-								array (
+							if(self::$routeResolveComplete)
+							{
+								$files = array (
 									$currModulePath . $filePath,	// 模块目录
 									APP_PATH . $filePath,			// 项目目录
 									ROOT_PATH . $filePath			// 框架目录
-								)
-							))
+								);
+							}
+							else
+							{
+								$files = array (
+									APP_PATH . $filePath,			// 项目目录
+									ROOT_PATH . $filePath			// 框架目录
+								);
+							}
+							if(require_once_multi($files))
 							{
 								return;
 							}
@@ -141,13 +159,22 @@ class Yurun
 						if($lastWord === $rule['word'])
 						{
 							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
-							if(require_once_multi(
-								array (
+							if(self::$routeResolveComplete)
+							{
+								$files = array (
 									$currModulePath . $filePath,	// 模块目录
 									APP_PATH . $filePath,			// 项目目录
 									ROOT_PATH . $filePath			// 框架目录
-								)
-							))
+								);
+							}
+							else
+							{
+								$files = array (
+									APP_PATH . $filePath,			// 项目目录
+									ROOT_PATH . $filePath			// 框架目录
+								);
+							}
+							if(require_once_multi($files))
 							{
 								return;
 							}
@@ -160,22 +187,43 @@ class Yurun
 			if(in_array($lastWord,$layers))
 			{
 				$filePath = $lastWord . DIRECTORY_SEPARATOR . $file;
-				if (require_once_multi(array (
-							$layerModulePath . $filePath,	// 模块分层目录
-							$layerAppPath . $filePath,		// 项目分层目录
-							ROOT_PATH . 'Ex/' . $filePath	// 框架分层目录
-						),
-						false))
+				if(self::$routeResolveComplete)
+				{
+					$files = array (
+						$layerModulePath . $filePath,	// 模块分层目录
+						$layerAppPath . $filePath,		// 项目分层目录
+						ROOT_PATH . 'Ex/' . $filePath	// 框架分层目录
+					);
+				}
+				else
+				{
+					$files = array (
+						$layerAppPath . $filePath,		// 项目分层目录
+						ROOT_PATH . 'Ex/' . $filePath	// 框架分层目录
+					);
+				}
+				if (require_once_multi($files,false))
 				{
 					return;
 				}
 			}
 			// 模块、项目、框架类库目录尝试加载
-			if(require_once_multi(array(
-				$currModulePath . $libPath . '/' . $file,
-				APP_PATH . $libPath . '/' . $file,
-				ROOT_PATH . 'Ex/Lib/' . $file
-			)))
+			if(self::$routeResolveComplete)
+			{
+				$files = array (
+					$currModulePath . $libPath . '/' . $file,
+					APP_PATH . $libPath . '/' . $file,
+					ROOT_PATH . 'Ex/Lib/' . $file
+				);
+			}
+			else
+			{
+				$files = array (
+					APP_PATH . $libPath . '/' . $file,
+					ROOT_PATH . 'Ex/Lib/' . $file
+				);
+			}
+			if(require_once_multi($files))
 			{
 				return;
 			}
