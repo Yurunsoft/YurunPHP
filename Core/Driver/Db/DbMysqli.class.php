@@ -1,7 +1,8 @@
 <?php
 /**
  * MySQLi数据库驱动类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class DbMysqli extends DbBase
 {
@@ -559,5 +560,14 @@ class DbMysqli extends DbBase
 		{
 			return $data;
 		}
+	}
+	/**
+	 * 获取表行数
+	 * @param type $tableName
+	 * @return type
+	 */
+	public function getTableRows($tableName)
+	{
+		return (int)$this->queryValue('select TABLE_ROWS from information_schema.`TABLES` WHERE TABLE_NAME = \'' . $this->filterString($tableName) . '\';');
 	}
 }

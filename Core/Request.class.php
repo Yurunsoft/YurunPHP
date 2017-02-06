@@ -1,13 +1,18 @@
 <?php
 /**
  * 请求获取类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Request
 {
 	/**
+	 * CLI模式下的参数数组
+	 * @var type 
+	 */
+	public static $cliArgs = array();
+	/**
 	 * 判断是否为https方式访问
-	 *
 	 * @return boolean
 	 */
 	public static function isHttps()
@@ -16,7 +21,6 @@ class Request
 	}
 	/**
 	 * 获取当前协议，http://或https://
-	 *
 	 * @return string
 	 */
 	public static function getProtocol()
@@ -25,9 +29,7 @@ class Request
 	}
 	/**
 	 * 获取或判断当前请求方式
-	 *
-	 * @param string $compare
-	 *        	比较的请求方式
+	 * @param string $compare 比较的请求方式
 	 * @return mixed
 	 */
 	public static function method($compare = null)
@@ -45,7 +47,6 @@ class Request
 	}
 	/**
 	 * 获取当前来路页面
-	 *
 	 * @param boolean $emptyDomain        	
 	 * @return string
 	 */
@@ -73,45 +74,64 @@ class Request
 	}
 	/**
 	 * 获取站点地址
-	 *
-	 * @param string $path        	
+	 * @param string $path
 	 * @return string
 	 */
 	public static function getHome($path = '')
 	{
-		$domain=Config::get('@.DOMAIN');
+		$domain = Config::get('@.DOMAIN');
 		if(empty($domain))
 		{
-			$domain=$_SERVER['HTTP_HOST'];
+			$domain = $_SERVER['HTTP_HOST'];
 		}
-		if(''===$path || '/'===$path[0])
+		if('' === $path || '/' === $path[0])
 		{
-			return self::getProtocol().$domain.$path;
+			return self::getProtocol() . $domain . $path;
 		}
 		else
 		{
-			$dir=dirname($_SERVER['SCRIPT_NAME']);
-			if('\\'===$dir)
+			$dir = dirname($_SERVER['SCRIPT_NAME']);
+			if('\\' === $dir)
 			{
-				$dir='';
+				$dir = '';
 			}
 			return self::getProtocol()."{$domain}{$dir}/{$path}";
 		}
 	}
 	/**
 	 * 魔术方法
-	 *
-	 * @param type $name        	
-	 * @param type $arguments        	
-	 * @return type
+	 * @param string $name        	
+	 * @param array $arguments        	
+	 * @return mixed
 	 */
 	public static function __callStatic($name, $arguments)
 	{
 		return call_user_func_array('self::getAll', array_merge(array ($name), $arguments));
 	}
+	/**
+	 * 指定数据是否存在
+	 * @param string $arrName        	
+	 * @param string $name        	
+	 * @return bool
+	 */
 	public static function exists($arrName, $name)
 	{
 		$arrName = strtolower($arrName);
+		if(IS_CLI)
+		{
+			if(is_integer($name))
+			{
+				return isset($_SERVER['argv'][$name]);
+			}
+			else
+			{
+				if(empty(self::$cliArgs))
+				{
+					self::parseCliArgs();
+				}
+				return isset(self::$cliArgs[$name]);
+			}
+		}
 		if('get' === $arrName)
 		{
 			return isset($_GET[$name]);
@@ -135,7 +155,6 @@ class Request
 	}
 	/**
 	 * 获取超全局变量值
-	 *
 	 * @param string $arrName        	
 	 * @param string $name        	
 	 * @param mixed $default        	
@@ -145,25 +164,43 @@ class Request
 	public static function getAll($arrName, $name = '', $default = false, $filter = false)
 	{
 		$arrName = strtolower($arrName);
-		if('get' === $arrName)
-		{
-			$data = &$_GET;
-		}
-		else if('post' === $arrName)
-		{
-			$data = &$_POST;
-		}
-		else if('cookie' === $arrName)
-		{
-			$data = &$_COOKIE;
-		}
-		else if('server' === $arrName)
+		if('server' === $arrName)
 		{
 			$data = &$_SERVER;
 		}
+		else if(IS_CLI)
+		{
+			if(is_integer($name))
+			{
+				$data = &$_SERVER['argv'];
+			}
+			else
+			{
+				if(empty(self::$cliArgs))
+				{
+					self::parseCliArgs();
+				}
+				$data = &self::$cliArgs;
+			}
+		}
 		else
 		{
-			$data = &$_REQUEST;
+			if('get' === $arrName)
+			{
+				$data = &$_GET;
+			}
+			else if('post' === $arrName)
+			{
+				$data = &$_POST;
+			}
+			else if('cookie' === $arrName)
+			{
+				$data = &$_COOKIE;
+			}
+			else
+			{
+				$data = &$_REQUEST;
+			}
 		}
 		if ('' === $name)
 		{
@@ -194,6 +231,34 @@ class Request
 		else 
 		{
 			return execFilter($value, $filter);
+		}
+	}
+	/**
+	 * 处理cli参数
+	 */
+	private static function parseCliArgs()
+	{
+		self::$cliArgs = array();
+		$keyName = null;
+		for($i = 2; $i < $_SERVER['argc']; ++$i)
+		{
+			if(isset($_SERVER['argv'][$i][0]) && '-' === $_SERVER['argv'][$i][0])
+			{
+				$keyName = substr($_SERVER['argv'][$i],1);
+				self::$cliArgs[$keyName] = true;
+			}
+			else
+			{
+				if(null === $keyName)
+				{
+					self::$cliArgs[$_SERVER['argv'][$i]] = true;
+				}
+				else
+				{
+					self::$cliArgs[$keyName] = $_SERVER['argv'][$i];
+					$keyName = null;
+				}
+			}
 		}
 	}
 	/**

@@ -1,7 +1,8 @@
 <?php
 /**
- * 文件缓存驱动
- * @author Yurun <admin@yurunsoft.com>
+ * 文件缓存驱动类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class CacheFile extends CacheBase
 {
@@ -28,13 +29,13 @@ class CacheFile extends CacheBase
 			$this->ext = $config['CACHE_EXT'];
 		}
 	}
-	
+
 	/**
 	 * 设置缓存
-	 *
-	 * @param string $alias        	
-	 * @param mixed $value        	
-	 * @param array $config        	
+	 * @param string $alias 别名
+	 * @param string $value 缓存内容
+	 * @param array $config 配置
+	 * @return bool
 	 */
 	public function set($alias, $value, $config = array())
 	{
@@ -75,10 +76,11 @@ class CacheFile extends CacheBase
 	}
 	
 	/**
-	 * 获取缓存
-	 *
-	 * @abstract
-	 *
+	 * 获取缓存内容
+	 * @param string $alias 别名
+	 * @param mixed $default 默认值或者回调
+	 * @param array $config 配置
+	 * @return mixed
 	 */
 	public function get($alias, $default = false, $config = array())
 	{
@@ -138,22 +140,12 @@ class CacheFile extends CacheBase
 			}
 		}
 	}
-	private function parseDefault($default)
-	{
-		if(is_callable($default))
-		{
-			return $default();
-		}
-		else
-		{
-			return $default;
-		}
-	}
+
 	/**
 	 * 删除缓存
-	 *
-	 * @abstract
-	 *
+	 * @param string $alias 别名
+	 * @param array $config 配置
+	 * @return bool
 	 */
 	public function remove($alias, $config = array())
 	{
@@ -161,18 +153,19 @@ class CacheFile extends CacheBase
 	}
 	
 	/**
-	 * 清除所有缓存文件
+	 * 清空缓存
+	 * @return bool
 	 */
 	public function clear()
 	{
 		enumFiles($this->path, 'unlink');
 	}
-	
+
 	/**
-	 * 缓存文件是否存在
-	 *
-	 * @param string $alias        	
-	 * @return boolean
+	 * 缓存是否存在
+	 * @param string $alias 别名
+	 * @param array $config 配置
+	 * @return bool
 	 */
 	public function exists($alias, $config = array())
 	{
@@ -191,7 +184,7 @@ class CacheFile extends CacheBase
 		$path = $this->path;
 		if ('.' !== $n)
 		{
-			$path .= $n . '/';
+			$path .= $n . DIRECTORY_SEPARATOR;
 		}
 		if (! is_dir($path))
 		{

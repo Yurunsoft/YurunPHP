@@ -1,7 +1,8 @@
 <?php
 /**
  * 模型类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Model extends ArrayData
 {
@@ -15,33 +16,59 @@ class Model extends ArrayData
 	 * @var int
 	 */
 	const TO_FORM = 1;
-	// 主键
+	/**
+	 * 主键
+	 */
 	public $pk = 'id';
-	// 前缀
+	/**
+	 * 前缀
+	 */
 	public $prefix ='';
-	// 表名
+	/**
+	 * 表名
+	 */
 	public $table = '';
-	// 数据库操作对象
+	/**
+	 * 数据库操作对象
+	 */
 	public $db;
-	// 字段映射
+	/**
+	 * 字段映射
+	 */
 	public $fieldsMap = array (
 		// '表单字段'=>'数据库字段'
 	);
-	// 连贯操作
+	/**
+	 * 连贯操作
+	 */
 	public $options = array ();
-	// 连贯操作方法名
+	/**
+	 * 连贯操作方法名
+	 */
 	public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
-	// 连贯操作函数
+	/**
+	 * 连贯操作函数
+	 */
 	public $funcs = array ('sum','max','min','avg','count');
-	// 从表单创建数据并验证的规则
+	/**
+	 * 从表单创建数据并验证的规则
+	 */
 	public $rules = array ();
-	// 是否自动加载字段信息
-	public $autoFields = true;
-	// 字段名数组
+	/**
+	 * 是否自动加载字段信息
+	 */
+	public $autoFields = null;
+	/**
+	 * 字段名数组
+	 */
 	public $fieldNames = array();
-	// 字段所有属性数组
+	/**
+	 * 字段所有属性数组
+	 */
 	public $fields = array();
-	// 数据库连接配置别名，为空则使用默认连接
+	/**
+	 * 数据库连接配置别名，为空则使用默认连接
+	 */
 	public $dbAlias = null;
 	/**
 	 * 构造方法
@@ -52,7 +79,7 @@ class Model extends ArrayData
 		{
 			if('' === $this->table)
 			{
-				// 根据Model名称自动
+				// 根据Model名称取出表名
 				$this->table = strtolower(substr(preg_replace_callback(
 						'/[A-Z]/',
 						function($matches){
@@ -69,26 +96,33 @@ class Model extends ArrayData
 		{
 			$this->dbAlias = $dbAlias;
 		}
-		$this->db = Db::get($this->dbAlias);
-		if(false!==$this->db && !$this->db->isConnect())
+		if(null === $this->autoFields)
 		{
-			throw new Exception($this->db->getError());
+			$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
 		}
-		// 表前缀
-		$this->prefix = $this->db->tablePrefix;
-		$this->autoFields = Config::get('@.MODEL_AUTO_FIELDS',true);
-		if($this->autoFields && $this->table != '')
+		$this->db = Db::get($this->dbAlias);
+		if(false !== $this->db)
 		{
-			$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+			if($this->db->isConnect())
+			{
+				// 表前缀
+				$this->prefix = $this->db->tablePrefix;
+				if($this->autoFields && $this->table != '')
+				{
+					$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+				}
+			}
+			else
+			{
+				throw new Exception($this->db->getError());
+			}
 		}
 	}
 	
 	/**
 	 * 获取Model实例对象
-	 *
-	 * @param string $table
-	 *        	数据表名
-	 * @param type $model        	
+	 * @param type $model
+	 * @param string $table 数据表名
 	 * @return Model
 	 */
 	public static function &obj($model='',$table=null)
@@ -101,7 +135,6 @@ class Model extends ArrayData
 
 	/**
 	 * 设置模型数据库对象
-	 *
 	 * @param resource $db        	
 	 */
 	public function setDb($db)
@@ -111,7 +144,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 获取模型数据库对象
-	 *
 	 * @return type
 	 */
 	public function getDb()
@@ -121,9 +153,7 @@ class Model extends ArrayData
 	
 	/**
 	 * 查询记录
-	 *
-	 * @param boolean $first
-	 *        	是否只获取一条记录
+	 * @param boolean $first 是否只获取一条记录
 	 * @return array
 	 */
 	public function &select($first = false)
@@ -136,18 +166,35 @@ class Model extends ArrayData
 	
 	/**
 	 * 分页查询，获取总记录数
-	 * @param unknown $recordCount
+	 * @param int $page
+	 * @param int $show
+	 * @param int $recordCount
+	 * @return array
 	 */
-	public function &selectPage($page = 1,$show = 10,&$recordCount = 0)
+	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
 		$option = $this->options;
-		$recordCount = $this->count();
+		if(null === $recordCount)
+		{
+			// 去除排序，提高效率
+			if(isset($this->options['order']))
+			{
+				unset($this->options['order']);
+			}
+			$recordCount = $this->count();
+		}
 		$this->options = $option;
 		$data = $this->db->select($this->page($page,$show)->getOption(), false);
 		$this->parseTotal($data,$option);
 		return $data;
 	}
 	
+	/**
+	 * 处理合计行数据
+	 * @param array &$data
+	 * @param array $option
+	 * @param string $headOrFoot
+	 */
 	private function parseTotal(&$data,$option,$headOrFoot = null)
 	{
 		if(null === $headOrFoot)
@@ -193,7 +240,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 查询获取值
-	 *
 	 * @return mixed
 	 */
 	public function selectValue()
@@ -203,7 +249,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 根据字段查询记录
-	 *
 	 * @return mixed
 	 */
 	public function &selectBy($field,$value)
@@ -212,7 +257,6 @@ class Model extends ArrayData
 	}
 	/**
 	 * 根据字段获取一条记录
-	 *
 	 * @return mixed
 	 */
 	public function &getBy($field,$value)
@@ -270,10 +314,9 @@ class Model extends ArrayData
 	}
 	/**
 	 * 实现连贯操作
-	 *
 	 * @param type $name        	
 	 * @param type $arguments        	
-	 * @return \Model
+	 * @return Model
 	 */
 	public function __call($name, $arguments)
 	{
@@ -393,7 +436,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 添加数据
-	 *
 	 * @param array $data        	
 	 * @param int $return        	
 	 * @return mixed
@@ -411,7 +453,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 编辑数据
-	 *
 	 * @param array $data        	
 	 * @param array $condition        	
 	 * @param int $return        	
@@ -457,15 +498,25 @@ class Model extends ArrayData
 				break;
 			}
 		}
+		// 判断记录是否存在，来决定$isEdit的值
 		if($isEdit)
 		{
 			$option = $this->options;
 			$isEdit = $this->wherePk($data,$table)->count() > 0;
 			$this->options = $option;
 		}
+		// 2个if不要合并！
 		if($isEdit)
 		{
-			return $this->wherePk($data,$table)->edit($data,$return);
+			$result = $this->wherePk($data,$table)->edit($data,$return);
+			if(Db::RETURN_INSERT_ID === $result)
+			{
+				return $pk[0];
+			}
+			else
+			{
+				return $result;
+			}
 		}
 		else
 		{
@@ -501,7 +552,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 删除数据
-	 *
 	 * @param array $condition        	
 	 * @param int $return        	
 	 * @return mixed
@@ -517,7 +567,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 获取连贯配置
-	 *
 	 * @return array
 	 */
 	public function &getOption()
@@ -567,10 +616,8 @@ class Model extends ArrayData
 	
 	/**
 	 * 取一条记录
-	 *
 	 * @param array $config        	
-	 * @param boolean $sqlMode
-	 *        	是否是SQL语句
+	 * @param boolean $sqlMode 是否是SQL语句
 	 * @return array
 	 */
 	function &find($config = array(), $sqlMode = false)
@@ -611,10 +658,8 @@ class Model extends ArrayData
 	
 	/**
 	 * 取多条数据
-	 *
 	 * @param array $config        	
-	 * @param boolean $sqlMode
-	 *        	是否是使用SQL语句
+	 * @param boolean $sqlMode 是否是使用SQL语句
 	 * @return array
 	 */
 	function &findA($config = array(), $sqlMode = false)
@@ -631,7 +676,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 设置或获取不包含前缀的数据表名
-	 *
 	 * @param string $table        	
 	 * @return string
 	 */
@@ -646,7 +690,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 设置或获取数据表前缀
-	 *
 	 * @param string $prefix        	
 	 * @return string
 	 */
@@ -661,7 +704,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 获取数据表全名
-	 *
 	 * @return string
 	 */
 	public function tableName($table=null)
@@ -678,7 +720,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 字段映射处理
-	 *
 	 * @param array $data        	
 	 * @param int $type        	
 	 * @return array
@@ -713,7 +754,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 递增
-	 *
 	 * @param mixed $field        	
 	 * @param mixed $num        	
 	 * @param int $return        	
@@ -743,7 +783,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 递减
-	 *
 	 * @param mixed $field        	
 	 * @param mixed $num        	
 	 * @param int $return        	
@@ -773,7 +812,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 从表单创建数据并验证，返回验证结果
-	 *
 	 * @param mixed $rule        	
 	 * @param boolean $all        	
 	 * @return mixed
@@ -873,7 +911,6 @@ class Model extends ArrayData
 	
 	/**
 	 * 使用页码和取出数量计算出从哪里开始取
-	 * 
 	 * @param int $page        	
 	 * @param int $quantity        	
 	 * @return int
@@ -917,13 +954,16 @@ class Model extends ArrayData
 		}
 		$this->loadFields($this->fields,$this->fieldNames,$this->pk);
 	}
+	/**
+	 * 获取最后执行的sql语句
+	 */
 	public function lastSql()
 	{
 		return $this->db->lastSql();
 	}
 	/**
 	 * 查询结果自动添加编号字段，从1开始编号
-	 * @param unknown $field
+	 * @param string $field
 	 */
 	public function number($field)
 	{
@@ -939,8 +979,11 @@ class Model extends ArrayData
 	}
 	/**
 	 * 加载字段数据
-	 * @param type $noCache
-	 * @return type
+	 * @param array $fields
+	 * @param array $fieldNames
+	 * @param mixed $pk
+	 * @param string $table
+	 * @param bool $refresh
 	 */
 	public function loadFields(&$fields,&$fieldNames,&$pk,$table = null,$refresh = false)
 	{
@@ -992,8 +1035,8 @@ class Model extends ArrayData
 	}
 	/**
 	 * 加入主键条件
-	 * @param type $pkData
-	 * @return type
+	 * @param mixed $pkData
+	 * @return Model
 	 */
 	public function wherePk($pkData,$table = null,$tableAlias = null)
 	{
@@ -1035,7 +1078,7 @@ class Model extends ArrayData
 		}
 		else
 		{
-			$where = array($tableAlias . '.' . $pk=>$pkData);
+			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
 	}

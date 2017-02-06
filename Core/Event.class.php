@@ -1,31 +1,18 @@
 <?php
 /**
  * 事件类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Event
 {
-	// 事件绑定记录
-	private static $events;
 	/**
-	 * 初始化
+	 * 事件绑定记录
 	 */
-	public static function init()
-	{
-		self::$events = array ();
-		// 获取插件列表
-		$data = Config::get('Plugin');
-		// 加载插件
-		foreach ($data as $value)
-		{
-			include_once APP_PLUGIN . "{$value}/{$value}.php";
-		}
-		return true;
-	}
+	private static $events = array();
 	
 	/**
 	 * 注册事件
-	 *
 	 * @param string $event
 	 * @param mixed $callback
 	 * @param bool $first 是否优先执行，以靠后设置的为准

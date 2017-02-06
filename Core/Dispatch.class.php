@@ -1,25 +1,42 @@
 <?php
 /**
- * 调度类
- * @author Yurun <admin@yurunsoft.com>
+ * 路由+调度类
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Dispatch
 {
-	// 模块名
-	private static $module = '';
-	// 控制器名
-	private static $control = '';
-	// 动作名
-	private static $action = '';
-	// 给action传的参数
+	/**
+	 * 模块名
+	 */
+	private static $module = null;
+	/**
+	 * 控制器名
+	 */
+	private static $control = null;
+	/**
+	 * 动作名
+	 */
+	private static $action = null;
+	/**
+	 * 给action传的参数
+	 */
 	private static $data = array();
-	// 处理后的路由规则
+	/**
+	 * 处理后的路由规则
+	 */
 	private static $routeRules = array();
-	// 当前文件的配置
+	/**
+	 * 当前文件的配置
+	 */
 	private static $currFileCfg;
-	// 权限判断结果
+	/**
+	 * 权限判断结果
+	 */
 	private static $checkAuth;
-	// 当前访问的文件名
+	/**
+	 * 当前访问的文件名
+	 */
 	private static $currFileName;
 	/**
 	 * 解析
@@ -27,38 +44,38 @@ class Dispatch
 	public static function resolve()
 	{
 		// 路由解析
-		self::parseRoute();
-		$mca = explode('/',self::$currFileCfg['default_mca']);
-		// 模块
-		if (Config::get('@.MODULE_ON'))
+		if(IS_CLI)
 		{
-			if(empty(self::$module))
-			{
-				self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
-				if (self::$module)
-				{
-					self::$module=ucfirst(self::$module);
-				}
-				else 
-				{
-					// 判断使用绑定模块还是默认模块
-					if(empty($mca[0]))
-					{
-						self::$module = Config::get('@.MODULE_DEFAULT', '');
-					}
-					else
-					{
-						self::$module = $mca[0];
-					}
-				}
-			}
+			self::parseCLIRoute();
 		}
 		else
 		{
-			self::$module = '';
+			self::parseRoute();
+		}
+		$mca = explode('/',self::$currFileCfg['default_mca']);
+		// 模块
+		if(null === self::$module)
+		{
+			self::$module = Request::get(Config::get('@.MODULE_NAME'), false);
+			if (self::$module)
+			{
+				self::$module=ucfirst(self::$module);
+			}
+			else 
+			{
+				// 判断使用绑定模块还是默认模块
+				if(empty($mca[0]))
+				{
+					self::$module = Config::get('@.MODULE_DEFAULT', '');
+				}
+				else
+				{
+					self::$module = $mca[0];
+				}
+			}
 		}
 		// 控制器
-		if(empty(self::$control))
+		if(null === self::$control)
 		{
 			self::$control = Request::get(Config::get('@.CONTROL_NAME'), false);
 			if (self::$control)
@@ -74,12 +91,12 @@ class Dispatch
 				}
 				else
 				{
-					self::$control = Config::get('@.CONTROL_DEFAULT');
+					self::$control = Config::get('@.CONTROL_DEFAULT', '');
 				}
 			}
 		}
 		// 动作
-		if(empty(self::$action))
+		if(null === self::$action)
 		{
 			self::$action = Request::get(Config::get('@.ACTION_NAME'), false);
 			if (!self::$action)
@@ -91,7 +108,7 @@ class Dispatch
 				}
 				else
 				{
-					self::$action = Config::get('@.CONTROL_DEFAULT');
+					self::$action = Config::get('@.ACTION_DEFAULT', '');
 				}
 			}
 		}
@@ -107,7 +124,6 @@ class Dispatch
 	 */
 	public static function initRouteRules()
 	{
-		Config::create('app_route', 'php', APP_CONFIG . 'route.php');
 		self::$routeRules = array();
 		$rules = Config::get('@.route.rules');
 		foreach($rules as $rule => $url)
@@ -122,9 +138,11 @@ class Dispatch
 			{
 				list($fileName,$rule) = explode('@',$rule,2);
 			}
+			$rule = str_replace('\]','\\rightzkh\\',str_replace('\[','\\leftzkh\\',$rule));
 			$tRule = preg_replace_callback(
 					'/\[([^\]]+)\]/i',
 					function($matches)use(&$fields){
+						$matches[1] = str_replace('\\rightzkh\\',']',str_replace('\\leftzkh\\','[',$matches[1]));
 						if(false !== strpos($matches[1],':'))
 						{
 							try {
@@ -162,34 +180,13 @@ class Dispatch
 		{
 			$requestURI = $_SERVER['PATH_INFO'];
 		}
-		else if(Config::get('@.URL_PARSE_ON')) // URL路由解析
+		if('' == $requestURI && Config::get('@.URL_PARSE_ON')) // URL路由解析
 		{
 			list($requestURI) = explode('&',$_SERVER['QUERY_STRING']);
-			if(false !== strpos($requestURI,'='))
-			{
-				$requestURI = '';
-			}
-			if(false === strpos($requestURI,'.'))
-			{
-				$trequestURI = $requestURI;
-			}
-			else
-			{
-				$trequestURI = str_replace('.','_',$requestURI);
-			}
-			if(isset($_GET[$trequestURI],$_REQUEST[$trequestURI]))
-			{
-				unset($_GET[$trequestURI],$_REQUEST[$trequestURI]);
-			}
-			unset($trequestURI);
 		}
 		if('' == $requestURI && Config::get('@.QUERY_PATHINFO_ON')) // 参数传入URL路由解析
 		{
 			$requestURI = Request::get(Config::get('@.PATHINFO_QUERY_NAME'),'');
-		}
-		if('' == $requestURI)
-		{
-			$requestURI = $_SERVER['REQUEST_URI'];
 		}
 		// 防止前面带/
 		if(isset($requestURI[0]) && '/' === $requestURI[0])
@@ -258,6 +255,50 @@ class Dispatch
 			self::$module = ucfirst($mca[0]);
 			self::$control = ucfirst($mca[1]);
 			self::$action = $mca[2];
+		}
+		else if(isset($mca[1])) // 2个成员
+		{
+			self::$module = null;
+			self::$control = ucfirst($mca[0]);
+			self::$action = $mca[1];
+		}
+		else if(isset($mca[0]) && '' !== $mca[0]) // 1个成员
+		{
+			self::$module = null;
+			self::$control = null;
+			self::$action = $mca[0];
+		}
+	}
+	/**
+	 * 处理CLI的路由
+	 * @return string|unknown
+	 */
+	private static function parseCLIRoute()
+	{
+		$mca = explode('/',Request::all(1,''));
+		if(isset($mca[2]))
+		{
+			self::$module = ucfirst($mca[0]);
+			self::$control = ucfirst($mca[1]);
+			self::$action = $mca[2];
+		}
+		else if(isset($mca[1]))
+		{
+			self::$module = null;
+			self::$control = ucfirst($mca[0]);
+			self::$action = ucfirst($mca[1]);
+		}
+		else if(isset($mca[0]) && '' !== $mca[0])
+		{
+			self::$module = null;
+			self::$control = null;
+			self::$action = ucfirst($mca[0]);
+		}
+		else
+		{
+			self::$module = null;
+			self::$control = null;
+			self::$action = null;
 		}
 	}
 	public static function checkAuth()
@@ -349,7 +390,7 @@ class Dispatch
 		}
 		return false;
 	}
-	public static function switchMCA($rule)
+	public static function switchMCA($rule = null)
 	{
 		if (! empty($rule))
 		{
@@ -381,11 +422,14 @@ class Dispatch
 	public static function exec($rule = null, $pageNotFound = true)
 	{
 		self::switchMCA($rule);
-		if (Config::get('@.MODULE_ON'))
-		{
-			// 载入模块配置
-			Config::create('Module', 'php', APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_FOLDER') . '/config.php');
-		}
+		// 载入模块配置
+		Config::removeInstance('Module');
+		Config::create(array(
+			'type'	=>	'php',
+			'option'	=>	array(
+				'filename'	=>	APP_MODULE . self::$module .'/' .Config::get('@.CONFIG_PATH') . '/config.php',
+			)
+		), 'Module');
 		if(
 				// 判断域名是否有权限访问
 				!self::checkDomain()

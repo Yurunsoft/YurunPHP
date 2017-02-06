@@ -1,17 +1,16 @@
 <?php
 /**
  * 响应类
- * @author Yurun <admin@yurunsoft.com>
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
 class Response
 {
 	/**
 	 * 设置HTTP状态码
 	 * 所有消息值和文本均来自于百度百科，HTTP状态码http://baike.baidu.com/view/1790469.htm
-	 *
 	 * @access public static
-	 * @param int $status
-	 *        	状态码值，如：301
+	 * @param int $status 状态码值，如：301
 	 * @return string
 	 */
 	public static function status($status, $msg = null)
@@ -46,65 +45,60 @@ class Response
 	
 	/**
 	 * 输出消息，支持模版和设置http状态码
-	 *
 	 * @param string $msg        	
 	 * @param int $status        	
 	 */
-	public static function msg($msg, $url = null, $status = 200)
+	public static function msg($msg, $url = null, $status = 200, $data = array())
 	{
-		ob_end_clean();
-		$ext = Config::get('@.TEMPLATE_EXT');
-		// 项目模版目录下对应http状态的模版文件
-		$file = APP_TEMPLATE . '_Msg/' . $status . $ext;
-		// 设置http状态码
-		self::status($status);
-		if (is_file($file))
+		if(IS_CLI)
 		{
-			include $file;
+			echo $msg;
 		}
 		else
 		{
-			// 项目模版目录下公用消息模版
-			$file = APP_TEMPLATE . '_Msg/public' . $ext;
+			// 设置http状态码
+			self::status($status);
+			ob_end_clean();
+			$ext = Config::get('@.TEMPLATE_EXT');
+			$path = '_Msg/' . (IS_DEBUG ? 'debug/' : 'release/');
+			// 项目模版目录下对应http状态的模版文件
+			$file = APP_TEMPLATE . $path . $status . $ext;
 			if (is_file($file))
 			{
 				include $file;
+				exit;
+			}
+			$file = PATH_TEMPLATE . $path . $status . $ext;
+			if (is_file($file))
+			{
+				include $file;
+				exit;
+			}
+			// 项目模版目录下公用消息模版
+			$file = APP_TEMPLATE . $path . 'public' . $ext;
+			if (is_file($file))
+			{
+				include $file;
+				exit;
+			}
+			// 框架模版
+			$file = PATH_TEMPLATE . $path . 'public' . $ext;
+			if(is_file($file))
+			{
+				include $file;
+				exit;
 			}
 			else
 			{
-				// 框架模版
-				$file=PATH_TEMPLATE . '_Msg/public' . $ext;
-				if(is_file($file))
-				{
-					include $file;
-				}
-				else
-				{// 所有模版都不存在，只能手动输出默认的啦
-					// 设定utf-8编码，防止乱码
-					header('Content-type: text/html; charset=utf-8');
-					if(empty($url))
-					{
-						// 页面后退
-						$js='history.go(-1);';
-					}
-					else
-					{
-						// 跳转
-						$js='location=\'' . $url . '\';';
-					}
-					// 输出并结束脚本
-					echo
+				// 所有模版都不存在，只能手动输出默认的啦
+				// 设定utf-8编码，防止乱码
+				header('Content-type: text/html; charset=utf-8');
+				// 输出并结束脚本
+				exit(
 <<<JS
 {$msg}
-<script>
-function redirect()
-{
-	{$js};
-}
-setTimeout('redirect()',1000);
-</script>
-JS;
-				}
+JS
+);
 			}
 		}
 		exit;

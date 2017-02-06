@@ -1,4 +1,9 @@
 <?php
+/**
+ * 一个封装的非标准API控制器
+ * @author Yurun <yurun@yurunsoft.com>
+ * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
+ */
 class APIBaseControl extends Control
 {
 	public $dataFormat,$dataFormatOption;
@@ -27,7 +32,7 @@ class APIBaseControl extends Control
 	}
 	public function parseException($exception)
 	{
-		if(Config::get('@.LOG_ON') && Config::get('@.LOG_ERROR'))
+		if(Config::get('@.LOG_ERROR'))
 		{
 			Log::add(Dispatch::module().'/'.Dispatch::control().'/'.Dispatch::action().'错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
 		}
