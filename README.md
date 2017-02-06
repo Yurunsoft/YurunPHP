@@ -4,6 +4,7 @@ YurunPHP是一款MVC开源PHP框架，它的一切都是根据实际项目需求
 YurunPHP框架支持PHP 5.3-7.x 版本，兼容 Windows / Linux 。
 
 YurunPHP 2.x 开发手册：预计最晚2月底放出，敬请期待！
+
 YurunPHP 1.x 开发手册：http://www.kancloud.cn/yurun/php-framework-1_0
 
 YurunPHP最新消息都会在官网以及QQ中发布，欢迎关注，共同学习进步！
