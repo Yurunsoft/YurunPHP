@@ -68,7 +68,7 @@ class Response
 				include $file;
 				exit;
 			}
-			$file = PATH_TEMPLATE . $path . $status . $ext;
+			$file = PATH_TEMPLATE . $path . $status . '.php';
 			if (is_file($file))
 			{
 				include $file;
@@ -82,7 +82,7 @@ class Response
 				exit;
 			}
 			// 框架模版
-			$file = PATH_TEMPLATE . $path . 'public' . $ext;
+			$file = PATH_TEMPLATE . $path . 'public.php';
 			if(is_file($file))
 			{
 				include $file;
