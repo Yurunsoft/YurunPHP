@@ -185,7 +185,6 @@ return array (
 			'option'	=>	array(
 				'max_size'		=>	104857600,			// 单个日志文件最大大小
 				'date_format'	=>	'Y-m-d H:i:s',		// 日志中显示的日期时间格式
-				'path'			=>	'Logs',				// 日志文件保存路径
 				'ext'			=>	'.log',				// 日志文件扩展名
 			),
 		)
