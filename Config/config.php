@@ -45,6 +45,12 @@ return array (
 		array('type'=>'FirstWord','word'=>'YC','path'=>'Ex/Component/%class'),
 		array('type'=>'LastWord','word'=>'Component','path'=>'Ex/Component'),
 		array('type'=>'Path','path'=>'Lib'),
+		array('type'=>'Path','path'=>'Lib/%class'),
+	),
+
+	// import函数导入文件规则
+	'IMPORT'	=>	array(
+		// 'xxx'	=>	'文件路径'
 	),
 	
 	// 自动开启Session功能
