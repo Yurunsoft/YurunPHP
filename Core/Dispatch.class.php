@@ -717,12 +717,14 @@ class Dispatch
 				$mcaRule = $mca;
 				if(isset($mca[2]))
 				{
+					$paramNames = array();
 					// 模块中的变量
 					if(false !== strpos($mca[0],'$'))
 					{
 						$mcaRule[0] = preg_replace_callback(
 								'/\$(\d+)/',
-								function($matches)use(&$cfg){
+								function($matches)use(&$cfg,&$paramNames){
+									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
 									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
 								},
 								$mcaRule[0]
@@ -733,7 +735,8 @@ class Dispatch
 					{
 						$mcaRule[1] = preg_replace_callback(
 								'/\$(\d+)/',
-								function($matches)use(&$cfg){
+								function($matches)use(&$cfg,&$paramNames){
+									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
 									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
 								},
 								$mcaRule[1]
@@ -744,7 +747,8 @@ class Dispatch
 					{
 						$mcaRule[2] = preg_replace_callback(
 								'/\$(\d+)/',
-								function($matches)use(&$cfg){
+								function($matches)use(&$cfg,&$paramNames){
+									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
 									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
 								},
 								$mcaRule[2]
@@ -788,7 +792,7 @@ class Dispatch
 						for($i=1;$i<$s;++$i)
 						{
 							// 把数据加入参数数组里
-							$param[$cfg['fields'][$i-1]['name']] = $matches[$i][0];
+							$param[$paramNames[$i-1]] = $matches[$i][0];
 						}
 						break;
 					}
