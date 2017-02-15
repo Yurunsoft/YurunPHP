@@ -133,53 +133,47 @@ class Yurun
 					case 'FirstWord':
 						if($firstWord === $rule['word'])
 						{
-							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
-							if(self::$routeResolveComplete)
-							{
-								$files = array (
-									$currModulePath . $filePath,	// 模块目录
-									APP_PATH . $filePath,			// 项目目录
-									ROOT_PATH . $filePath			// 框架目录
-								);
-							}
-							else
-							{
-								$files = array (
-									APP_PATH . $filePath,			// 项目目录
-									ROOT_PATH . $filePath			// 框架目录
-								);
-							}
-							if(require_once_multi($files))
-							{
-								return;
-							}
+							$canInclude = true;
 						}
 						break;
 					case 'LastWord':
 						if($lastWord === $rule['word'])
 						{
-							$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
-							if(self::$routeResolveComplete)
-							{
-								$files = array (
-									$currModulePath . $filePath,	// 模块目录
-									APP_PATH . $filePath,			// 项目目录
-									ROOT_PATH . $filePath			// 框架目录
-								);
-							}
-							else
-							{
-								$files = array (
-									APP_PATH . $filePath,			// 项目目录
-									ROOT_PATH . $filePath			// 框架目录
-								);
-							}
-							if(require_once_multi($files))
-							{
-								return;
-							}
+							$canInclude = true;
 						}
 						break;
+					case 'Word':
+						if($class === $rule['word'])
+						{
+							$canInclude = true;
+						}
+						break;
+					default:
+						$canInclude = false;
+						break;
+				}
+				if($canInclude)
+				{
+					$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
+					if(self::$routeResolveComplete)
+					{
+						$files = array (
+							$currModulePath . $filePath,	// 模块目录
+							APP_PATH . $filePath,			// 项目目录
+							ROOT_PATH . $filePath			// 框架目录
+						);
+					}
+					else
+					{
+						$files = array (
+							APP_PATH . $filePath,			// 项目目录
+							ROOT_PATH . $filePath			// 框架目录
+						);
+					}
+					if(require_once_multi($files))
+					{
+						return;
+					}
 				}
 			}
 			// 自定义分层加载支持
