@@ -43,15 +43,18 @@ abstract class SoapControl extends Control
 	 */
 	protected function __index($serviceName)
 	{
-		$disco = new SoapDiscovery();
-		$disco->getWSDL($serviceName, Dispatch::url($this->exec,array('serviceName'=>$serviceName)));
+		$ctw = new ClassToWsdl($serviceName,Dispatch::url($this->exec,array('serviceName'=>$serviceName)),$this->wsdlStyle,$this->wsdlUse);
 		$this->view->serviceName = $serviceName;
-		$this->view->functions = $disco->_operations;
-		$this->view->args = $disco->_messages;
+		$this->view->service = $ctw->service;
+		$this->view->wsdlUrl = Dispatch::url($this->wsdl,array('serviceName'=>$serviceName));
+		$this->view->indexMCA = $this->index;
+		$this->view->wsdlMCA = $this->wsdl;
+		$this->view->execMCA = $this->exec;
+		$this->view->testMCA = $this->test;
 		$fileName = $this->view->getTemplateFile();
 		if(!is_file($fileName))
 		{
-			$fileName = ROOT_PATH . 'Ex/Template/Soap/index.php';
+			$fileName = ROOT_PATH . 'Ex/Lib/Soap/Template/index.php';
 		}
 		$this->view->display($fileName);
 	}
@@ -84,19 +87,48 @@ abstract class SoapControl extends Control
 	 * @param $serviceName 服务名称
 	 * @param $method 方法名
 	 */
-	public function __test($serviceName,$method)
+	public function __test($serviceName,$methodName)
 	{
-		$instance = new $serviceName;
-		$reflection = new ReflectionMethod($instance, $method);
-		$ps = $reflection->getParameters();
-		$params = array();
-		foreach($ps as $p)
+		if(Request::method('get'))
 		{
-			$params[] = Request::all($p->name);
+			$this->__testGet($serviceName,$methodName);
 		}
-		$this->view->params = $ps;
-		$this->view->result = call_user_func_array(array($instance,$method), $params);
-		$this->view->display();
+		else
+		{
+			$this->__testPost($serviceName,$methodName);
+		}
+	}
+	protected function __testGet($serviceName,$methodName)
+	{
+		$ctw = new ClassToWsdl($serviceName,Dispatch::url($this->exec,array('serviceName'=>$serviceName)),$this->wsdlStyle,$this->wsdlUse);
+		if(!isset($ctw->service['methods'][$methodName]))
+		{
+			$this->returnData('方法不存在','html');
+			exit;
+		}
+		$this->view->method = $ctw->service['methods'][$methodName];
+		$this->view->serviceName = $serviceName;
+		$this->view->methodName = $methodName;
+		$this->view->indexUrl = Dispatch::url($this->index,array('serviceName'=>$serviceName));
+		$fileName = $this->view->getTemplateFile();
+		if(!is_file($fileName))
+		{
+			$fileName = ROOT_PATH . 'Ex/Lib/Soap/Template/test.php';
+		}
+		$this->view->display($fileName);
+	}
+	protected function __testPost($serviceName,$methodName)
+	{
+		try {
+			$client = new SoapClient($this->getWsdlFileName($serviceName));
+			$result = $client->$methodName(Request::post());
+			$propName = $methodName . 'Result';
+			$this->returnData(array('success'=>true,'result'=>print_r($result->$propName,true)));
+		} catch (Exception $exception) {
+			$message = $exception->getMessage();
+			Log::add('Soap调用错误:'.$message.' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
+			$this->returnData(array('success'=>false,'message'=>'Soap调用错误：' . $message));
+		}
 	}
 	/**
 	 * 创建缓存驱动实例
