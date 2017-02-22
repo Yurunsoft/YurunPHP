@@ -467,13 +467,11 @@ class Model extends ArrayData
 		$result = $this->__saveBefore($data);
 		if(null !== $result && true !== $result)
 		{
-			$this->error = $result;
 			return false;
 		}
 		$result = $this->__addBefore($data);
 		if(null !== $result && true !== $result)
 		{
-			$this->error = $result;
 			return false;
 		}
 		$saveData = $this->parseSaveData($data);
@@ -489,10 +487,9 @@ class Model extends ArrayData
 			$result = $this->__addAfter($data,$saveResult);
 			if(null === $result || true === $result)
 			{
-				return $saveResult;
+				return true;
 			}
 		}
-		$this->error = '添加失败';
 		return false;
 	}
 	
@@ -513,13 +510,11 @@ class Model extends ArrayData
 		$result = $this->__saveBefore($data);
 		if(null !== $result && true !== $result)
 		{
-			$this->error = $result;
 			return false;
 		}
 		$result = $this->__editBefore($data);
 		if(null !== $result && true !== $result)
 		{
-			$this->error = $result;
 			return false;
 		}
 		$saveData = $this->parseSaveData($data);
@@ -535,10 +530,9 @@ class Model extends ArrayData
 			$result = $this->__editAfter($data,$saveResult);
 			if(null === $result || true === $result)
 			{
-				return $saveResult;
+				return true;
 			}
 		}
-		$this->error = '修改失败';
 		return false;
 	}
 	
@@ -640,7 +634,6 @@ class Model extends ArrayData
 		$result = $this->__deleteBefore($pkData);
 		if(null !== $result && true !== $result)
 		{
-			$this->error = $result;
 			return false;
 		}
 		$deleteResult = $this->db->delete($option, $return);
@@ -652,11 +645,10 @@ class Model extends ArrayData
 		$result = $this->__deleteAfter($pkData,$deleteResult);
 		if(null === $result || true === $result)
 		{
-			return $deleteResult;
+			return true;
 		}
 		else
 		{
-			$this->error = '删除失败';
 			return false;
 		}
 	}
