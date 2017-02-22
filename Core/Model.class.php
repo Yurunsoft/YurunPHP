@@ -476,8 +476,8 @@ class Model extends ArrayData
 			$this->error = $result;
 			return false;
 		}
-		$data = $this->parseSaveData($data);
-		$saveResult = $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data, $return);
+		$saveData = $this->parseSaveData($data);
+		$saveResult = $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $saveData, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
@@ -522,8 +522,8 @@ class Model extends ArrayData
 			$this->error = $result;
 			return false;
 		}
-		$data = $this->parseSaveData($data);
-		$saveResult = $this->db->update($data, $option, $return);
+		$saveData = $this->parseSaveData($data);
+		$saveResult = $this->db->update($saveData, $option, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
@@ -1185,7 +1185,7 @@ class Model extends ArrayData
 	{
 
 	}
-	public function __deleteBefore($pkData)
+	public function __deleteBefore(&$pkData)
 	{
 
 	}
