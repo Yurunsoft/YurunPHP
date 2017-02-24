@@ -9,7 +9,7 @@ class Control
 	/**
 	 * 视图层对象
 	 */
-	protected $view;
+	public $view;
 	/**
 	 * 构造方法
 	 */
