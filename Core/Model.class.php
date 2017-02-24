@@ -266,7 +266,7 @@ class Model extends ArrayData
 	 */
 	public function &selectBy($field,$value)
 	{
-		return $this->where(array($field=>$value))->select();
+		return $this->where(array($this->tableName() . '.' . $field=>$value))->select();
 	}
 	/**
 	 * 根据字段获取一条记录
@@ -274,7 +274,7 @@ class Model extends ArrayData
 	 */
 	public function &getBy($field,$value)
 	{
-		return $this->where(array($field=>$value))->select(true);
+		return $this->where(array($this->tableName() . '.' . $field=>$value))->select(true);
 	}
 	
 	/**
