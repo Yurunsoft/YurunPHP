@@ -43,7 +43,7 @@ class Cookie
 	 * @param int $secure HTTPS 连接来传输cookie
 	 * @return boolean
 	 */
-	public static function set($name, $value, $expire = 0, $path = '', $domain = '', $secure = '')
+	public static function set($name, $value, $expire = 0, $path = '/', $domain = '', $secure = '')
 	{
 		if(!self::$isInit)
 		{

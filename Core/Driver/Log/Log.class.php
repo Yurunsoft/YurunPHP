@@ -22,7 +22,7 @@ abstract class Log extends Driver
 	/**
 	 * 项目初始化前
 	 */
-	protected static function __initAppBefore()
+	protected static function __onAppLoadBefore()
 	{
 		// 项目配置文件目录
 		defined('APP_LOG') or define('APP_LOG', APP_PATH . Config::get('@.LOG_PATH') . DIRECTORY_SEPARATOR);

@@ -39,6 +39,21 @@ function require_once_multi($files, $all = true)
 	}
 }
 /**
+ * 按别名导入文件，在配置文件IMPORT项中配置
+ */
+function import($name)
+{
+	$filePath = Config::get('@.IMPORT.' . $name);
+	if(false === $filePath)
+	{
+		return false;
+	}
+	else
+	{
+		require_once $filePath;
+	}
+}
+/**
  * 获取第一个单词
  * @param string $str        	
  * @return string

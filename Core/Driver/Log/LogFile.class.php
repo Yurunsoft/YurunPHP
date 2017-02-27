@@ -29,7 +29,11 @@ class LogFile extends LogBase
 		{
 			$this->dateFormat = $option['date_format'];
 		}
-		if(isset($option['path']))
+		if(empty($option['path']))
+		{
+			$this->path = APP_LOG;
+		}
+		else
 		{
 			$this->path = $option['path'];
 			$last = substr($this->path,-1,1);

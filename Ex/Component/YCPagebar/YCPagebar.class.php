@@ -6,6 +6,14 @@
  */
 class YCPagebar extends YCBase
 {
+	/**
+	 * 属性默认值们
+	 * @var unknown
+	 */
+	protected $attrsDefault = array(
+		// 只有一页时候是否显示分页条
+		'only_first_page_show'		=> true,
+	);
 	protected static $_count = 0;
 	public function __construct($attrs = array(), $tagName = null)
 	{
@@ -55,22 +63,15 @@ class YCPagebar extends YCBase
 			$this->total_records = 0;
 		}
 		$this->calcTotalPages();
-		$this->parseParam();
-		$this->view->set('total_records',$this->total_records);
-		$this->view->set('page_show_field',$this->page_show_field);
-		$this->view->set('page_show',$this->page_show);
-		$this->view->set('total_pages',$this->total_pages);
-		$this->view->set('curr_page',$this->curr_page);
-		$this->view->set('page_field',$this->page_field);
-		$this->view->set('page_item_count',$this->page_item_count);
-		$this->view->set('url_rule',$this->url_rule);
-		$this->view->set('url_param',$this->url_param);
-		$this->view->set('formid',$this->formid);
-		if(0===self::$_count)
+		if(1 < $this->total_pages || $this->only_first_page_show)
 		{
-			parent::render('include');
+			$this->parseParam();
+			if(0===self::$_count)
+			{
+				parent::render('include');
+			}
+			parent::render('pagebar_' . $this->show_style);
 		}
-		parent::render('pagebar_' . $this->show_style);
 		++self::$_count;
 	}
 	/**
