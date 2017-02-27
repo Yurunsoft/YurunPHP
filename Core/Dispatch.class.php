@@ -43,6 +43,15 @@ class Dispatch
 	 */
 	public static function resolve()
 	{
+		$params = array('module'=>&$module,'control'=>&$control,'action'=>&$action,'result'=>&$result);
+		Event::trigger('YURUN_ROUTE_RESOLVE',$params);
+		if($params['result'])
+		{
+			self::$module = $module;
+			self::$control = $control;
+			self::$action = $action;
+			return;
+		}
 		// 路由解析
 		if(IS_CLI)
 		{
@@ -425,6 +434,12 @@ class Dispatch
 	 */
 	public static function exec($rule = null, $pageNotFound = true)
 	{
+		$params = array('result'=>&$result);
+		Event::trigger('YURUN_DISPATCH',$params);
+		if($params['result'])
+		{
+			return;
+		}
 		self::switchMCA($rule);
 		// 载入模块配置
 		Config::removeInstance('Module');
