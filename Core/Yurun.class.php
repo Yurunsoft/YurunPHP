@@ -148,6 +148,9 @@ class Yurun
 							$canInclude = true;
 						}
 						break;
+					case 'Path':
+						$canInclude = true;
+						break;
 					default:
 						$canInclude = false;
 						break;
@@ -158,6 +161,7 @@ class Yurun
 					if(self::$routeResolveComplete)
 					{
 						$files = array (
+							$filePath,
 							$currModulePath . $filePath,	// 模块目录
 							APP_PATH . $filePath,			// 项目目录
 							ROOT_PATH . $filePath			// 框架目录
@@ -166,6 +170,7 @@ class Yurun
 					else
 					{
 						$files = array (
+							$filePath,
 							APP_PATH . $filePath,			// 项目目录
 							ROOT_PATH . $filePath			// 框架目录
 						);
