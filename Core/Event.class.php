@@ -40,7 +40,7 @@ class Event
 	 * @param boolean $once        	
 	 * @return mixed
 	 */
-	public static function trigger($event, &$params=array())
+	public static function trigger($event, $params=array())
 	{
 		if (isset(self::$events[$event]))
 		{
