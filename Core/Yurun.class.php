@@ -9,7 +9,7 @@ class Yurun
 	/**
 	 * 框架版本号
 	 */
-	const YURUN_VERSION = '2.0.1 Beta';
+	const YURUN_VERSION = '2.0.0 Beta';
 	/**
 	 * 框架核心设置
 	 * @var array 
@@ -265,6 +265,10 @@ class Yurun
 			}
 			ob_end_clean();
 			self::printError($e);
+		}
+		else
+		{
+			Event::trigger('YURUN_SHUTDOWN');
 		}
 		if(class_exists('Log',false))
 		{
