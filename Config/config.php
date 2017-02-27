@@ -45,6 +45,12 @@ return array (
 		array('type'=>'FirstWord','word'=>'YC','path'=>'Ex/Component/%class'),
 		array('type'=>'LastWord','word'=>'Component','path'=>'Ex/Component'),
 		array('type'=>'Path','path'=>'Lib'),
+		array('type'=>'Path','path'=>'Lib/%class'),
+	),
+
+	// import函数导入文件规则
+	'IMPORT'	=>	array(
+		// 'xxx'	=>	'文件路径'
 	),
 	
 	// 自动开启Session功能
@@ -185,7 +191,6 @@ return array (
 			'option'	=>	array(
 				'max_size'		=>	104857600,			// 单个日志文件最大大小
 				'date_format'	=>	'Y-m-d H:i:s',		// 日志中显示的日期时间格式
-				'path'			=>	'Logs',				// 日志文件保存路径
 				'ext'			=>	'.log',				// 日志文件扩展名
 			),
 		)

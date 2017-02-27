@@ -417,23 +417,24 @@ PHP
 	private static function initConst()
 	{
 		$consts = array(
-			'__MODULE__'	=>	Dispatch::module(),		// 当前模块名
-			'__CONTROL__'	=>	Dispatch::control(),	// 当前控制器名
-			'__ACTION__'	=>	Dispatch::action(),		// 当前动作名
-			'__DYNAMIC_MODULE__'	=>	'Dispatch::module()',		// 当前模块名
+			'__MODULE__'	=>	Dispatch::module(),				// 当前模块名
+			'__CONTROL__'	=>	Dispatch::control(),			// 当前控制器名
+			'__ACTION__'	=>	Dispatch::action(),				// 当前动作名
+			'__DYNAMIC_MODULE__'	=>	'Dispatch::module()',	// 当前模块名
 			'__DYNAMIC_CONTROL__'	=>	'Dispatch::control()',	// 当前控制器名
-			'__DYNAMIC_ACTION__'	=>	'Dispatch::action()',		// 当前动作名
-			'__WEBROOT__'	=>	WEBROOT,				// 站点根目录
-			'__STATIC__'	=>	STATIC_PATH,			// 静态文件目录
-			'__THEME__'		=>	Config::get('@.THEME')	// 当前主题名
+			'__DYNAMIC_ACTION__'	=>	'Dispatch::action()',	// 当前动作名
+			'__WEBROOT__'	=>	Request::getHome(),				// 站点根目录
+			'__STATIC__'	=>	STATIC_PATH,					// 静态文件目录
+			'__THEME__'		=>	Config::get('@.THEME')			// 当前主题名
 		);
 		$tplConsts = Config::get('@.TEMPLATE_CONSTS');
-		if(is_array($tplConsts))
-		{
-			$consts = array_merge($consts,$tplConsts);
-		}
 		self::$constsKey = array_keys($consts);
 		self::$constsValue = array_values($consts);
+		foreach($tplConsts as $key => $value)
+		{
+			self::$constsValue[] = str_replace(self::$constsKey,self::$constsValue,$value);
+			self::$constsKey[] = $key;
+		}
 	}
 	private function parseConst(&$html)
 	{

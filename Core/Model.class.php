@@ -71,6 +71,10 @@ class Model extends ArrayData
 	 */
 	public $dbAlias = null;
 	/**
+	 * 操作错误信息
+	 */
+	public $error = '';
+	/**
 	 * 构造方法
 	 */
 	function __construct($table = null, $dbAlias = null)
@@ -158,9 +162,17 @@ class Model extends ArrayData
 	 */
 	public function &select($first = false)
 	{
+		$this->__selectBefore();
 		$option = $this->getOption();
 		$data = $this->db->select($option, $first);
-		$this->parseTotal($data,$option);
+		if($first)
+		{
+			$this->__selectOneAfter($data);
+		}
+		else
+		{
+			$this->__selectAfter($data);
+		}
 		return $data;
 	}
 	
@@ -173,6 +185,7 @@ class Model extends ArrayData
 	 */
 	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
+		$this->__selectBefore();
 		$option = $this->options;
 		if(null === $recordCount)
 		{
@@ -185,7 +198,7 @@ class Model extends ArrayData
 		}
 		$this->options = $option;
 		$data = $this->db->select($this->page($page,$show)->getOption(), false);
-		$this->parseTotal($data,$option);
+		$this->__selectAfter($data);
 		return $data;
 	}
 	
@@ -253,7 +266,7 @@ class Model extends ArrayData
 	 */
 	public function &selectBy($field,$value)
 	{
-		return $this->where(array($field=>$value))->select();
+		return $this->where(array($this->tableName() . '.' . $field=>$value))->select();
 	}
 	/**
 	 * 根据字段获取一条记录
@@ -261,7 +274,7 @@ class Model extends ArrayData
 	 */
 	public function &getBy($field,$value)
 	{
-		return $this->where(array($field=>$value))->select(true);
+		return $this->where(array($this->tableName() . '.' . $field=>$value))->select(true);
 	}
 	
 	/**
@@ -271,6 +284,7 @@ class Model extends ArrayData
 	 */
 	public function &randomEx($num = 1)
 	{
+		$this->__selectBefore();
 		$opt = $this->getOption();
 		$field = isset($opt['field']) ? $opt['field'] : '';
 		$opt['field'] = 'count(*)';
@@ -290,6 +304,7 @@ class Model extends ArrayData
 			$opt['limit'] = $value . ',1';
 			$results[] = $this->db->select($opt, true);
 		}
+		$this->__selectAfter($results);
 		return $results;
 	}
 
@@ -300,6 +315,7 @@ class Model extends ArrayData
 	 */
 	public function &random($num = 1)
 	{
+		$this->__selectBefore();
 		$opt = $this->getOption();
 		$this->setOption($opt);
 		$result = $this->field(array('count(*)'=>'count','max(' . $this->pk . ')'=>'max','min(' . $this->pk . ')'=>'min'))->select(true);
@@ -310,6 +326,7 @@ class Model extends ArrayData
 		$this->where(array($this->pk=>array('in',$limits)));
 		$this->limit($num);
 		$results = $this->orderfield($this->pk,$limits)->select();
+		$this->__selectAfter($results);
 		return $results;
 	}
 	/**
@@ -446,9 +463,34 @@ class Model extends ArrayData
 		{
 			$data = $this->data;
 		}
-		$data = $this->parseSaveData($data);
-		$option=$this->getOption();
-		return $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $data, $return);
+		$option = $this->getOption();
+		$result = $this->__saveBefore($data);
+		if(null !== $result && true !== $result)
+		{
+			return false;
+		}
+		$result = $this->__addBefore($data);
+		if(null !== $result && true !== $result)
+		{
+			return false;
+		}
+		$saveData = $this->parseSaveData($data);
+		$saveResult = $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $saveData, $return);
+		if(!$saveResult)
+		{
+			$this->error = '数据库操作失败';
+			return false;
+		}
+		$result = $this->__saveAfter($data,$saveResult);
+		if(null === $result || true === $result)
+		{
+			$result = $this->__addAfter($data,$saveResult);
+			if(null === $result || true === $result)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -464,8 +506,34 @@ class Model extends ArrayData
 		{
 			$data = $this->data;
 		}
-		$data = $this->parseSaveData($data);
-		return $this->db->update($data, $this->getOption(), $return);
+		$option = $this->getOption();
+		$result = $this->__saveBefore($data);
+		if(null !== $result && true !== $result)
+		{
+			return false;
+		}
+		$result = $this->__editBefore($data);
+		if(null !== $result && true !== $result)
+		{
+			return false;
+		}
+		$saveData = $this->parseSaveData($data);
+		$saveResult = $this->db->update($saveData, $option, $return);
+		if(!$saveResult)
+		{
+			$this->error = '数据库操作失败';
+			return false;
+		}
+		$result = $this->__saveAfter($data,$saveResult);
+		if(null === $result || true === $result)
+		{
+			$result = $this->__editAfter($data,$saveResult);
+			if(null === $result || true === $result)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 	/**
@@ -528,7 +596,7 @@ class Model extends ArrayData
 	 * 处理保存的数据
 	 * @param type $data
 	 */
-	public function parseSaveData(&$data)
+	public function parseSaveData($data)
 	{
 		$table = $this->getOptionTable();
 		if(empty($this->fields) || $table !== $this->tableName())
@@ -562,7 +630,27 @@ class Model extends ArrayData
 		{
 			$this->wherePk($pkData,$this->getOptionTable());
 		}
-		return $this->db->delete($this->getOption(), $return);
+		$option = $this->getOption();
+		$result = $this->__deleteBefore($pkData);
+		if(null !== $result && true !== $result)
+		{
+			return false;
+		}
+		$deleteResult = $this->db->delete($option, $return);
+		if(!$deleteResult)
+		{
+			$this->error = '删除失败';
+			return false;
+		}
+		$result = $this->__deleteAfter($pkData,$deleteResult);
+		if(null === $result || true === $result)
+		{
+			return true;
+		}
+		else
+		{
+			return false;
+		}
 	}
 	
 	/**
@@ -611,66 +699,6 @@ class Model extends ArrayData
 		else
 		{
 			return $this->options['from'];
-		}
-	}
-	
-	/**
-	 * 取一条记录
-	 * @param array $config        	
-	 * @param boolean $sqlMode 是否是SQL语句
-	 * @return array
-	 */
-	function &find($config = array(), $sqlMode = false)
-	{
-		if ($sqlMode)
-		{
-			$data = $this->db->query($config);
-		}
-		else
-		{
-			if (isset($config['limit']))
-			{
-				if (! is_array($config['limit']))
-				{
-					$config['limit'] = explode(',', $config['limit']);
-					if (1 === count($config))
-					{
-						$config['limit'][0] = 1;
-					}
-					else
-					{
-						$config['limit'][1] = 1;
-					}
-				}
-			}
-			else
-			{
-				$config['limit'] = '1';
-			}
-			$data = $this->db->select($config, true);
-		}
-		if (!is_array($data))
-		{
-			$data = array();
-		}
-		return $data;
-	}
-	
-	/**
-	 * 取多条数据
-	 * @param array $config        	
-	 * @param boolean $sqlMode 是否是使用SQL语句
-	 * @return array
-	 */
-	function &findA($config = array(), $sqlMode = false)
-	{
-		if ($sqlMode)
-		{
-			return $this->db->queryA($config);
-		}
-		else
-		{
-			return $this->db->select($config);
 		}
 	}
 	
@@ -927,9 +955,11 @@ class Model extends ArrayData
 	 */
 	public function &getByPk($value)
 	{
-		return $this->wherePk($value)
-					->limit(1)
-					->select(true);
+		$data = $this->wherePk($value)
+					 ->limit(1)
+					 ->select(true);
+		$this->__selectOneAfter($data);
+		return $data;
 	}
 
 	/**
@@ -1058,21 +1088,14 @@ class Model extends ArrayData
 		}
 		if(is_array($pk))
 		{
-			if(isset($pk[0]))
+			$where = array();
+			$tWhere = &$where;
+			foreach($pk as $pkName)
 			{
-				if(isset($pk[1]))
+				if(isset($pkData[$pkName]))
 				{
-					$where = array();
-					$tWhere = &$where;
-					foreach($pk as $pk)
-					{
-						$tWhere['and'] = array($tableAlias . '.' . $pk => $pkData[$pk]);
-						$tWhere = &$tWhere['and'];
-					}
-				}
-				else
-				{
-					$where = array($tableAlias . '.' . $pk[0]=>isset($pkData[$pk[0]]) ? $pkData[$pk[0]] : $pkData);
+					$tWhere['and'] = array($tableAlias . '.' . $pkName => $pkData[$pkName]);
+					$tWhere = &$tWhere['and'];
 				}
 			}
 		}
@@ -1081,5 +1104,85 @@ class Model extends ArrayData
 			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
+	}
+	public function __selectBefore()
+	{
+
+	}
+	public function __selectAfter(&$data)
+	{
+		$this->parseTotal($data,$option);
+		foreach($data as $index => $value)
+		{
+			$this->__selectOneAfter($data[$index]);
+		}
+	}
+	public function __selectOneAfter(&$data)
+	{
+		
+	}
+	/**
+	 * 添加数据之前
+	 * @param $data array 数据
+	 * @return mixed
+	 */
+	public function __addBefore(&$data)
+	{
+
+	}
+	/**
+	 * 添加数据之后
+	 * @param $data array 数据
+	 * @param $result mixed 添加结果
+	 * @return mixed
+	 */
+	public function __addAfter(&$data,$result)
+	{
+
+	}
+	/**
+	 * 修改数据之前
+	 * @param $data array 数据
+	 * @return mixed
+	 */
+	public function __editBefore(&$data)
+	{
+	}
+	/**
+	 * 修改数据之后
+	 * @param $data array 数据
+	 * @param $result mixed 修改结果
+	 * @return mixed
+	 */
+	public function __editAfter(&$data,$result)
+	{
+
+	}
+	/**
+	 * 保存数据之前
+	 * @param $data array 数据
+	 * @return mixed
+	 */
+	public function __saveBefore(&$data)
+	{
+		
+	}
+	/**
+	 * 保存数据之后
+	 * @param $data array 数据
+	 * @param $result mixed 保存结果
+	 * @return mixed
+	 */
+	public function __saveAfter(&$data,$result)
+	{
+
+	}
+	public function __deleteBefore(&$pkData)
+	{
+
+	}
+	public function __deleteAfter($result)
+	{
+
 	}
 }

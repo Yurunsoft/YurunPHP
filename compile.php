@@ -4,39 +4,64 @@
  * @author Yurun <yurun@yurunsoft.com>
  */
 $result = '';
-enumFiles(__DIR__ . '/Core/',function($fileName)use(&$result){
-	$result .= includeFile($fileName);
-});
+$coreClasses = array('ArrayData');
+foreach($coreClasses as $class)
+{
+	$result .= includeFile(__DIR__ . '/Core/'. $class .'.class.php');
+}
+// 加载Core目录文件
+$dir = dir(__DIR__ . '/Core/');
+while (false !== ($file = $dir->read()))
+{
+	if ('.' !== $file && '..' !== $file)
+	{
+		$fileName = __DIR__ . '/Core/' . $file;
+		if(!is_dir($fileName) && !in_array(basename($file,'.class.php'),$coreClasses))
+		{
+			$result .= includeFile(__DIR__ . '/Core/' . $file);
+		}
+	}
+}
+$dir->close();
+// 加载驱动
+$dir = dir(__DIR__ . '/Core/Driver/');
+while (false !== ($file = $dir->read()))
+{
+	if ('.' !== $file && '..' !== $file)
+	{
+		$fileName = __DIR__ . '/Core/Driver/' . $file;
+		if(is_dir($fileName))
+		{
+			$baseFileName = $file . 'Base.class.php';
+			$baseFileNames = array($baseFileName);
+			$result .= includeFile($fileName . '/' . $baseFileName);
+			switch($file)
+			{
+				case 'Config':
+					$tfile = $file . 'FileBase.class.php';
+					$baseFileNames[] = $tfile;
+					$result .= includeFile($fileName . '/' . $tfile);
+					break;
+			}
+			$dir2 = dir($fileName . '/');
+			while (false !== ($file2 = $dir2->read()))
+			{
+				if ('.' !== $file2 && '..' !== $file2 && !in_array($file2, $baseFileNames))
+				{
+					$result .= includeFile($fileName . '/' . $file2);
+				}
+			}
+			$dir2->close();
+		}
+	}
+}
+$dir->close();
 $yurunContent = strip_whitespace(file_get_contents('Yurun.php'));
 $yurunContent = substr($yurunContent, 5);
 $result = '<?php define(\'IS_COMPILE\',true);' . $result . $yurunContent;
 file_put_contents('Yurun-min.php', $result,LOCK_EX);
 header('Content-type: text/html; charset=utf-8');
 echo '生成成功！';
-function enumFiles($path, $event)
-{
-	if ('/' !== substr(strtr($path, '\\', '/'), '-1', 1))
-	{
-		$path .= '/';
-	}
-	$dir = dir($path);
-	while (false !== ($file = $dir->read()))
-	{
-		if ('.' !== $file && '..' !== $file)
-		{
-			$fileName = $path . $file;
-			if (is_dir($fileName))
-			{
-				enumFiles($fileName, $event);
-			}
-			else
-			{
-				call_user_func_array($event, array ($fileName));
-			}
-		}
-	}
-	$dir->close();
-}
 /**
  * 将PHP文件读入并去除空格和注释
  *

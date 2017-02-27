@@ -15,7 +15,8 @@ class YCSelect extends YCBase
 			'value_field'		=> 'value',
 			'group_field'		=> 'group',
 			'group_field_value'	=>	0,
-			'show_group'		=>	false
+			'show_group'		=>	false,
+			'disabled_field'	=>	'disabled'
 	);
 	/**
 	 * 构造方法
@@ -26,7 +27,7 @@ class YCSelect extends YCBase
 	{
 		parent::__construct($attrs,$tagName);
 		$this->excludeAttrs = array_merge($this->excludeAttrs,array(
-				'text_field','value_field','select_value','first_item_text','first_item_value','select_text','group_field','show_group','group_field_value'
+			'text_field','value_field','disabled_field','select_value','first_item_text','first_item_value','select_text','group_field','show_group','group_field_value'
 		));
 	}
 	/**
@@ -98,8 +99,6 @@ class YCSelect extends YCBase
 			{
 				$this->renderOptionItem($option,$key);
 			}
-// 			$data = array();
-// 			$this->view->set($data);
 		}
 		$this->view->set('innerHtml',$this->innerHtml);
 	}
@@ -109,6 +108,7 @@ class YCSelect extends YCBase
 		{
 			$option_text = $option[$this->text_field];
 			$option_value = isset($option[$this->value_field])?$option[$this->value_field]:$option[$this->text_field];
+			$option_disabled = isset($option[$this->disabled_field]) ? $option[$this->disabled_field] == 1 : false;
 		}
 		else
 		{
@@ -121,9 +121,11 @@ class YCSelect extends YCBase
 				$option_text = $key;
 			}
 			$option_value = $option;
+			$option_disabled = false;
 		}
 		$this->option_text = $option_text;
 		$this->option_value = $option_value;
+		$this->option_disabled = $option_disabled;
 		$select_value = $this->get('select_value',null);
 		$select_text = $this->get('select_text',null);
 		$this->option_selected = (null!==$select_value && $select_value==$option_value) || (null!==$select_text && $select_text==$option_text);

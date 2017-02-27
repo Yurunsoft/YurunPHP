@@ -416,11 +416,12 @@ class DbMysqli extends DbBase
 		}
 		else
 		{
+			$keys = array_keys($result[0]);
 			$r = array ();
 			// 处理数据
 			foreach ($result as $value)
 			{
-				$r[] = $value[0];
+				$r[] = $value[$keys[0]];
 			}
 			// 返回结果
 			return $r;
