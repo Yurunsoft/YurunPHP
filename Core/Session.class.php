@@ -11,26 +11,53 @@ class Session
 	 * @var string
 	 */
 	private static $prefix;
-	
+	/**
+	 * 是否已经初始化过了
+	 * @var bool
+	 */
+	private static $isInited = false;
+	/**
+	 * 对Session的更改
+	 */
+	private static $modifys = array();
+	/**
+	 * 初始化
+	 * @return bool 
+	 */
+	public static function init()
+	{
+		if(!self::$isInited)
+		{
+			self::name(Config::get('@.SESSION_NAME', null));
+			self::savePath(Config::get('@.SESSION_SAVEPATH', null));
+			self::useCookies(Config::get('@.SESSION_USE_COOKIES', null));
+			self::cacheExpire(Config::get('@.SESSION_CACHE_EXPIRE', null));
+			self::cacheLimiter(Config::get('@.SESSION_CACHE_LIMITER', null));
+			self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
+			self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
+			self::prefix(Config::get('@.SESSION_PREFIX', ''));
+			$saveHandler = Config::get('@.SESSION_SAVE_HANDLER', 'files');
+			self::saveHandler($saveHandler);
+			if('user' === $saveHandler)
+			{
+				self::userSaveHandler(Config::get('@.SESSION_USER_SAVE_HANDLER'));
+			}
+			self::$isInited = true;
+			session_start();
+			session_write_close();
+			return true;
+		}
+		else
+		{
+			return false;
+		}
+	}
 	/**
 	 * 开始Session
 	 */
 	public static function start()
 	{
-		self::name(Config::get('@.SESSION_NAME', null));
-		self::savePath(Config::get('@.SESSION_SAVEPATH', null));
-		self::useCookies(Config::get('@.SESSION_USE_COOKIES', null));
-		self::cacheExpire(Config::get('@.SESSION_CACHE_EXPIRE', null));
-		self::cacheLimiter(Config::get('@.SESSION_CACHE_LIMITER', null));
-		self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
-		self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
-		self::prefix(Config::get('@.SESSION_PREFIX', ''));
-		$saveHandler = Config::get('@.SESSION_SAVE_HANDLER', 'files');
-		self::saveHandler($saveHandler);
-		if('user' === $saveHandler)
-		{
-			self::userSaveHandler(Config::get('@.SESSION_USER_SAVE_HANDLER'));
-		}
+		self::init();
 		session_start();
 	}
 	
@@ -58,20 +85,7 @@ class Session
 	 */
 	public static function set($name, $value)
 	{
-		$names = parseCfgName($name);
-		$var = &$_SESSION;
-		foreach($names as $name)
-		{
-			if('@' === $name)
-			{
-				$name = self::$prefix;
-			}
-			if('' !== $name)
-			{
-				$var = &$var[$name];
-			}
-		}
-		$var = $value;
+		self::$modifys[$name] = $value;
 	}
 	
 	/**
@@ -82,24 +96,37 @@ class Session
 	 */
 	public static function get($name = null, $default = false)
 	{
-		if(null === $name)
+		if(isset(self::$modifys[$name]))
 		{
-			return $_SESSION;
+			return self::$modifys[$name];
 		}
-		$names = parseCfgName($name);
-		$var = &$_SESSION;
-		foreach($names as $name)
+		else if(array_key_exists($name,self::$modifys))
 		{
-			if('@' === $name)
-			{
-				$name = self::$prefix;
-			}
-			if('' !== $name)
-			{
-				$var = &$var[$name];
-			}
+			return $default;
 		}
-		return isset($var) ? $var : $default;
+		else
+		{
+			self::init();
+			self::save();
+			if(null === $name)
+			{
+				return $_SESSION;
+			}
+			$names = parseCfgName($name);
+			$var = &$_SESSION;
+			foreach($names as $name)
+			{
+				if('@' === $name)
+				{
+					$name = self::$prefix;
+				}
+				if('' !== $name)
+				{
+					$var = &$var[$name];
+				}
+			}
+			return isset($var) ? $var : $default;
+		}
 	}
 	
 	/**
@@ -108,22 +135,7 @@ class Session
 	 */
 	public static function delete($name)
 	{
-		$names = parseCfgName($name);
-		$var = &$_SESSION;
-		$lastName = array_pop($names);
-		foreach($names as $name)
-		{
-			if('@' === $name)
-			{
-				$name = self::$prefix;
-			}
-			if('' !== $name)
-			{
-				$var = &$var[$name];
-			}
-		}
-		unset($var[$lastName]);
-		return true;
+		self::$modifys[$name] = null;
 	}
 	
 	/**
@@ -132,7 +144,40 @@ class Session
 	 */
 	public static function clear()
 	{
+		self::start();
 		$_SESSION = array ();
+		session_write_close();
+	}
+
+	/**
+	 * 保存所有Session更改
+	 */
+	public static function save()
+	{
+		if(empty(self::$modifys))
+		{
+			return;
+		}
+		self::start();
+		foreach(self::$modifys as $name => $item)
+		{
+			$names = parseCfgName($name);
+			$var = &$_SESSION;
+			foreach($names as $name)
+			{
+				if('@' === $name)
+				{
+					$name = self::$prefix;
+				}
+				if('' !== $name)
+				{
+					$var = &$var[$name];
+				}
+			}
+			$var = $item;
+		}
+		self::$modifys = array();
+		session_write_close();
 	}
 	
 	/**
@@ -141,24 +186,33 @@ class Session
 	 */
 	public static function exists($name)
 	{
-		if(null === $name)
+		if(isset(self::$modifys[$name]))
 		{
-			return $_SESSION;
+			return true;
 		}
-		$names = parseCfgName($name);
-		$var = &$_SESSION;
-		foreach($names as $name)
+		else if(array_key_exists($name,self::$modifys))
 		{
-			if('@' === $name)
-			{
-				$name = self::$prefix;
-			}
-			if('' !== $name)
-			{
-				$var = &$var[$name];
-			}
+			return false;
 		}
-		return isset($var);
+		else
+		{
+			self::init();
+			self::save();
+			$names = parseCfgName($name);
+			$var = &$_SESSION;
+			foreach($names as $name)
+			{
+				if('@' === $name)
+				{
+					$name = self::$prefix;
+				}
+				if('' !== $name)
+				{
+					$var = &$var[$name];
+				}
+			}
+			return isset($var);
+		}
 	}
 	
 	/**

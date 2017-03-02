@@ -85,11 +85,6 @@ class Yurun
 		}
 		// 静态文件目录
 		define('STATIC_PATH',$staticPath);
-		// 自动启动session
-		if(Config::get('@.SESSION_AUTO_OPEN'))
-		{
-			Session::start();
-		}
 		// 初始化路由规则
 		Dispatch::initRouteRules();
 		Dispatch::resolve();
@@ -270,6 +265,7 @@ class Yurun
 		{
 			Event::trigger('YURUN_SHUTDOWN');
 		}
+		Session::save();
 		if(class_exists('Log',false))
 		{
 			Log::save();
