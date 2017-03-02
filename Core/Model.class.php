@@ -75,6 +75,10 @@ class Model extends ArrayData
 	 */
 	public $error = '';
 	/**
+	 * 是否执行查询前置方法
+	 */
+	public $isSelectBefore = true;
+	/**
 	 * 构造方法
 	 */
 	function __construct($table = null, $dbAlias = null)
@@ -162,7 +166,10 @@ class Model extends ArrayData
 	 */
 	public function &select($first = false)
 	{
-		$this->__selectBefore();
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
 		$option = $this->getOption();
 		$data = $this->db->select($option, $first);
 		if($first)
@@ -185,7 +192,10 @@ class Model extends ArrayData
 	 */
 	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
-		$this->__selectBefore();
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
 		$option = $this->options;
 		if(null === $recordCount)
 		{
@@ -284,7 +294,10 @@ class Model extends ArrayData
 	 */
 	public function &randomEx($num = 1)
 	{
-		$this->__selectBefore();
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
 		$opt = $this->getOption();
 		$field = isset($opt['field']) ? $opt['field'] : '';
 		$opt['field'] = 'count(*)';
@@ -315,7 +328,10 @@ class Model extends ArrayData
 	 */
 	public function &random($num = 1)
 	{
-		$this->__selectBefore();
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
 		$opt = $this->getOption();
 		$this->setOption($opt);
 		$result = $this->field(array('count(*)'=>'count','max(' . $this->pk . ')'=>'max','min(' . $this->pk . ')'=>'min'))->select(true);
@@ -667,6 +683,7 @@ class Model extends ArrayData
 			// 未设置表明则为模型表名
 			$option['from'] = $this->tableName();
 		}
+		$this->isSelectBefore = true;
 		return $option;
 	}
 
@@ -1105,10 +1122,19 @@ class Model extends ArrayData
 		}
 		return $this->where($where);
 	}
+	/**
+	 * 查询记录前置方法
+	 * @return mixed 
+	 */
 	public function __selectBefore()
 	{
 
 	}
+	/**
+	 * 查询多条记录后置方法
+	 * @param array $data 
+	 * @return mixed
+	 */
 	public function __selectAfter(&$data)
 	{
 		$this->parseTotal($data,$option);
@@ -1117,12 +1143,17 @@ class Model extends ArrayData
 			$this->__selectOneAfter($data[$index]);
 		}
 	}
+	/**
+	 * 查询单挑记录后置方法
+	 * @param array $data 
+	 * @return mixed
+	 */
 	public function __selectOneAfter(&$data)
 	{
 		
 	}
 	/**
-	 * 添加数据之前
+	 * 添加数据前置方法
 	 * @param $data array 数据
 	 * @return mixed
 	 */
@@ -1131,7 +1162,7 @@ class Model extends ArrayData
 
 	}
 	/**
-	 * 添加数据之后
+	 * 添加数据后置方法
 	 * @param $data array 数据
 	 * @param $result mixed 添加结果
 	 * @return mixed
@@ -1141,7 +1172,7 @@ class Model extends ArrayData
 
 	}
 	/**
-	 * 修改数据之前
+	 * 修改数据前置方法
 	 * @param $data array 数据
 	 * @return mixed
 	 */
@@ -1149,7 +1180,7 @@ class Model extends ArrayData
 	{
 	}
 	/**
-	 * 修改数据之后
+	 * 修改数据后置方法
 	 * @param $data array 数据
 	 * @param $result mixed 修改结果
 	 * @return mixed
@@ -1159,7 +1190,7 @@ class Model extends ArrayData
 
 	}
 	/**
-	 * 保存数据之前
+	 * 保存数据前置方法
 	 * @param $data array 数据
 	 * @return mixed
 	 */
@@ -1168,7 +1199,7 @@ class Model extends ArrayData
 		
 	}
 	/**
-	 * 保存数据之后
+	 * 保存数据后置方法
 	 * @param $data array 数据
 	 * @param $result mixed 保存结果
 	 * @return mixed
@@ -1177,12 +1208,27 @@ class Model extends ArrayData
 	{
 
 	}
+	/**
+	 * 删除数据前置方法
+	 * @param array $pkData 
+	 * @return mixed 
+	 */
 	public function __deleteBefore(&$pkData)
 	{
 
 	}
+	/**
+	 * 删除数据后置方法
+	 * @param array $result 
+	 * @return mixed 
+	 */
 	public function __deleteAfter($result)
 	{
 
+	}
+	public function selectBefore($isSelectBefore = true)
+	{
+		$this->isSelectBefore = $isSelectBefore;
+		return $this;
 	}
 }
