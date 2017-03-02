@@ -474,30 +474,15 @@ function unparse_url($parsed_url)
  */
 function parseStatic($src)
 {
-	$str = substr($src,0,7);
-	if('http://'===$str || 'https:/'===$str)
+	$arr = explode('//',$src);
+	if(isset($arr[1]))
 	{
 		// 绝对地址
 		return $src;
 	}
 	else
 	{
-		$staticPath = Config::get('@.PATH_STATIC','');
-		if('/'!==substr($staticPath,-1,1))
-		{
-			$staticPath .= '/';
-		}
-		$str = substr($staticPath,0,7);
-		if('http://'===$str || 'https:/'===$str)
-		{
-			// 静态文件是某域名下的
-			return $staticPath . $src;
-		}
-		else
-		{
-			// 静态文件是网站根目录下的
-			return Request::getHome($staticPath . $src);
-		}
+		return STATIC_PATH . '/' . $src;
 	}
 }
 /**
