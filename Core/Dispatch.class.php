@@ -555,7 +555,7 @@ class Dispatch
 	 * @param bool	$noEvent 是否强制不触发生成事件，默认为false
 	 * @return type
 	 */
-	public static function url($rule = null, $param = null, $subDomain = null, $noEvent = false)
+	public static function url($rule = null, $param = null, $subDomain = null, $noEvent = false, $scheme = '')
 	{
 		// 支持数组和文本两种数据格式
 		if(empty($param))
@@ -650,17 +650,24 @@ class Dispatch
 			}
 		}
 		// 协议，http、https……
-		if(isset($urlInfo['scheme']))
+		if('' === $scheme)
 		{
-			$protocol=$urlInfo['scheme'];
+			if(isset($urlInfo['scheme']))
+			{
+				$protocol=$urlInfo['scheme'];
+			}
+			else
+			{
+				$protocol = Config::get('@.URL_PROTOCOL');
+				if(empty($protocol))
+				{
+					$protocol=Request::getProtocol();
+				}
+			}
 		}
 		else
 		{
-			$protocol = Config::get('@.URL_PROTOCOL');
-			if(empty($protocol))
-			{
-				$protocol=Request::getProtocol();
-			}
+			$protocol = $scheme;
 		}
 		// 域名
 		if(isset($urlInfo['host']))

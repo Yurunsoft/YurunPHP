@@ -77,16 +77,24 @@ class Request
 	 * @param string $path
 	 * @return string
 	 */
-	public static function getHome($path = '')
+	public static function getHome($path = '',$scheme = '')
 	{
 		$domain = Config::get('@.DOMAIN');
 		if(empty($domain))
 		{
 			$domain = $_SERVER['HTTP_HOST'];
 		}
+		if('' === $scheme)
+		{
+			$scheme = Config::get('@.URL_PROTOCOL');
+			if(empty($scheme))
+			{
+				$scheme=Request::getProtocol();
+			}
+		}
 		if('' === $path || '/' === $path[0])
 		{
-			return self::getProtocol() . $domain . $path;
+			return $scheme . $domain . $path;
 		}
 		else
 		{
@@ -95,7 +103,7 @@ class Request
 			{
 				$dir = '';
 			}
-			return self::getProtocol()."{$domain}{$dir}/{$path}";
+			return "{$scheme}{$domain}{$dir}/{$path}";
 		}
 	}
 	/**
