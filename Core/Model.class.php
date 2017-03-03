@@ -503,7 +503,7 @@ class Model extends ArrayData
 			$result = $this->__addAfter($data,$saveResult);
 			if(null === $result || true === $result)
 			{
-				return true;
+				return $saveResult;
 			}
 		}
 		return false;
@@ -546,7 +546,7 @@ class Model extends ArrayData
 			$result = $this->__editAfter($data,$saveResult);
 			if(null === $result || true === $result)
 			{
-				return true;
+				return $saveResult;
 			}
 		}
 		return false;
@@ -661,7 +661,7 @@ class Model extends ArrayData
 		$result = $this->__deleteAfter($pkData,$deleteResult);
 		if(null === $result || true === $result)
 		{
-			return true;
+			return $saveResult;
 		}
 		else
 		{
