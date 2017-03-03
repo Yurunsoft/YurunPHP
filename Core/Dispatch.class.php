@@ -434,13 +434,13 @@ class Dispatch
 	 */
 	public static function exec($rule = null, $pageNotFound = true)
 	{
+		self::switchMCA($rule);
 		$params = array('result'=>&$result);
 		Event::trigger('YURUN_DISPATCH',$params);
 		if($params['result'])
 		{
 			return;
 		}
-		self::switchMCA($rule);
 		// 载入模块配置
 		Config::removeInstance('Module');
 		Config::create(array(
