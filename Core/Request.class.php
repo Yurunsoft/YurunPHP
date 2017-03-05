@@ -82,7 +82,7 @@ class Request
 		$domain = Config::get('@.DOMAIN');
 		if(empty($domain))
 		{
-			$domain = $_SERVER['HTTP_HOST'];
+			$domain = $_SERVER['HTTP_HOST'] . strtr(dirname($_SERVER['SCRIPT_NAME']), '\\','/');
 		}
 		if('' === $scheme)
 		{
@@ -92,19 +92,11 @@ class Request
 				$scheme=Request::getProtocol();
 			}
 		}
-		if('' === $path || '/' === $path[0])
+		if((!isset($path[0]) || '/' !== $path[0]) && '/' !== substr($domain,-1,1))
 		{
-			return $scheme . $domain . $path;
+			$path = '/' . $path;
 		}
-		else
-		{
-			$dir = dirname($_SERVER['SCRIPT_NAME']);
-			if('\\' === $dir)
-			{
-				$dir = '';
-			}
-			return "{$scheme}{$domain}{$dir}/{$path}";
-		}
+		return $scheme . $domain . $path;
 	}
 	/**
 	 * 魔术方法
