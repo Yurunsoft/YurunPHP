@@ -661,7 +661,7 @@ class Model extends ArrayData
 		$result = $this->__deleteAfter($pkData,$deleteResult);
 		if(null === $result || true === $result)
 		{
-			return $saveResult;
+			return $deleteResult;
 		}
 		else
 		{
