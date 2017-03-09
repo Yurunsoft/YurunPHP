@@ -152,7 +152,16 @@ class Yurun
 				}
 				if($canInclude)
 				{
-					$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
+					$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR;
+					// 扩展名支持
+					if(isset($rule['ext']))
+					{
+						$filePath .= $class . $rule['ext'];
+					}
+					else
+					{
+						$filePath .= $file;
+					}
 					if(self::$routeResolveComplete)
 					{
 						$files = array (
