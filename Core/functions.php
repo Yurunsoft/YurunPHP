@@ -43,7 +43,7 @@ function require_once_multi($files, $all = true)
  */
 function import($name)
 {
-	$filePath = Config::get('@.IMPORT.' . $name);
+	$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
 	if(false === $filePath)
 	{
 		return false;
