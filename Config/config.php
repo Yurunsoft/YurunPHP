@@ -51,6 +51,7 @@ return array (
 	// import函数导入文件规则
 	'IMPORT'	=>	array(
 		// 'xxx'	=>	'文件路径'
+		'IDb.implements'		=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php'
 	),
 	
 	// 自动开启Session功能
