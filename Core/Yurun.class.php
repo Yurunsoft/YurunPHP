@@ -92,6 +92,11 @@ class Yurun
 		self::$routeResolveComplete = true;
 		// 释放变量
 		unset($file,$str,$staticPath);
+		// CLI处理
+		if(IS_CLI)
+		{
+			exec('chcp 65001'); // 编码设为UTF-8防止乱码
+		}
 		Dispatch::exec();
 	}
 	public static function autoload($class)
