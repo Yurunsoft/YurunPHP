@@ -16,6 +16,7 @@ return array(
 		'Task',
 		'Validator',
 		'View',
+		'DbOperation',
 	),
 	// 框架驱动
 	'CORE_DRIVER_CLASSES' => array(

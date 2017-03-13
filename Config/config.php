@@ -51,7 +51,9 @@ return array (
 	// import函数导入文件规则
 	'IMPORT'	=>	array(
 		// 'xxx'	=>	'文件路径'
-		'IDb.implements'		=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php'
+		'IDb.implements'		=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php',
+		'TDbOperation.trait'	=>	ROOT_PATH . 'Core/Driver/Db/TDbOperation.trait.php',
+		'TDbSQLHelper.trait'	=>	ROOT_PATH . 'Core/Driver/Db/TDbSQLHelper.trait.php',
 	),
 	
 	// 自动开启Session功能

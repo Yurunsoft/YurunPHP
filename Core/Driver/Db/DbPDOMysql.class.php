@@ -42,7 +42,6 @@ class DbPDOMysql extends DbPDOBase
 		return (int)$this->handler->query('select found_rows()')->fetchColumn();
 	}
 
-
 	/**
 	 * 获取数据库中所有数据表名
 	 * @param string $dbname

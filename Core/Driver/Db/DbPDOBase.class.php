@@ -1,7 +1,13 @@
 <?php
-import('IDb.implements');
+import(
+	'IDb.implements',
+	'TDbSQLHelper.trait',
+	'TDbOperation.trait'
+);
 abstract class DbPDOBase implements IDb
 {
+	use TDbSQLHelper;
+	use TDbOperation;
 	/**
 	 * 数据库操作对象
 	 * @var PDO
@@ -21,24 +27,6 @@ abstract class DbPDOBase implements IDb
 	public $lastStmt;
 
 	/**
-	 * 运算符
-	 * @var array
-	 */
-	public $operators = array ();
-
-	/**
-	 * 逻辑运算符
-	 * @var array
-	 */
-	public $logicOperators = array ('and','or','xor','and not','or not','xor not');
-
-	/**
-	 * 参数标识
-	 * @var array
-	 */
-	public $param_flag = array ('','');
-
-	/**
 	 * 最后执行的SQL语句
 	 * @var string
 	 */
@@ -51,10 +39,10 @@ abstract class DbPDOBase implements IDb
 	public $lastSqlParams = array();
 
 	/**
-	 * 是否启用参数标识
-	 * @var bool
+	 * 表名前缀
+	 * @var string
 	 */
-	public $isUseParamFlag = true;
+	public $tablePrefix = 'tb_';
 
 	/**
 	 * 构造方法
@@ -135,101 +123,6 @@ abstract class DbPDOBase implements IDb
 	}
 
 	/**
-	 * 准备一个查询
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return array 
-	 */
-	public function prepareQuery($sql,$params = array())
-	{
-		$this->lastSql = $sql;
-		$this->lastSqlParams = $params;
-		if(empty($params))
-		{
-			// 没有参数的查询
-			$this->lastStmt = $this->handler->query($sql);
-		}
-		else
-		{
-			// 参数查询
-			$this->lastStmt = $this->handler->prepare($sql);
-			foreach($params as $key => $value)
-			{
-				if(is_int($key))
-				{
-					// 问号形式的参数
-					$paramName = ($key) + 1;
-				}
-				else
-				{
-					// 名称形式的参数
-					$paramName = ':' . $key;
-				}
-				// 绑定参数
-				$this->lastStmt->bindValue($paramName, $value);
-			}
-			// 执行
-			$this->lastStmt->execute();
-		}
-		return $this->lastStmt;
-	}
-
-	/**
-	 * 执行一个SQL语句，返回影响的行数
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return int 
-	 */
-	public function execute($sql,$params = array())
-	{
-		return $this->prepareQuery($sql,$params)->rowCount();
-	}
-
-	/**
-	 * 查询多条记录
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return array 
-	 */
-	public function query($sql,$params = array())
-	{
-		return $this->prepareQuery($sql,$params)->fetchAll(PDO::FETCH_ASSOC);
-	}
-
-	/**
-	 * 查询一列数据
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return array 
-	 */
-	public function queryColumn($sql,$params = array())
-	{
-		return $this->prepareQuery($sql,$params)->fetchAll(PDO::FETCH_COLUMN);
-	}
-
-	/**
-	 * 查询一条记录
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return array 
-	 */
-	public function getOne($sql,$params = array())
-	{
-		return $this->prepareQuery($sql,$params)->fetch(PDO::FETCH_ASSOC);
-	}
-
-	/**
-	 * 执行SQL语句，返回第一行第一列
-	 * @param string $sql 
-	 * @param array $params 
-	 * @return array 
-	 */
-	public function getScalar($sql,$params = array())
-	{
-		return $this->prepareQuery($sql,$params)->fetchColumn();
-	}
-
-	/**
 	 * 返回最后插入行的ID或序列值
 	 * @param string $name 应该返回ID的那个序列对象的名称。比如，PDO_PGSQL() 要求为 name 参数指定序列对象的名称。
 	 * @return string
@@ -293,23 +186,4 @@ abstract class DbPDOBase implements IDb
 		return $this->handler->inTransaction();
 	}
 
-	/**
-	 * 获取数据库中所有数据表名
-	 * @param string $dbname
-	 * @return array
-	 */
-	public function getTables($dbName = null)
-	{
-
-	}
-
-	/**
-	 * 获取数据表中所有字段详细信息
-	 * @param string $table
-	 * @return array
-	 */
-	public function getFields($table)
-	{
-
-	}
 }

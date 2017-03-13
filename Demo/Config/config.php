@@ -14,6 +14,18 @@ return array (
 				'charset' => 'utf8',
 			)
 		)*/
+		'default'	=>	array(
+			'type' => 'PDOMysql',
+			'option'	=>	array(
+				'host' => '127.0.0.1',
+				'port' => '3306',
+				'username' => 'root',
+				'password' => 'root',
+				'dbname' => 'db_wxzl_video',
+				'prefix' => 'tb_',
+				'charset' => 'utf8',
+			)
+		)
 	),
 	// 默认使用default数据库配置
 	'DEFAULT_DB'	=>	'default',
