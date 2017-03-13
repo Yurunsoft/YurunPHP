@@ -41,16 +41,16 @@ function require_once_multi($files, $all = true)
 /**
  * 按别名导入文件，在配置文件IMPORT项中配置
  */
-function import($name)
+function import()
 {
-	$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
-	if(false === $filePath)
+	$names = func_get_args();
+	foreach($names as $name)
 	{
-		return false;
-	}
-	else
-	{
-		require_once $filePath;
+		$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
+		if(false !== $filePath)
+		{
+			require_once $filePath;
+		}
 	}
 }
 /**
@@ -517,4 +517,13 @@ function parseMuiltLine($text,$newLineSplit = PHP_EOL)
 function parseAutoloadPath($rule,$class = '',$word = '')
 {
 	return str_replace('%word', $word, str_replace('%class', $class, $rule));
+}
+/**
+ * 判断数组是否为关联数组
+ * @param array $array 
+ * @return bool 
+ */
+function isAssocArray($array)
+{  
+    return array_keys($array) !== range(0, count($array) - 1);  
 }
