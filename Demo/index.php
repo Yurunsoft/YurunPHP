@@ -6,9 +6,9 @@ define('APP_PATH',__DIR__.DIRECTORY_SEPARATOR);
 // 引入YurunPHP框架入口文件
 if(IS_DEBUG)
 {
-	require_once '../Yurun.php';
+	require_once APP_PATH . '../Yurun.php';
 }
 else
 {
-	require_once '../Yurun-min.php';
+	require_once APP_PATH . '../Yurun-min.php';
 }
