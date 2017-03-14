@@ -32,6 +32,40 @@ trait TDbSQLHelper
 	 */
 	public function parseKeyword($keyword)
 	{
-		return $this->paramFlag[0] . $keyword . $this->paramFlag[1];
+		list($keyword, $alias) = explode(' as ', $keyword);
+		$names = explode('.', $keyword);
+		$last = array_pop($names);
+		if(isset($names[0]))
+		{
+			$result = $this->paramFlag[0] . implode($this->paramFlag[1] . '.' . $this->paramFlag[0],$names) . $this->paramFlag[1];
+			$prefix = '.';
+		}
+		else
+		{
+			$prefix = '';
+		}
+		if('*' === $last)
+		{
+			$result .= $prefix . $last;
+		}
+		else
+		{
+			$result .= $prefix . $this->paramFlag[0] . $last . $this->paramFlag[1];
+		}
+		if(null !== $alias)
+		{
+			$result .= ' as ' . $this->paramFlag[0] . $alias . $this->paramFlag[1];
+		}
+		return $result;
+	}
+
+	/**
+	 * 获取真实操作符
+	 * @param string $name 
+	 * @return string 
+	 */
+	public function getOperator($name)
+	{
+		return isset($this->operators[$name]) ? $this->operators[$name] : $name;
 	}
 }
