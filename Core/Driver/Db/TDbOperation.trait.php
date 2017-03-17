@@ -2,97 +2,10 @@
 trait TDbOperation
 {
 	/**
-	 * 链式操作数据
-	 * @var array
-	 */
-	public $operationOption = array();
-
-	/**
-	 * 链式操作列表
-	 * @var array
-	 */
-	public static $operations = array(
-		'distinct'		=>	array('onlyOne'=>true),
-		'field'			=>	array('merge'=>true),
-		'from'			=>	array('alias'=>'table','merge'=>true),
-		'table'			=>	array('merge'=>true),
-		'where'			=>	array('merge'=>true),
-		'group'			=>	array('merge'=>true),
-		'having'		=>	array('merge'=>true),
-		'order'			=>	array('merge'=>true),
-		'orderBy'		=>	array('alias'=>'order'),
-		'orderByField'	=>	array('custom'=>true),
-		'limit'			=>	array('onlyOne'=>true),
-		'join'			=>	array(),
-		'innerJoin'		=>	array('custom'=>true),
-		'leftJoin'		=>	array('custom'=>true),
-		'rightJoin'		=>	array('custom'=>true),
-		'crossJoin'		=>	array('custom'=>true),
-		'page'			=>	array('onlyOne'=>true),
-		'headTotal'		=>	array(),
-		'footTotal'		=>	array(),
-		'params'		=>	array('onlyOne'=>true),
-	);
-
-	/**
 	 * 随机参数序号
 	 * @var array
 	 */
 	public static $randomParamNum = 0;
-
-	/**
-	 * 魔术方法，实现链式操作
-	 * @param string $name        	
-	 * @param array $arguments        	
-	 * @return Model
-	 */
-	public function __call($name, $arguments)
-	{
-		if(isset(self::$operations[$name]))
-		{
-			// 操作别名
-			if(isset(self::$operations[$name]['alias']))
-			{
-				$operationName = self::$operations[$name]['alias'];
-			}
-			else
-			{
-				$operationName = $name;
-			}
-			// 支持链式操作
-			if(isset(self::$operations[$name]['onlyOne']) && self::$operations[$name]['onlyOne'])
-			{
-				// 只存一次
-				$this->operationOption[$operationName] = $arguments;
-			}
-			else
-			{
-				// 允许存多次
-				if(isset(self::$operations[$name]['custom']) && self::$operations[$name]['custom'])
-				{
-					// 自定义操作
-					$this->{'__link' . ucfirst($name)}($arguments);
-				}
-				else
-				{
-					// 默认操作
-					if(!isset($this->operationOption[$operationName]))
-					{
-						$this->operationOption[$operationName] = array();
-					}
-					if(isset(self::$operations[$name]['merge']) && self::$operations[$name]['merge'])
-					{
-						$this->operationOption[$operationName] = array_merge($this->operationOption[$operationName],$arguments);
-					}
-					else
-					{
-						$this->operationOption[$operationName][] = $arguments;
-					}
-				}
-			}
-			return $this;
-		}
-	}
 
 	/**
 	 * 准备一个查询
@@ -103,7 +16,7 @@ trait TDbOperation
 	public function prepareQuery($sql, $params = array())
 	{
 		// 如果参数为空则取链式操作传入的参数
-		$params = $this->params($params);
+		$params = $this->parseParams($params);
 		// 记录sql语句和参数
 		$this->lastSql = $sql;
 		$this->lastSqlParams = $params;
@@ -245,18 +158,79 @@ trait TDbOperation
 
 	/**
 	 * 插入数据
-	 * @param string $table 
-	 * @param array $data 
-	 * @param int $return 
 	 * @return mixed 
 	 */
-	public function insert($table = null, $data = array(), $return = Db::RETURN_ISOK)
+	public function insert()
 	{
+		return $this->parseIUD(func_get_args(),'Insert');
+	}
+
+	/**
+	 * 更新数据
+	 * @return mixed 
+	 */
+	public function update()
+	{
+		return $this->parseIUD(func_get_args(),'Update');
+	}
+
+	/**
+	 * 删除数据
+	 * @return mixed 
+	 */
+	public function delete()
+	{
+		return $this->parseIUD(func_get_args(),'Delete');
+	}
+
+	/**
+	 * 处理Insert、Update、Delete
+	 * @param mixed $args 
+	 * @param mixed $operation 
+	 * @return mixed 
+	 */
+	protected function parseIUD($args,$operation)
+	{
+		if(isset($args[2]))
+		{
+			// 三个参数齐全
+			list($table,$data,$return) = $args;
+		}
+		else if(isset($args[1]))
+		{
+			// 两个参数的情况
+			if(is_array($args[0]))
+			{
+				// 数据+返回值
+				list($data,$return) = $args;
+			}
+			else
+			{
+				// 表名+数据
+				list($table,$data) = $args;
+				$return = Db::RETURN_ISOK;
+			}
+		}
+		else if(isset($args[0]))
+		{
+			// 一个参数的情况
+			if(is_array($args[0]))
+			{
+				// 数据
+				$data = $args[0];
+			}
+			else
+			{
+				// 表名
+				$table = $args[0];
+			}
+			$return = Db::RETURN_ISOK;
+		}
 		if(!isset($this->operationOption['params']))
 		{
 			$this->operationOption['params'] = array();
 		}
-		$result = $this->execute($this->buildInsertSQL($table, $data),$data);
+		$result = $this->execute($this->{'build' . $operation . 'SQL'}($table, $data),$this->operationOption['params']);
 		if(Db::RETURN_ROWS === $return)
 		{
 			return $this->rowCount();
@@ -264,30 +238,6 @@ trait TDbOperation
 		else if(Db::RETURN_INSERT_ID === $return)
 		{
 			return $this->lastInsertId();
-		}
-		else
-		{
-			return $result;
-		}
-	}
-
-	/**
-	 * 更新数据
-	 * @param string $table 
-	 * @param array $data 
-	 * @param int $return 
-	 * @return mixed 
-	 */
-	public function update($table = null, $data = array(), $return = Db::RETURN_ISOK)
-	{
-		if(!isset($this->operationOption['params']))
-		{
-			$this->operationOption['params'] = array();
-		}
-		$result = $this->execute($this->buildUpdateSQL($table, $data),$data);
-		if(Db::RETURN_ROWS === $return)
-		{
-			return $this->rowCount();
 		}
 		else
 		{
@@ -333,23 +283,13 @@ trait TDbOperation
 	 * @param mixed $params 
 	 * @return array 
 	 */
-	protected function params($params = array())
+	protected function parseParams($params = array())
 	{
-		if(empty($params))
+		if(!empty($params))
 		{
-			if(isset($this->operationOption['params']))
-			{
-				return $this->operationOption['params'];
-			}
-			else
-			{
-				return array();
-			}
+			$this->operationOption['params'] = $params;
 		}
-		else
-		{
-			return $params;
-		}
+		return $this->operationOption['params'];
 	}
 
 	/**
@@ -406,11 +346,7 @@ trait TDbOperation
 			}
 			else
 			{
-				$list = explode(',', $tField);
-				foreach($list as $item)
-				{
-					$result .= $this->parseKeyword($item) . ',';
-				}
+				$result .= $tField . ',';
 			}
 		}
 		return isset($result[1]) ? (substr($result,0,-1) . ' ') : '';
@@ -585,6 +521,7 @@ trait TDbOperation
 
 	/**
 	 * parseOrder
+	 * @return string 
 	 */
 	protected function parseOrder()
 	{
@@ -634,6 +571,7 @@ trait TDbOperation
 
 	/**
 	 * parseGroup
+	 * @return string 
 	 */
 	protected function parseGroup()
 	{
@@ -658,6 +596,7 @@ trait TDbOperation
 
 	/**
 	 * parseHaving
+	 * @return string 
 	 */
 	protected function parseHaving()
 	{
@@ -706,69 +645,11 @@ trait TDbOperation
 	abstract public function buildUpdateSQL($table = null, $data = array());
 
 	/**
-	 * orderByField 自定义处理
-	 * @param array $arguments 
+	 * 构建DELETE语句
+	 * @param string $table 
+	 * @return string 
 	 */
-	protected function __linkOrderByField($arguments)
-	{
-		if(!isset($this->operationOption['order']))
-		{
-			$this->operationOption['order'] = array();
-		}
-		$arguments['type'] = 'field';
-		$this->operationOption['order'][] = $arguments;
-	}
-
-	/**
-	 * xxxJoin自定义处理
-	 * @param array $arguments 
-	 * @param string $method 
-	 */
-	protected function __parseLinkJoin($arguments, $method)
-	{
-		if(!isset($this->operationOption['join']))
-		{
-			$this->operationOption['join'] = array();
-		}
-		array_unshift($arguments,$method);
-		$this->operationOption['join'][] = $arguments;
-	}
-
-	/**
-	 * innerJoin 自定义处理
-	 * @param array $arguments 
-	 */
-	protected function __linkInnerJoin($arguments)
-	{
-		$this->__parseLinkJoin($arguments,'inner');
-	}
-
-	/**
-	 * leftJoin 自定义处理
-	 * @param array $arguments 
-	 */
-	protected function __linkLeftJoin($arguments)
-	{
-		$this->__parseLinkJoin($arguments,'left');
-	}
-
-	/**
-	 * rightJoin 自定义处理
-	 * @param array $arguments 
-	 */
-	protected function __linkRightjoin($arguments)
-	{
-		$this->__parseLinkJoin($arguments,'right');
-	}
-
-	/**
-	 * crossJoin 自定义处理
-	 * @param array $arguments 
-	 */
-	protected function __linkCrossjoin($arguments)
-	{
-		$this->__parseLinkJoin($arguments,'cross');
-	}
+	abstract public function buildDeleteSQL($table = null);
 
 	/**
 	 * 获得随机的参数名

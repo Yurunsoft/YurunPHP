@@ -33,24 +33,32 @@ trait TDbSQLHelper
 	public function parseKeyword($keyword)
 	{
 		list($keyword, $alias) = explode(' as ', $keyword);
-		$names = explode('.', $keyword);
-		$last = array_pop($names);
-		if(isset($names[0]))
+		if (false !== strpos($keyword, '(') && false !== strpos($keyword, ')'))
 		{
-			$result = $this->paramFlag[0] . implode($this->paramFlag[1] . '.' . $this->paramFlag[0],$names) . $this->paramFlag[1];
-			$prefix = '.';
+			// 字段带函数
+			$result = $keyword;
 		}
 		else
 		{
-			$prefix = '';
-		}
-		if('*' === $last)
-		{
-			$result .= $prefix . $last;
-		}
-		else
-		{
-			$result .= $prefix . $this->paramFlag[0] . $last . $this->paramFlag[1];
+			$names = explode('.', $keyword);
+			$last = array_pop($names);
+			if(isset($names[0]))
+			{
+				$result = $this->paramFlag[0] . implode($this->paramFlag[1] . '.' . $this->paramFlag[0],$names) . $this->paramFlag[1];
+				$prefix = '.';
+			}
+			else
+			{
+				$prefix = '';
+			}
+			if('*' === $last)
+			{
+				$result .= $prefix . $last;
+			}
+			else
+			{
+				$result .= $prefix . $this->paramFlag[0] . $last . $this->paramFlag[1];
+			}
 		}
 		if(null !== $alias)
 		{

@@ -2,12 +2,14 @@
 import(
 	'IDb.implements',
 	'TDbSQLHelper.trait',
-	'TDbOperation.trait'
+	'TDbOperation.trait',
+	'TLinkOperation.trait'
 );
 abstract class DbPDOBase implements IDb
 {
 	use TDbSQLHelper;
 	use TDbOperation;
+	use TLinkOperation;
 	/**
 	 * 数据库操作对象
 	 * @var PDO
