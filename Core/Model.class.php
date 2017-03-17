@@ -178,7 +178,7 @@ class Model extends ArrayData
 		}
 		else
 		{
-			$this->__selectAfter($data);
+			$this->__selectAfter($data,$option);
 		}
 		return $data;
 	}
@@ -208,7 +208,7 @@ class Model extends ArrayData
 		}
 		$this->options = $option;
 		$data = $this->db->select($this->page($page,$show)->getOption(), false);
-		$this->__selectAfter($data);
+		$this->__selectAfter($data,$option);
 		return $data;
 	}
 	
@@ -317,7 +317,7 @@ class Model extends ArrayData
 			$opt['limit'] = $value . ',1';
 			$results[] = $this->db->select($opt, true);
 		}
-		$this->__selectAfter($results);
+		$this->__selectAfter($results,$opt);
 		return $results;
 	}
 
@@ -342,7 +342,7 @@ class Model extends ArrayData
 		$this->where(array($this->pk=>array('in',$limits)));
 		$this->limit($num);
 		$results = $this->orderfield($this->pk,$limits)->select();
-		$this->__selectAfter($results);
+		$this->__selectAfter($results,$opt);
 		return $results;
 	}
 	/**
@@ -480,12 +480,12 @@ class Model extends ArrayData
 			$data = $this->data;
 		}
 		$option = $this->getOption();
-		$result = $this->__saveBefore($data);
+		$result = $this->__saveBefore($data,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
-		$result = $this->__addBefore($data);
+		$result = $this->__addBefore($data,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
@@ -497,10 +497,10 @@ class Model extends ArrayData
 			$this->error = '数据库操作失败';
 			return false;
 		}
-		$result = $this->__saveAfter($data,$saveResult);
+		$result = $this->__saveAfter($data,$saveResult,$option);
 		if(null === $result || true === $result)
 		{
-			$result = $this->__addAfter($data,$saveResult);
+			$result = $this->__addAfter($data,$saveResult,$option);
 			if(null === $result || true === $result)
 			{
 				return $saveResult;
@@ -523,12 +523,12 @@ class Model extends ArrayData
 			$data = $this->data;
 		}
 		$option = $this->getOption();
-		$result = $this->__saveBefore($data);
+		$result = $this->__saveBefore($data,$option,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
-		$result = $this->__editBefore($data);
+		$result = $this->__editBefore($data,$option,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
@@ -540,10 +540,10 @@ class Model extends ArrayData
 			$this->error = '数据库操作失败';
 			return false;
 		}
-		$result = $this->__saveAfter($data,$saveResult);
+		$result = $this->__saveAfter($data,$saveResult,$option);
 		if(null === $result || true === $result)
 		{
-			$result = $this->__editAfter($data,$saveResult);
+			$result = $this->__editAfter($data,$saveResult,$option);
 			if(null === $result || true === $result)
 			{
 				return $saveResult;
@@ -1135,7 +1135,7 @@ class Model extends ArrayData
 	 * @param array $data 
 	 * @return mixed
 	 */
-	public function __selectAfter(&$data)
+	public function __selectAfter(&$data,$linkOption)
 	{
 		$this->parseTotal($data,$option);
 		foreach($data as $index => $value)
@@ -1148,7 +1148,7 @@ class Model extends ArrayData
 	 * @param array $data 
 	 * @return mixed
 	 */
-	public function __selectOneAfter(&$data)
+	public function __selectOneAfter(&$data,$linkOption)
 	{
 		
 	}
@@ -1157,7 +1157,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __addBefore(&$data)
+	public function __addBefore(&$data,$linkOption)
 	{
 
 	}
@@ -1167,7 +1167,7 @@ class Model extends ArrayData
 	 * @param $result mixed 添加结果
 	 * @return mixed
 	 */
-	public function __addAfter(&$data,$result)
+	public function __addAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1176,7 +1176,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __editBefore(&$data)
+	public function __editBefore(&$data,$linkOption)
 	{
 	}
 	/**
@@ -1185,7 +1185,7 @@ class Model extends ArrayData
 	 * @param $result mixed 修改结果
 	 * @return mixed
 	 */
-	public function __editAfter(&$data,$result)
+	public function __editAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1194,7 +1194,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __saveBefore(&$data)
+	public function __saveBefore(&$data,$linkOption)
 	{
 		
 	}
@@ -1204,7 +1204,7 @@ class Model extends ArrayData
 	 * @param $result mixed 保存结果
 	 * @return mixed
 	 */
-	public function __saveAfter(&$data,$result)
+	public function __saveAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1213,7 +1213,7 @@ class Model extends ArrayData
 	 * @param array $pkData 
 	 * @return mixed 
 	 */
-	public function __deleteBefore(&$pkData)
+	public function __deleteBefore(&$pkData,$linkOption)
 	{
 
 	}
@@ -1222,7 +1222,7 @@ class Model extends ArrayData
 	 * @param array $result 
 	 * @return mixed 
 	 */
-	public function __deleteAfter($result)
+	public function __deleteAfter($result,$linkOption)
 	{
 
 	}
