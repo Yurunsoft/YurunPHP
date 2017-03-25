@@ -16,7 +16,8 @@ class YCSelect extends YCBase
 			'group_field'		=> 'group',
 			'group_field_value'	=>	0,
 			'show_group'		=>	false,
-			'disabled_field'	=>	'disabled'
+			'disabled_field'	=>	'disabled',
+			'compare_method'	=>	'=='
 	);
 	/**
 	 * 构造方法
@@ -81,7 +82,14 @@ class YCSelect extends YCBase
 			$option_value = null!==$this->first_item_value?$this->first_item_value:$this->first_item_text;
 			$select_value = $this->get('select_value',null);
 			$select_text = $this->get('select_text',null);
-			$option_selected = (null!==$select_value && select_value==$option_value) || (null!==$select_text && $select_text==$option_text);
+			if('===' === $this->compare_method)
+			{
+				$option_selected = (null!==$select_value && select_value===$option_value) || (null!==$select_text && $select_text===$option_text);
+			}
+			else
+			{
+				$option_selected = (null!==$select_value && select_value==$option_value) || (null!==$select_text && $select_text==$option_text);
+			}
 			$this->option_text = $option_text;
 			$this->option_value = $option_value;
 			$this->option_selected = $option_selected;
