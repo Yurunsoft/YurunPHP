@@ -1,4 +1,7 @@
 <?php
+import(
+	'TLinkOperation.trait'
+);
 /**
  * 模型类
  * @author Yurun <yurun@yurunsoft.com>
@@ -6,6 +9,7 @@
  */
 class Model extends ArrayData
 {
+	use TLinkOperation;
 	/**
 	 * 转换为数据库字段
 	 * @var int
@@ -39,13 +43,9 @@ class Model extends ArrayData
 		// '表单字段'=>'数据库字段'
 	);
 	/**
-	 * 连贯操作
-	 */
-	public $options = array ();
-	/**
 	 * 连贯操作方法名
 	 */
-	public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
+	// public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
 	/**
 	 * 连贯操作函数
 	 */
@@ -78,11 +78,34 @@ class Model extends ArrayData
 	 * 是否执行查询前置方法
 	 */
 	public $isSelectBefore = true;
+
+	/**
+	 * 是否已初始化
+	 * @var bool
+	 */
+	protected static $isInit = false;
+
+	/**
+	 * 初始化
+	 * @return mixed 
+	 */
+	public static function init()
+	{
+		self::$operations['page'] = array('custom'=>true);
+		self::$operations['headTotal'] = array('onlyOne'=>true);
+		self::$operations['footTotal'] = array('onlyOne'=>true);
+		self::$isInit = true;
+	}
+
 	/**
 	 * 构造方法
 	 */
 	function __construct($table = null, $dbAlias = null)
 	{
+		if(!self::$isInit)
+		{
+			self::init();
+		}
 		if (null === $table)
 		{
 			if('' === $this->table)
@@ -164,22 +187,41 @@ class Model extends ArrayData
 	 * @param boolean $first 是否只获取一条记录
 	 * @return array
 	 */
-	public function &select($first = false)
+	public function select($first = false)
 	{
 		if($this->isSelectBefore)
 		{
 			$this->__selectBefore();
 		}
 		$option = $this->getOption();
-		$data = $this->db->select($option, $first);
+		$this->db->operationOption = $option;
 		if($first)
 		{
+			$data = $this->db->getOne();
 			$this->__selectOneAfter($data);
 		}
 		else
 		{
-			$this->__selectAfter($data);
+			$data = $this->db->query();
+			$this->__selectAfter($data,$option);
 		}
+		return $data;
+	}
+
+	/**
+	 * 获取一条记录
+	 * @return array 
+	 */
+	public function getOne()
+	{
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
+		$option = $this->getOption();
+		$this->db->operationOption = $option;
+		$data = $this->db->getOne();
+		$this->__selectOneAfter($data);
 		return $data;
 	}
 	
@@ -196,19 +238,20 @@ class Model extends ArrayData
 		{
 			$this->__selectBefore();
 		}
-		$option = $this->options;
+		$option = $this->operationOption;
 		if(null === $recordCount)
 		{
 			// 去除排序，提高效率
-			if(isset($this->options['order']))
+			if(isset($this->operationOption['order']))
 			{
-				unset($this->options['order']);
+				unset($this->operationOption['order']);
 			}
 			$recordCount = $this->count();
 		}
-		$this->options = $option;
-		$data = $this->db->select($this->page($page,$show)->getOption(), false);
-		$this->__selectAfter($data);
+		$this->operationOption = $option;
+		$this->db->operationOption = $this->page($page,$show)->getOption();
+		$data = $this->db->query();
+		$this->__selectAfter($data,$option);
 		return $data;
 	}
 	
@@ -222,11 +265,11 @@ class Model extends ArrayData
 	{
 		if(null === $headOrFoot)
 		{
-			if(isset($option['headtotal']))
+			if(isset($option['headTotal']))
 			{
 				$this->parseTotal($data,$option,'head');
 			}
-			if(isset($option['foottotal']))
+			if(isset($option['footTotal']))
 			{
 				$this->parseTotal($data,$option,'foot');
 			}
@@ -252,22 +295,34 @@ class Model extends ArrayData
 			}
 			if('head' === $headOrFoot)
 			{
-				array_unshift($data,$this->db->select($option, true));
+				$this->db->operationOption = $option;
+				array_unshift($data,$this->db->getOne());
 			}
 			else if('foot' === $headOrFoot)
 			{
-				$data[] = $this->db->select($option, true);
+				$this->db->operationOption = $option;
+				$data[] = $this->db->getOne();
 			}
 		}
 	}
 	
 	/**
-	 * 查询获取值
+	 * 查询获取值，getScalar的别名，兼容旧版
 	 * @return mixed
 	 */
 	public function selectValue()
 	{
-		return $this->db->selectValue($this->getOption());
+		return $this->getScalar();
+	}
+
+	/**
+	 * 查询获取值，第一行第一列
+	 * @return mixed 
+	 */
+	public function getScalar()
+	{
+		$this->db->operationOption = $this->getOption();
+		return $this->db->getScalar();
 	}
 	
 	/**
@@ -284,7 +339,7 @@ class Model extends ArrayData
 	 */
 	public function &getBy($field,$value)
 	{
-		return $this->where(array($this->tableName() . '.' . $field=>$value))->select(true);
+		return $this->where(array($this->tableName() . '.' . $field=>$value))->getOne();
 	}
 	
 	/**
@@ -299,25 +354,23 @@ class Model extends ArrayData
 			$this->__selectBefore();
 		}
 		$opt = $this->getOption();
-		$field = isset($opt['field']) ? $opt['field'] : '';
-		$opt['field'] = 'count(*)';
+		$field = isset($opt['field']) ? $opt['field'] : '*';
+		$opt['field'] = array('count(*)');
 		// 取记录数量
-		$sum = $this->db->selectValue($opt);
-		$opt['field'] = $field;
+		$this->db->operationOption = $opt;
+		$sum = $this->db->getScalar();
+		$opt['field'] = array($field);
 		// 随机出记录位置
 		$limits = randomNums(0, $sum - 1, $num);
 		$results = array ();
-		if('Mssql' === $this->db->getType() && !isset($opt['order']))
-		{
-			$opt['order'] = array($this->pk);
-		}
 		// 循环取出多条记录
 		foreach ($limits as $value)
 		{
-			$opt['limit'] = $value . ',1';
-			$results[] = $this->db->select($opt, true);
+			$opt['limit'] = array($value,1);
+			$this->db->operationOption = $opt;
+			$results[] = $this->db->getOne();
 		}
-		$this->__selectAfter($results);
+		$this->__selectAfter($results,$opt);
 		return $results;
 	}
 
@@ -334,15 +387,15 @@ class Model extends ArrayData
 		}
 		$opt = $this->getOption();
 		$this->setOption($opt);
-		$result = $this->field(array('count(*)'=>'count','max(' . $this->pk . ')'=>'max','min(' . $this->pk . ')'=>'min'))->select(true);
+		$result = $this->field(array('count(*)'=>'count','max(' . $this->pk . ')'=>'max','min(' . $this->pk . ')'=>'min'))->getOne();
 		$this->setOption($opt);
 		$max_count=$result['max']-$result['count']+$num;
 		// 随机出记录位置
 		$limits = randomNums($result['min'], $result['max'], $max_count);
 		$this->where(array($this->pk=>array('in',$limits)));
 		$this->limit($num);
-		$results = $this->orderfield($this->pk,$limits)->select();
-		$this->__selectAfter($results);
+		$results = $this->orderByField($this->pk,$limits)->select();
+		$this->__selectAfter($results,$opt);
 		return $results;
 	}
 	/**
@@ -351,7 +404,7 @@ class Model extends ArrayData
 	 * @param type $arguments        	
 	 * @return Model
 	 */
-	public function __call($name, $arguments)
+	public function __callBefore($name, $arguments)
 	{
 		if(isset($arguments[0]))
 		{
@@ -370,86 +423,6 @@ class Model extends ArrayData
 			unset($arr);
 			// 全部转为小写，照顾所有大小写习惯的用户
 			$name = strtolower($name);
-			// 方法名是否存在于预定义的连贯操作方法名中
-			if (false !== in_array($name, $this->methods))
-			{
-				if('join' === $name)
-				{
-					// 为空则创建空数组
-					if(!isset($this->options[$name]))
-					{
-						$this->options[$name]=array();
-					}
-					// 判断是否批量join
-					if(is_array($arguments[0]))
-					{
-						$this->options[$name]=array_merge($this->options[$name],$arguments[0]);
-					}
-					else
-					{
-						if(count($arguments)>1)
-						{
-							// 参数形式
-							$this->options[$name][] = array('type'=>$arguments[0],'table'=>$arguments[1],'on'=>$arguments[2]);
-						}
-						else
-						{
-							// sql形式
-							$this->options[$name][] = $arguments[0];
-						}
-					}
-				}
-				else if('limit' === $name)
-				{
-					if(isset($arguments[1]))
-					{
-						$this->options['limit'] = $arguments;
-					}
-					else
-					{
-						$this->options['limit'] = $arguments[0];
-					}
-				}
-				else if('page' === $name)
-				{
-					if(isset($arguments[1]))
-					{
-						$this->options['limit'] = array($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
-					}
-				}
-				else if('distinct' === $name)
-				{
-					$this->options['distinct'] = $arguments[0];
-				}
-				else if('orderfield' === $name)
-				{
-					if(!isset($this->options['order']))
-					{
-						$this->options['order'] = array();
-					}
-					if(isset($arguments[1]))
-					{
-						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments);
-					}
-					else
-					{
-						$this->options['order'][] = array('#orderfield#'=>true,'data'=>$arguments[0]);
-					}
-				}
-				else if('from' === $name)
-				{
-					$this->options['from'] = $arguments[0];
-				}
-				else
-				{
-					if(!isset($this->options[$name]))
-					{
-						$this->options[$name] = array();
-					}
-					$this->options[$name][] = $arguments[0];
-				}
-				return $this;
-			}
 		}
 		// 是否连贯操作函数
 		if (false !== in_array($name, $this->funcs))
@@ -462,8 +435,9 @@ class Model extends ArrayData
 			{
 				$field = '*';
 			}
-			$this->options['field'] = $name . '(' . $field . ')';
-			return $this->db->selectValue($this->getOption());
+			$this->field($name . '(' . $field . ')');
+			$this->db->operationOption = $this->getOption();
+			return $this->db->getScalar();
 		}
 	}
 	
@@ -480,27 +454,28 @@ class Model extends ArrayData
 			$data = $this->data;
 		}
 		$option = $this->getOption();
-		$result = $this->__saveBefore($data);
+		$result = $this->__saveBefore($data,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
-		$result = $this->__addBefore($data);
+		$result = $this->__addBefore($data,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
 		$saveData = $this->parseSaveData($data);
-		$saveResult = $this->db->insert(isset($option['from'])?$option['from']:$this->tableName(), $saveData, $return);
+		$this->db->operationOption = $option;
+		$saveResult = $this->db->insert(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
 			return false;
 		}
-		$result = $this->__saveAfter($data,$saveResult);
+		$result = $this->__saveAfter($data,$saveResult,$option);
 		if(null === $result || true === $result)
 		{
-			$result = $this->__addAfter($data,$saveResult);
+			$result = $this->__addAfter($data,$saveResult,$option);
 			if(null === $result || true === $result)
 			{
 				return $saveResult;
@@ -523,27 +498,28 @@ class Model extends ArrayData
 			$data = $this->data;
 		}
 		$option = $this->getOption();
-		$result = $this->__saveBefore($data);
+		$result = $this->__saveBefore($data,$option,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
-		$result = $this->__editBefore($data);
+		$result = $this->__editBefore($data,$option,$option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
 		}
 		$saveData = $this->parseSaveData($data);
-		$saveResult = $this->db->update($saveData, $option, $return);
+		$this->db->operationOption = $option;
+		$saveResult = $this->db->update(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
 			return false;
 		}
-		$result = $this->__saveAfter($data,$saveResult);
+		$result = $this->__saveAfter($data,$saveResult,$option);
 		if(null === $result || true === $result)
 		{
-			$result = $this->__editAfter($data,$saveResult);
+			$result = $this->__editAfter($data,$saveResult,$option);
 			if(null === $result || true === $result)
 			{
 				return $saveResult;
@@ -585,9 +561,9 @@ class Model extends ArrayData
 		// 判断记录是否存在，来决定$isEdit的值
 		if($isEdit)
 		{
-			$option = $this->options;
+			$option = $this->operationOption;
 			$isEdit = $this->wherePk($data,$table)->count() > 0;
-			$this->options = $option;
+			$this->operationOption = $option;
 		}
 		// 2个if不要合并！
 		if($isEdit)
@@ -652,7 +628,8 @@ class Model extends ArrayData
 		{
 			return false;
 		}
-		$deleteResult = $this->db->delete($option, $return);
+		$this->db->operationOption = $option;
+		$deleteResult = $this->db->delete(isset($option['table']) ? null : $this->tableName(), $return);
 		if(!$deleteResult)
 		{
 			$this->error = '删除失败';
@@ -675,13 +652,13 @@ class Model extends ArrayData
 	 */
 	public function &getOption()
 	{
-		$option = $this->options;
+		$option = $this->operationOption;
 		// 清空连贯配置
-		$this->options = array ();
-		if (! isset($option['from']))
+		$this->operationOption = array ();
+		if (! isset($option['table']))
 		{
 			// 未设置表明则为模型表名
-			$option['from'] = $this->tableName();
+			$option['table'] = $this->tableName();
 		}
 		$this->isSelectBefore = true;
 		return $option;
@@ -693,7 +670,7 @@ class Model extends ArrayData
 	 */
 	public function setOption($option)
 	{
-		$this->options=$option;
+		$this->operationOption = $option;
 	}
 	
 	/**
@@ -701,13 +678,13 @@ class Model extends ArrayData
 	 */
 	public function getOptionTable()
 	{
-		if(!isset($this->options['from']))
+		if(!isset($this->operationOption['table']))
 		{
 			return $this->tableName();
 		}
-		if(is_array($this->options['from']))
+		if(is_array($this->operationOption['table']))
 		{
-			foreach($this->options['from'] as $table => $alias)
+			foreach($this->operationOption['table'] as $table => $alias)
 			{
 				return $table;
 			}
@@ -715,7 +692,7 @@ class Model extends ArrayData
 		}
 		else
 		{
-			return $this->options['from'];
+			return $this->operationOption['table'];
 		}
 	}
 	
@@ -728,7 +705,7 @@ class Model extends ArrayData
 	{
 		if (null !== $table)
 		{
-			$this->table=$table;
+			$this->table = $table;
 		}
 		return $this->table;
 	}
@@ -755,11 +732,11 @@ class Model extends ArrayData
 	{
 		if(null === $table)
 		{
-			return $this->prefix.$this->table;
+			return $this->prefix . $this->table;
 		}
 		else
 		{
-			return $this->prefix.$table;
+			return $this->prefix . $table;
 		}
 	}
 	
@@ -823,7 +800,8 @@ class Model extends ArrayData
 			$f = $this->db->parseField($field);
 			$data[] = "{$f}={$f}+{$num}";
 		}
-		return $this->db->update($data, $this->getOption(), $return);
+		$this->db->operationOption = $this->getOption();
+		return $this->db->update($data, $return);
 	}
 	
 	/**
@@ -852,7 +830,8 @@ class Model extends ArrayData
 			$f = $this->db->parseField($field);
 			$data[] = "{$f}={$f}-{$num}";
 		}
-		return $this->db->update($data, $this->getOption(), $return);
+		$this->db->operationOption = $this->getOption();
+		return $this->db->update($data, $return);
 	}
 	
 	/**
@@ -885,9 +864,9 @@ class Model extends ArrayData
 			if (isset($value['name']))
 			{
 				// 处理没有传入from的情况
-				if (! isset($value['from']))
+				if (! isset($value['table']))
 				{
-					$value['from'] = '';
+					$value['table'] = '';
 				}
 			}
 			else
@@ -904,15 +883,15 @@ class Model extends ArrayData
 				$value['name'] = $t[0];
 				if (isset($t[3]))
 				{
-					$value['from'] = $t[3];
+					$value['table'] = $t[3];
 				}
 				else
 				{
-					$value['from'] = '';
+					$value['table'] = '';
 				}
 			}
 			// 获取数据
-			$d = Request::getAll($value['from'], $value['name']);
+			$d = Request::getAll($value['table'], $value['name']);
 			// 判断获取是否成功
 			if (false === $d)
 			{
@@ -974,7 +953,7 @@ class Model extends ArrayData
 	{
 		$data = $this->wherePk($value)
 					 ->limit(1)
-					 ->select(true);
+					 ->getOne();
 		$this->__selectOneAfter($data);
 		return $data;
 	}
@@ -1003,10 +982,11 @@ class Model extends ArrayData
 	}
 	/**
 	 * 获取最后执行的sql语句
+	 * @return string 
 	 */
 	public function lastSql()
 	{
-		return $this->db->lastSql();
+		return $this->db->lastSql;
 	}
 	/**
 	 * 查询结果自动添加编号字段，从1开始编号
@@ -1014,15 +994,30 @@ class Model extends ArrayData
 	 */
 	public function number($field)
 	{
-		$this->options['number']=$field;
+		$this->operationOption['number']=$field;
 		return $this;
 	}
 	/**
 	 * 生成select查询的SQL语句
+	 * @param string $method 
+	 * @return string 
 	 */
-	public function buildSql()
+	public function buildSql($method = 'select')
 	{
-		return $this->db->parseSelectOption($this->getOption());
+		$this->db->operationOption = $this->getOption();
+		switch($method)
+		{
+			case 'select':
+				return $this->db->buildSelectSQL();
+			case 'insert':
+				return $this->db->buildInsertSQL();
+			case 'update':
+				return $this->db->buildUpdateSQL();
+			case 'delete':
+				return $this->db->buildDeleteSQL();
+			default:
+				return '';
+		}
 	}
 	/**
 	 * 加载字段数据
@@ -1135,9 +1130,9 @@ class Model extends ArrayData
 	 * @param array $data 
 	 * @return mixed
 	 */
-	public function __selectAfter(&$data)
+	public function __selectAfter(&$data,$linkOption)
 	{
-		$this->parseTotal($data,$option);
+		$this->parseTotal($data,$linkOption);
 		foreach($data as $index => $value)
 		{
 			$this->__selectOneAfter($data[$index]);
@@ -1148,7 +1143,7 @@ class Model extends ArrayData
 	 * @param array $data 
 	 * @return mixed
 	 */
-	public function __selectOneAfter(&$data)
+	public function __selectOneAfter(&$data,$linkOption)
 	{
 		
 	}
@@ -1157,7 +1152,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __addBefore(&$data)
+	public function __addBefore(&$data,$linkOption)
 	{
 
 	}
@@ -1167,7 +1162,7 @@ class Model extends ArrayData
 	 * @param $result mixed 添加结果
 	 * @return mixed
 	 */
-	public function __addAfter(&$data,$result)
+	public function __addAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1176,7 +1171,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __editBefore(&$data)
+	public function __editBefore(&$data,$linkOption)
 	{
 	}
 	/**
@@ -1185,7 +1180,7 @@ class Model extends ArrayData
 	 * @param $result mixed 修改结果
 	 * @return mixed
 	 */
-	public function __editAfter(&$data,$result)
+	public function __editAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1194,7 +1189,7 @@ class Model extends ArrayData
 	 * @param $data array 数据
 	 * @return mixed
 	 */
-	public function __saveBefore(&$data)
+	public function __saveBefore(&$data,$linkOption)
 	{
 		
 	}
@@ -1204,7 +1199,7 @@ class Model extends ArrayData
 	 * @param $result mixed 保存结果
 	 * @return mixed
 	 */
-	public function __saveAfter(&$data,$result)
+	public function __saveAfter(&$data,$result,$linkOption)
 	{
 
 	}
@@ -1213,7 +1208,7 @@ class Model extends ArrayData
 	 * @param array $pkData 
 	 * @return mixed 
 	 */
-	public function __deleteBefore(&$pkData)
+	public function __deleteBefore(&$pkData,$linkOption)
 	{
 
 	}
@@ -1222,13 +1217,30 @@ class Model extends ArrayData
 	 * @param array $result 
 	 * @return mixed 
 	 */
-	public function __deleteAfter($result)
+	public function __deleteAfter($result,$linkOption)
 	{
 
 	}
+	/**
+	 * 可设置取消查询前置方法
+	 * @param bool $isSelectBefore 
+	 * @return Model 
+	 */
 	public function selectBefore($isSelectBefore = true)
 	{
 		$this->isSelectBefore = $isSelectBefore;
 		return $this;
+	}
+
+	/**
+	 * page 自定义处理
+	 * @param array $arguments 
+	 */
+	protected function __linkPage($arguments)
+	{
+		if(isset($arguments[1]))
+		{
+			$this->options['limit'] = array($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
+		}
 	}
 }

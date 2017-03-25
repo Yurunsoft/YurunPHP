@@ -51,7 +51,10 @@ return array (
 	// import函数导入文件规则
 	'IMPORT'	=>	array(
 		// 'xxx'	=>	'文件路径'
-		'IDb.implements'		=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php'
+		'IDb.implements'			=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php',
+		'TDbOperation.trait'		=>	ROOT_PATH . 'Core/Driver/Db/TDbOperation.trait.php',
+		'TDbSQLHelper.trait'		=>	ROOT_PATH . 'Core/Driver/Db/TDbSQLHelper.trait.php',
+		'TLinkOperation.trait'		=>	ROOT_PATH . 'Core/Traits/TLinkOperation.trait.php',
 	),
 	
 	// 自动开启Session功能
@@ -94,7 +97,7 @@ return array (
 	// 模型是否自动获取字段信息
 	'MODEL_AUTO_FIELDS'		=>	true,
 	// 是否对模型字段缓存
-	'MODEL_FIELDS_CACHE'	=>	true,
+	'MODEL_FIELDS_CACHE'	=>	false,
 	
 	/**
 	 * 数据库部分

@@ -5,7 +5,7 @@ class DbPDOMysql extends DbPDOBase
 	 * 参数标识
 	 * @var array
 	 */
-	public $param_flag = array ('`','`');
+	public $paramFlag = array ('`','`');
 
 	/**
 	 * 构建DNS字符串
@@ -42,7 +42,6 @@ class DbPDOMysql extends DbPDOBase
 		return (int)$this->handler->query('select found_rows()')->fetchColumn();
 	}
 
-
 	/**
 	 * 获取数据库中所有数据表名
 	 * @param string $dbname
@@ -50,7 +49,34 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function getTables($dbName = null)
 	{
-
+		if (empty($dbName))
+		{ // 当前表
+			$sql = 'show tables';
+		}
+		else
+		{ // 其他表
+			$sql = 'show tables from ' . $this->parseKeyword($dbName);
+		}
+		// 查询
+		$result = $this->query($sql);
+		if (false === $result)
+		{
+			// 失败
+			$r = false;
+			return $r;
+		}
+		else
+		{
+			$keys = array_keys($result[0]);
+			$r = array ();
+			// 处理数据
+			foreach ($result as $value)
+			{
+				$r[] = $value[$keys[0]];
+			}
+			// 返回结果
+			return $r;
+		}
 	}
 
 	/**
@@ -60,6 +86,164 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function getFields($table)
 	{
+		// 查询
+		$result = $this->query('show columns from ' . $this->parseKeyword($table));
+		if (false === $result)
+		{
+			// 失败
+			$result = false;
+			return $result;
+		}
+		else
+		{
+			$fields = array ();
+			// 处理数据
+			foreach($result as $item)
+			{
+				$fields[$item['Field']] = array(
+					'name'			=>	$item['Field'],
+					'type'			=>	$item['Type'],
+					'null'			=>	'yes' === strtolower($item['Null']),
+					'default'		=>	$item['Default'],
+					'pk'			=>	'PRI' === $item['Key'],
+					'is_auto_inc'	=>	false !== strpos($item['Extra'], 'auto_increment'),
+					'key'			=>	$item['Key'],
+					'extra'			=>	$item['Extra']
+				);
+			}
+			// 返回结果
+			return $fields;
+		}
+	}
 
+	/**
+	 * 构建SELECT语句
+	 * @return string 
+	 */
+	public function buildSelectSQL()
+	{
+		$where = $this->parseCondition(isset($this->operationOption['where']) ? $this->operationOption['where'] : '');
+		if ('' !== $where)
+		{
+			$where = 'where ' . $where . ' ';
+		}
+		return 'select ' . $this->parseDistinct()
+				. $this->parseField(null,'*')
+				. 'from '
+				. $this->parseTable() . ' '
+				. $this->parseJoin()
+				. $where
+				. $this->parseGroup()
+				. $this->parseHaving()
+				. $this->parseOrder()
+				. $this->parseLimit()
+				;
+	}
+
+	/**
+	 * 构建INSERT语句
+	 * @param string $table 
+	 * @param array $data 
+	 * @return string 
+	 */
+	public function buildInsertSQL($table = null, $data = array())
+	{
+		$data = $this->parseParams($data);
+		if(isAssocArray($data))
+		{
+			$keys = array_keys($data);
+			return 'insert into ' . $this->parseTable($table) . '(' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values(:' . implode(',:',$keys) . ')';
+		}
+		else
+		{
+			return 'insert into ' . $this->parseTable($table) . ' values(' . substr(str_repeat('?,',count($data)),0,-1) . ')';
+		}
+	}
+
+	/**
+	 * 构建UPDATE语句
+	 * @param string $table 
+	 * @param array $data 
+	 * @return string 
+	 */
+	public function buildUpdateSQL($table = null, $data = array())
+	{
+		$data = $this->parseParams($data);
+		$sql = 'update ' . $this->parseTable($table) . ' set ';
+		foreach($data as $key => $value)
+		{
+			$sql .= $this->parseKeyword($key) . "=:{$key},";
+		}
+		$where = $this->parseCondition(isset($this->operationOption['where']) ? $this->operationOption['where'] : '');
+		if ('' !== $where)
+		{
+			$where = 'where ' . $where . ' ';
+		}
+		return substr($sql,0,-1) . ' '
+				. $where
+				. $this->parseOrder()
+				. $this->parseLimit()
+				;
+	}
+
+	/**
+	 * buildDeleteSQL
+	 * @param string $table 
+	 * @return string 
+	 */
+	public function buildDeleteSQL($table = null)
+	{
+		$sql = 'delete from ' . $this->parseTable($table) . ' ';
+		$where = $this->parseCondition(isset($this->operationOption['where']) ? $this->operationOption['where'] : '');
+		if ('' !== $where)
+		{
+			$where = 'where ' . $where . ' ';
+		}
+		return $sql
+				. $where
+				. $this->parseOrder()
+				. $this->parseLimit()
+				;
+	}
+
+	/**
+	 * parseOrderByField
+	 * @param mixed $order 
+	 * @return string 
+	 */
+	public function parseOrderByField($order)
+	{
+		if(isset($order[0],$order[1]))
+		{
+			if(!is_array($order[1]))
+			{
+				$order[1] = explode(',', $order[1]);
+			}
+			$list = array();
+			foreach($order[1] as $item)
+			{
+				$paramName = $this->getParamName();
+				$this->operationOption['params'][$paramName] = $item;
+				$list[] = ':' . $paramName;
+			}
+			return 'field(' . $this->parseKeyword($order[0]) . ',' . implode(',', $list) . ')';
+		}
+		else
+		{
+			return 1;
+		}
+	}
+
+	/**
+	 * parseLimit
+	 * @return string 
+	 */
+	public function parseLimit()
+	{
+		if(!isset($this->operationOption['limit'],$this->operationOption['limit'][0]))
+		{
+			return '';
+		}
+		return 'limit ' . $this->operationOption['limit'][0] . (isset($this->operationOption['limit'][1]) ? (',' . $this->operationOption['limit'][1]) : '');
 	}
 }
