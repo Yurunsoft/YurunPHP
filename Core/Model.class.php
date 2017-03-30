@@ -635,7 +635,7 @@ class Model extends ArrayData
 			$this->error = '删除失败';
 			return false;
 		}
-		$result = $this->__deleteAfter($pkData,$deleteResult);
+		$result = $this->__deleteAfter($deleteResult, $option);
 		if(null === $result || true === $result)
 		{
 			return $deleteResult;
