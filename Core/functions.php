@@ -43,13 +43,23 @@ function require_once_multi($files, $all = true)
  */
 function import()
 {
-	$names = func_get_args();
-	foreach($names as $name)
+	if(null === Yurun::$config)
 	{
-		$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
-		if(false !== $filePath)
+		$args = func_get_args();
+		Event::register('YURUN_APP_ONLOAD',function()use($args){
+			call_user_func_array('import', $args);
+		});
+	}
+	else
+	{
+		$names = func_get_args();
+		foreach($names as $name)
 		{
-			require_once $filePath;
+			$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
+			if(false !== $filePath)
+			{
+				require_once $filePath;
+			}
 		}
 	}
 }
