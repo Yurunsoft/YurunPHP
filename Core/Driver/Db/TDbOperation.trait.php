@@ -54,14 +54,14 @@ trait TDbOperation
 	}
 
 	/**
-	 * 执行一个SQL语句，返回影响的行数
+	 * 执行一个SQL语句，返回是否执行成功
 	 * @param string $sql 
 	 * @param array $params 
-	 * @return int 
+	 * @return bool 
 	 */
 	public function execute($sql,$params = array())
 	{
-		return $this->prepareQuery($sql,$params)->rowCount();
+		return false !== $this->prepareQuery($sql,$params);
 	}
 
 	/**
@@ -401,8 +401,9 @@ trait TDbOperation
 				// 只有on
 				$result .= $join[2];
 			}
+			$result .= ' ';
 		}
-		return $result . ' ';
+		return $result;
 	}
 
 	/**
