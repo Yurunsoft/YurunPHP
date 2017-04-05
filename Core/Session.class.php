@@ -36,6 +36,7 @@ class Session
 			self::gcProbability(Config::get('@.SESSION_GC_PROBABILITY', null));
 			self::maxLifetime(Config::get('@.SESSION_MAX_LIFETIME', null));
 			self::prefix(Config::get('@.SESSION_PREFIX', ''));
+			self::cookieDomain(Config::get('@.SESSION_COOKIE_DOMAIN',null));
 			$saveHandler = Config::get('@.SESSION_SAVE_HANDLER', 'files');
 			self::saveHandler($saveHandler);
 			if('user' === $saveHandler)
@@ -293,6 +294,15 @@ class Session
 	public static function maxLifetime($maxLifetime = null)
 	{
 		return null === $maxLifetime ? ini_get('session.gc_maxlifetime') : ini_set('session.gc_maxlifetime', $maxLifetime);
+	}
+	/**
+	 * 设置session的cookie域名
+	 * @param stirng $cookieDomain 
+	 * @return string 
+	 */
+	public static function cookieDomain($cookieDomain = null)
+	{
+		return null === $cookieDomain ? ini_get('session.cookie_domain') : ini_set('session.cookie_domain', $cookieDomain);
 	}
 	/**
 	 * SESSION前缀
