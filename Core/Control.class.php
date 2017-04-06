@@ -39,7 +39,7 @@ class Control
 		else if('xml' === $returnType)
 		{
 			Response::setMime('xml');
-			exit(ArrayToXML::parse($data,null === $option?'xml':$option));
+			exit(XML::toString($data));
 		}
 		else if('html' === $returnType)
 		{
