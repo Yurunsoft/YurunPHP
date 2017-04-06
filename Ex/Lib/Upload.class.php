@@ -230,12 +230,17 @@ class Upload
 	private function uploadMulti($files,&$result)
 	{
 		$result=$files;
-		$r=true;
+		$r=false;
 		foreach($files as $key=>$item)
 		{
 			if(!$this->uploadSingle($item,$result2))
 			{
-				$r=false;
+				$r = true;
+			}
+			else
+			{
+				$r = false;
+				break;
 			}
 			$result[$key]=$result2;
 		}
