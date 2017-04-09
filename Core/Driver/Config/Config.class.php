@@ -29,7 +29,7 @@ abstract class Config extends Driver
 	protected static function __initAfter()
 	{
 		// 添加公共配置组
-		self::$defaultObject = self::create(array('type'=>'Php'),'@');
+		self::$defaultObject = self::create(array('type'=>'PHP'),'@');
 	}
 	/**
 	 * 项目初始化前
