@@ -1,10 +1,4 @@
 <?php
-import(
-	'IDb.implements',
-	'TDbSQLHelper.trait',
-	'TDbOperation.trait',
-	'TLinkOperation.trait'
-);
 abstract class DbPDOBase implements IDb
 {
 	use TDbSQLHelper;

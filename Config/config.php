@@ -44,6 +44,10 @@ return array (
 	'AUTOLOAD_RULES'	=>	array(
 		array('type'=>'FirstWord','word'=>'YC','path'=>'Ex/Component/%class'),
 		array('type'=>'LastWord','word'=>'Component','path'=>'Ex/Component'),
+		array('type'=>'Word','word'=>'IDb','path'=>'Core/Driver/Db','ext'=>'.implements.php'),
+		array('type'=>'Word','word'=>'TDbOperation','path'=>'Core/Driver/Db','ext'=>'.trait.php'),
+		array('type'=>'Word','word'=>'TDbSQLHelper','path'=>'Core/Driver/Db','ext'=>'.trait.php'),
+		array('type'=>'Word','word'=>'TLinkOperation','path'=>'Core/Traits','ext'=>'.trait.php'),
 		array('type'=>'Path','path'=>'Lib'),
 		array('type'=>'Path','path'=>'Lib/%class'),
 	),
@@ -51,10 +55,6 @@ return array (
 	// import函数导入文件规则
 	'IMPORT'	=>	array(
 		// 'xxx'	=>	'文件路径'
-		'IDb.implements'			=>	ROOT_PATH . 'Core/Driver/Db/IDb.implements.php',
-		'TDbOperation.trait'		=>	ROOT_PATH . 'Core/Driver/Db/TDbOperation.trait.php',
-		'TDbSQLHelper.trait'		=>	ROOT_PATH . 'Core/Driver/Db/TDbSQLHelper.trait.php',
-		'TLinkOperation.trait'		=>	ROOT_PATH . 'Core/Traits/TLinkOperation.trait.php',
 	),
 	
 	// 自动开启Session功能

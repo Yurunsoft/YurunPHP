@@ -1,7 +1,4 @@
 <?php
-import(
-	'TLinkOperation.trait'
-);
 /**
  * 模型类
  * @author Yurun <yurun@yurunsoft.com>
@@ -1230,5 +1227,17 @@ class Model extends ArrayData
 	{
 		$this->isSelectBefore = $isSelectBefore;
 		return $this;
+	}
+
+	/**
+	 * page 自定义处理
+	 * @param array $arguments 
+	 */
+	protected function __linkPage($arguments)
+	{
+		if(isset($arguments[1]))
+		{
+			$this->options['limit'] = array($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
+		}
 	}
 }
