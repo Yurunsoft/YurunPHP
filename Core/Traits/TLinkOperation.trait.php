@@ -176,4 +176,15 @@ trait TLinkOperation
 			$this->operationOption['params'] = $arguments[0];
 		}
 	}
+	/**
+	 * page 自定义处理
+	 * @param array $arguments 
+	 */
+	protected function __linkPage($arguments)
+	{
+		if(isset($arguments[1]))
+		{
+			$this->limit($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
+		}
+	}
 }
