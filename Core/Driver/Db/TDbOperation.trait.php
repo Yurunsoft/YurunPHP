@@ -566,7 +566,7 @@ trait TDbOperation
 		}
 		else
 		{
-			return 'order by ' . substr($result, 0, - 1);
+			return 'order by ' . substr($result, 0, - 1) . ' ';
 		}
 	}
 
