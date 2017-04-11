@@ -22,6 +22,7 @@ while (false !== ($file = $dir->read()))
 		}
 	}
 }
+$result .= includeFile(__DIR__ . '/Core/Traits/TLinkOperation.trait.php');
 $dir->close();
 // 加载驱动
 $dir = dir(__DIR__ . '/Core/Driver/');
@@ -32,7 +33,14 @@ while (false !== ($file = $dir->read()))
 		$fileName = __DIR__ . '/Core/Driver/' . $file;
 		if(is_dir($fileName))
 		{
-			$baseFileName = $file . 'Base.class.php';
+			if('Db' === $file)
+			{
+				$baseFileName = $file . 'PDOBase.class.php';
+			}
+			else
+			{
+				$baseFileName = $file . 'Base.class.php';
+			}
 			$baseFileNames = array($baseFileName);
 			$result .= includeFile($fileName . '/' . $baseFileName);
 			switch($file)
