@@ -195,7 +195,7 @@ class Model extends ArrayData
 		if($first)
 		{
 			$data = $this->db->getOne();
-			$this->__selectOneAfter($data);
+			$this->__selectOneAfter($data,$option);
 		}
 		else
 		{
@@ -218,7 +218,7 @@ class Model extends ArrayData
 		$option = $this->getOption();
 		$this->db->operationOption = $option;
 		$data = $this->db->getOne();
-		$this->__selectOneAfter($data);
+		$this->__selectOneAfter($data,$option);
 		return $data;
 	}
 	
@@ -948,10 +948,10 @@ class Model extends ArrayData
 	 */
 	public function &getByPk($value)
 	{
-		$data = $this->wherePk($value)
-					 ->limit(1)
-					 ->getOne();
-		$this->__selectOneAfter($data);
+		$option = $this->wherePk($value)
+					   ->limit(1);
+		$data = $this->getOne();
+		$this->__selectOneAfter($data,$option);
 		return $data;
 	}
 
@@ -1132,7 +1132,7 @@ class Model extends ArrayData
 		$this->parseTotal($data,$linkOption);
 		foreach($data as $index => $value)
 		{
-			$this->__selectOneAfter($data[$index]);
+			$this->__selectOneAfter($data[$index],$linkOption);
 		}
 	}
 	/**
