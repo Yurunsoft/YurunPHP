@@ -195,7 +195,6 @@ class Model extends ArrayData
 		if($first)
 		{
 			$data = $this->db->getOne();
-			$this->__selectOneAfter($data,$option);
 		}
 		else
 		{
@@ -948,11 +947,9 @@ class Model extends ArrayData
 	 */
 	public function &getByPk($value)
 	{
-		$option = $this->wherePk($value)
-					   ->limit(1);
-		$data = $this->getOne();
-		$this->__selectOneAfter($data,$option);
-		return $data;
+		return $this->wherePk($value)
+					->limit(1)
+					->getOne();
 	}
 
 	/**
