@@ -47,6 +47,10 @@ trait TDbOperation
 			// 执行
 			$this->lastStmt->execute();
 		}
+		if(false === $this->lastStmt)
+		{
+			throw new Exception($this->getError());
+		}
 		// 链式操作清空
 		$this->operationOption = array();
 		$this->randomParamNum = 0;
