@@ -23,31 +23,34 @@ trait TDbOperation
 		if(empty($params))
 		{
 			// 没有参数的查询
-			$this->lastStmt = $this->handler->query($sql);
+			$result = $this->lastStmt = $this->handler->query($sql);
 		}
 		else
 		{
 			// 参数查询
-			$this->lastStmt = $this->handler->prepare($sql);
-			foreach($params as $key => $value)
+			$result = $this->lastStmt = $this->handler->prepare($sql);
+			if($result)
 			{
-				if(is_int($key))
+				foreach($params as $key => $value)
 				{
-					// 问号形式的参数
-					$paramName = ($key) + 1;
+					if(is_int($key))
+					{
+						// 问号形式的参数
+						$paramName = ($key) + 1;
+					}
+					else
+					{
+						// 名称形式的参数
+						$paramName = ':' . $key;
+					}
+					// 绑定参数
+					$this->lastStmt->bindValue($paramName, $value);
 				}
-				else
-				{
-					// 名称形式的参数
-					$paramName = ':' . $key;
-				}
-				// 绑定参数
-				$this->lastStmt->bindValue($paramName, $value);
+				// 执行
+				$result = $this->lastStmt->execute();
 			}
-			// 执行
-			$this->lastStmt->execute();
 		}
-		if(false === $this->lastStmt)
+		if(false === $result)
 		{
 			throw new Exception($this->getError());
 		}
