@@ -34,7 +34,16 @@ class APIBaseControl extends Control
 	{
 		if(Config::get('@.LOG_ERROR'))
 		{
-			Log::add(Dispatch::module().'/'.Dispatch::control().'/'.Dispatch::action().'错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
+			if(isset($GLOBALS['debug']['lastsql']))
+			{
+				$sql = "\n最后执行的SQL语句:" . $GLOBALS['debug']['lastsql'];
+				unset($GLOBALS['debug']['lastsql']);
+			}
+			else
+			{
+				$sql = '';
+			}
+			Log::add(Dispatch::module().'/'.Dispatch::control().'/'.Dispatch::action()."\n错误:".$exception->getMessage()."\n文件:".$exception->getFile()."\n行数:".$exception->getLine().$sql);
 		}
 		$this->__parseException($exception);
 		$this->parseResult();

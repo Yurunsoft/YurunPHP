@@ -40,14 +40,6 @@ class Model extends ArrayData
 		// '表单字段'=>'数据库字段'
 	);
 	/**
-	 * 连贯操作方法名
-	 */
-	// public $methods = array ('distinct','field','from','where','group','having','order','orderfield','limit','join','page','headtotal','foottotal');
-	/**
-	 * 连贯操作函数
-	 */
-	public $funcs = array ('sum','max','min','avg','count');
-	/**
 	 * 从表单创建数据并验证的规则
 	 */
 	public $rules = array ();
@@ -252,6 +244,26 @@ class Model extends ArrayData
 	}
 	
 	/**
+	 * 结尾方法自定义处理
+	 * @param array $arguments 
+	 */
+	protected function __linkLast($arguments,$operation)
+	{
+		if (isset($arguments[0]))
+		{
+			$field = $arguments[0];
+		}
+		else
+		{
+			$field = '*';
+		}
+		$option = $this->getOption();
+		$option['field'] = array($operation . '(' . $field . ')');
+		$this->db->operationOption = $option;
+		return $this->db->getScalar();
+	}
+
+	/**
 	 * 处理合计行数据
 	 * @param array &$data
 	 * @param array $option
@@ -419,21 +431,6 @@ class Model extends ArrayData
 			unset($arr);
 			// 全部转为小写，照顾所有大小写习惯的用户
 			$name = strtolower($name);
-		}
-		// 是否连贯操作函数
-		if (false !== in_array($name, $this->funcs))
-		{
-			if (isset($arguments[0]))
-			{
-				$field = $arguments[0];
-			}
-			else
-			{
-				$field = '*';
-			}
-			$this->field($name . '(' . $field . ')');
-			$this->db->operationOption = $this->getOption();
-			return $this->db->getScalar();
 		}
 	}
 	

@@ -52,6 +52,7 @@ trait TDbOperation
 		}
 		if(false === $result)
 		{
+			$GLOBALS['debug']['lastsql'] = $sql;
 			throw new Exception($this->getError());
 		}
 		// 链式操作清空
@@ -161,6 +162,23 @@ trait TDbOperation
 		{
 			return $this->lastStmt->fetchColumn();
 		}
+	}
+
+	/**
+	 * 结尾方法自定义处理
+	 * @param array $arguments 
+	 */
+	protected function __linkLast($arguments,$operation)
+	{
+		if (isset($arguments[0]))
+		{
+			$field = $arguments[0];
+		}
+		else
+		{
+			$field = '*';
+		}
+		return $this->field($operation . '(' . $field . ')')->getScalar();
 	}
 
 	/**

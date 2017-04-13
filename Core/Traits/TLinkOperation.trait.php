@@ -32,6 +32,11 @@ trait TLinkOperation
 		'headTotal'		=>	array(),
 		'footTotal'		=>	array(),
 		'params'		=>	array('custom'=>true),
+		'sum'			=>	array('custom'=>'last','return'=>true),
+		'max'			=>	array('custom'=>'last','return'=>true),
+		'min'			=>	array('custom'=>'last','return'=>true),
+		'avg'			=>	array('custom'=>'last','return'=>true),
+		'count'			=>	array('custom'=>'last','return'=>true),
 	);
 
 	/**
@@ -73,7 +78,11 @@ trait TLinkOperation
 				if(isset(self::$operations[$name]['custom']) && self::$operations[$name]['custom'])
 				{
 					// 自定义操作
-					$this->{'__link' . ucfirst($name)}($arguments);
+					$result = $this->{'__link' . ucfirst(true === self::$operations[$name]['custom'] ? $name : self::$operations[$name]['custom'])}($arguments,$name);
+					if(isset(self::$operations[$name]['return']) && self::$operations[$name]['return'])
+					{
+						return $result;
+					}
 				}
 				else
 				{
