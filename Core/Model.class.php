@@ -367,7 +367,7 @@ class Model extends ArrayData
 		// 取记录数量
 		$this->db->operationOption = $opt;
 		$sum = $this->db->getScalar();
-		$opt['field'] = array($field);
+		$opt['field'] = $field;
 		// 随机出记录位置
 		$limits = randomNums(0, $sum - 1, $num);
 		$results = array ();
