@@ -212,6 +212,25 @@ class Model extends ArrayData
 		$this->__selectOneAfter($data,$option);
 		return $data;
 	}
+
+	/**
+	 * 查询某一列数据
+	 * @param string $columnName 
+	 * @return array 
+	 */
+	public function selectColumn($columnName)
+	{
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
+		$option = $this->getOption();
+		$option['field'] = array($columnName);
+		$this->db->operationOption = $option;
+		$data = $this->db->queryColumn();
+		$this->__selectAfter($data,$option);
+		return $data;
+	}
 	
 	/**
 	 * 分页查询，获取总记录数
@@ -783,15 +802,15 @@ class Model extends ArrayData
 			// 数组参数，多个
 			foreach ($field as $key => $value)
 			{
-				$f = $this->db->parseField($key);
-				$data[] = "{$f}={$f}+{$value}";
+				$f = $this->db->parseKeyword($key);
+				$data = "{$f}={$f}+{$value}";
 			}
 		}
 		else
 		{
 			// 单个单数
-			$f = $this->db->parseField($field);
-			$data[] = "{$f}={$f}+{$num}";
+			$f = $this->db->parseKeyword($field);
+			$data = "{$f}={$f}+{$num}";
 		}
 		$this->db->operationOption = $this->getOption();
 		return $this->db->update($data, $return);
@@ -813,15 +832,15 @@ class Model extends ArrayData
 			// 数组参数，多个
 			foreach ($field as $key => $value)
 			{
-				$f = $this->db->parseField($key);
-				$data[] = "{$f}={$f}-{$value}";
+				$f = $this->db->parseKeyword($key);
+				$data = "{$f}={$f}-{$value}";
 			}
 		}
 		else
 		{
 			// 单个单数
-			$f = $this->db->parseField($field);
-			$data[] = "{$f}={$f}-{$num}";
+			$f = $this->db->parseKeyword($field);
+			$data = "{$f}={$f}-{$num}";
 		}
 		$this->db->operationOption = $this->getOption();
 		return $this->db->update($data, $return);

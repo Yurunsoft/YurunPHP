@@ -223,18 +223,8 @@ trait TDbOperation
 		}
 		else if(isset($args[1]))
 		{
-			// 两个参数的情况
-			if(is_array($args[0]))
-			{
-				// 数据+返回值
-				list($data,$return) = $args;
-			}
-			else
-			{
-				// 表名+数据
-				list($table,$data) = $args;
-				$return = Db::RETURN_ISOK;
-			}
+			// 数据+返回值
+			list($data,$return) = $args;
 		}
 		else if(isset($args[0]))
 		{

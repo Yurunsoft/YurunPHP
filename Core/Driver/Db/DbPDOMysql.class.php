@@ -168,11 +168,18 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function buildUpdateSQL($table = null, $data = array())
 	{
-		$data = $this->parseParams($data);
 		$sql = 'update ' . $this->parseTable($table) . ' set ';
-		foreach($data as $key => $value)
+		if(is_string($data))
 		{
-			$sql .= $this->parseKeyword($key) . "=:{$key},";
+			$sql .= $data . ' ';
+		}
+		else
+		{
+			$data = $this->parseParams($data);
+			foreach($data as $key => $value)
+			{
+				$sql .= $this->parseKeyword($key) . "=:{$key},";
+			}
 		}
 		$where = $this->parseCondition(isset($this->operationOption['where']) ? $this->operationOption['where'] : '');
 		if ('' !== $where)
