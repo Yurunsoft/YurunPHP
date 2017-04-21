@@ -628,7 +628,7 @@ class Model extends ArrayData
 	 * @param int $return        	
 	 * @return mixed
 	 */
-	public function delete($pkData = null,$return = Db::RETURN_ISOK)
+	public function delete($pkData = null,$return = Db::RETURN_ROWS)
 	{
 		if(null !== $pkData)
 		{
@@ -642,7 +642,7 @@ class Model extends ArrayData
 		}
 		$this->db->operationOption = $option;
 		$deleteResult = $this->db->delete(isset($option['table']) ? null : $this->tableName(), $return);
-		if(!$deleteResult)
+		if($deleteResult <= 0)
 		{
 			$this->error = '删除失败';
 			return false;
