@@ -54,6 +54,10 @@ class LogFile extends LogBase
 	 */
 	public function add($content, $option = array())
 	{
+		if(!is_scalar($content))
+		{
+			$content = json_encode($content);
+		}
 		$this->data[] = array(
 			'content'	=>	$content,
 			'time'		=>	date($this->dateFormat)
