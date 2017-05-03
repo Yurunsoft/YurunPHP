@@ -277,9 +277,8 @@ class Model extends ArrayData
 			$field = '*';
 		}
 		$option = $this->getOption();
-		$option['field'] = array($operation . '(' . $field . ')');
 		$this->db->operationOption = $option;
-		return $this->db->getScalar();
+		return $this->db->$operation($field);
 	}
 
 	/**
