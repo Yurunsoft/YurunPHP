@@ -64,10 +64,10 @@ while (false !== ($file = $dir->read()))
 	}
 }
 $dir->close();
-$yurunContent = strip_whitespace(file_get_contents('Yurun.php'));
+$yurunContent = strip_whitespace(file_get_contents(__DIR__.'/Yurun.php'));
 $yurunContent = substr($yurunContent, 5);
 $result = '<?php define(\'IS_COMPILE\',true);' . $result . $yurunContent;
-file_put_contents('Yurun-min.php', $result,LOCK_EX);
+file_put_contents(__DIR__.'/Yurun-min.php', $result,LOCK_EX);
 header('Content-type: text/html; charset=utf-8');
 echo '生成成功！';
 /**
