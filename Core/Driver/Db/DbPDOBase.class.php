@@ -41,6 +41,14 @@ abstract class DbPDOBase implements IDb
 	public $tablePrefix = 'tb_';
 
 	/**
+	 * 字段类型和PDO类型关联
+	 * @var array
+	 */
+	public $paramType = array(
+		// 'varchar' => PDO::PARAM_STR
+	);
+
+	/**
 	 * 构造方法
 	 * @param array $option 
 	 */
@@ -182,4 +190,47 @@ abstract class DbPDOBase implements IDb
 		return $this->handler->inTransaction();
 	}
 
+	/**
+	 * 处理类似varchar(32)和decimal(10,2)格式的字段类型
+	 * @param string $text 
+	 * @param string $typeName 
+	 * @param int $length 
+	 * @param int $accuracy 
+	 * @return bool 
+	 */
+	public function parseFieldType($text, &$typeName, &$length, &$accuracy)
+	{
+		if(preg_match('/([^(]+)(\((\d+)(,(\d+))?\))?/', $text, $match))
+		{
+			$typeName = $match[1];
+			$length = (int)$match[3];
+			if(isset($match[5]))
+			{
+				$accuracy = (int)$match[5];
+			}
+			else
+			{
+				$accuracy = 0;
+			}
+			return true;
+		}
+		else
+		{
+			$typeName = '';
+			$length = 0;
+			$accuracy = 0;
+			return false;
+		}
+	}
+
+	/**
+	 * 根据字段类型获取PDO的参数数据类型
+	 * @param string $fieldType 
+	 * @return int 
+	 */
+	public function getParamType($fieldType)
+	{
+		$fieldType = strtolower($fieldType);
+		return isset($this->paramType[$fieldType]) ? $this->paramType[$fieldType] : PDO::PARAM_STR;
+	}
 }

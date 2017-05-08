@@ -7,6 +7,8 @@ trait TDbOperation
 	 */
 	public static $randomParamNum = 0;
 
+	public $bindValues = array();
+
 	/**
 	 * 准备一个查询
 	 * @param string $sql 
@@ -31,6 +33,7 @@ trait TDbOperation
 			$result = $this->lastStmt = $this->handler->prepare($sql);
 			if($result)
 			{
+				// 自动绑定的参数
 				foreach($params as $key => $value)
 				{
 					if(is_int($key))
@@ -46,6 +49,11 @@ trait TDbOperation
 					// 绑定参数
 					$this->lastStmt->bindValue($paramName, $value);
 				}
+				// 手动绑定的参数
+				foreach($this->bindValues as $bindValue)
+				{
+					$this->lastStmt->bindValue($bindValue[0], $bindValue[1], $bindValue[2]);
+				}
 				// 执行
 				$result = $this->lastStmt->execute();
 			}
@@ -58,6 +66,7 @@ trait TDbOperation
 		// 链式操作清空
 		$this->operationOption = array();
 		$this->randomParamNum = 0;
+		$this->bindValues = array();
 		return $this->lastStmt;
 	}
 
@@ -178,7 +187,7 @@ trait TDbOperation
 		{
 			$field = '*';
 		}
-		return $this->field($operation . '(' . $this->parseDistinct() . $field . ')')->getScalar();
+		return $this->field($operation . '(' . $field . ')')->getScalar();
 	}
 
 	/**
@@ -258,6 +267,17 @@ trait TDbOperation
 		{
 			return $result;
 		}
+	}
+
+	/**
+	 * 绑定参数
+	 * @param mixed $parameter 
+	 * @param mixed $value 
+	 * @param int $data_type 
+	 */
+	public function bindValue($parameter, $value, $data_type = PDO::PARAM_STR)
+	{
+		$this->bindValues[$parameter] = array($parameter, $value, $data_type);
 	}
 
 	/**

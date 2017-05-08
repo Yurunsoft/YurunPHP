@@ -8,6 +8,20 @@ class DbPDOMysql extends DbPDOBase
 	public $paramFlag = array ('`','`');
 
 	/**
+	 * 字段类型和PDO类型关联
+	 * @var array
+	 */
+	public $paramType = array(
+		'int'			=>	PDO::PARAM_INT,
+		'smallint'		=>	PDO::PARAM_INT,
+		'tinyint'		=>	PDO::PARAM_INT,
+		'mediumint'		=>	PDO::PARAM_INT,
+		'bigint'		=>	PDO::PARAM_INT,
+		'bit'			=>	PDO::PARAM_BOOL,
+		'year'			=>	PDO::PARAM_INT,
+	);
+
+	/**
 	 * 构建DNS字符串
 	 * @param array $option 
 	 * @return string 
@@ -100,9 +114,12 @@ class DbPDOMysql extends DbPDOBase
 			// 处理数据
 			foreach($result as $item)
 			{
+				$this->parseFieldType($item['Type'], $typeName, $length, $accuracy);
 				$fields[$item['Field']] = array(
 					'name'			=>	$item['Field'],
-					'type'			=>	$item['Type'],
+					'type'			=>	$typeName,
+					'length'		=>	$length,
+					'accuracy'		=>	$accuracy,
 					'null'			=>	'yes' === strtolower($item['Null']),
 					'default'		=>	$item['Default'],
 					'pk'			=>	'PRI' === $item['Key'],

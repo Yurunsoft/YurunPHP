@@ -475,7 +475,7 @@ class Model extends ArrayData
 		{
 			return false;
 		}
-		$saveData = $this->parseSaveData($data);
+		$saveData = $this->parseSaveData($data, Config::get('@.MODEL_AUTO_FIELDS'));
 		$this->db->operationOption = $option;
 		$saveResult = $this->db->insert(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
@@ -519,7 +519,7 @@ class Model extends ArrayData
 		{
 			return false;
 		}
-		$saveData = $this->parseSaveData($data);
+		$saveData = $this->parseSaveData($data, Config::get('@.MODEL_AUTO_FIELDS'));
 		$this->db->operationOption = $option;
 		$saveResult = $this->db->update(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
@@ -599,7 +599,7 @@ class Model extends ArrayData
 	 * 处理保存的数据
 	 * @param type $data
 	 */
-	public function parseSaveData($data)
+	public function parseSaveData($data, $parseBindValue = false)
 	{
 		$table = $this->getOptionTable();
 		if(empty($this->fields) || $table !== $this->tableName())
@@ -616,6 +616,10 @@ class Model extends ArrayData
 			if(isset($data[$field]))
 			{
 				$result[$field] = $data[$field];
+				if($parseBindValue)
+				{
+					$this->db->bindValue(':' . $field, $result[$field], $this->db->getParamType($this->fields[$field]['type']));
+				}
 			}
 		}
 		return $result;
