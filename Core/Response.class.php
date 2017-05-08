@@ -325,7 +325,7 @@ JS
 	 * @param bool $notModifiedExit 
      * @return bool
 	 */
-	public static function eTag($etag, $notModifiedExit = true,$callback)
+	public static function eTag($etag, $notModifiedExit = true)
 	{
 		header("Etag: {$etag}");
 		if ($notModifiedExit && isset($_SERVER['HTTP_IF_NONE_MATCH']) && $etag === $_SERVER['HTTP_IF_NONE_MATCH'])
