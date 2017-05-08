@@ -186,6 +186,8 @@ return array (
 	 */
 	// 是否记录PHP异常和错误
 	'LOG_ERROR'			=>	true,
+	// 在命令行模式下是否每条日志都触发保存操作，对长时间运行的cli操作应该设置为true，否则不会在日志中看到记录
+	'LOG_CLI_AUTOSAVE'	=>	false,
 	// 日志路径
 	'LOG_PATH'			=>	'Logs',
 	// 日志驱动配置
