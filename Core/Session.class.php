@@ -138,6 +138,19 @@ class Session
 	{
 		self::$modifys[$name] = null;
 	}
+
+	/**
+	 * 获取一次值后将该值删除，可用于验证码等一次性功能
+	 * @param string $name 
+	 * @param mixed $default 
+	 * @return mixed 
+	 */
+	public static function once($name, $default = false)
+	{
+		$value = self::get($name, $default);
+		self::delete($name);
+		return $value;
+	}
 	
 	/**
 	 * 清空所有Session
