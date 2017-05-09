@@ -187,7 +187,8 @@ trait TDbOperation
 		{
 			$field = '*';
 		}
-		return $this->field($operation . '(' . $field . ')')->getScalar();
+		$this->operationOption['field'] = array($operation . '(' . $field . ')');
+		return $this->getScalar();
 	}
 
 	/**
