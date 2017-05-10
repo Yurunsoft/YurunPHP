@@ -660,6 +660,11 @@ trait TDbOperation
 	abstract public function parseOrderByField($order);
 
 	/**
+	 * parseLock
+	 * @return string
+	 */
+	abstract public function parseLock();
+	/**
 	 * 构建SELECT语句
 	 * @return string 
 	 */

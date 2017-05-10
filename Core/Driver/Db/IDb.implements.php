@@ -142,4 +142,17 @@ interface IDb
 	 */
 	public function getFields($table);
 
+	/**
+	 * 锁定表
+	 * @param array $option 
+	 * @return bool 
+	 */
+	public function lockTable($option = null);
+
+	/**
+	 * 解锁表
+	 * @param array $option 
+	 * @return bool 
+	 */
+	public function unlockTable($option = null);
 }

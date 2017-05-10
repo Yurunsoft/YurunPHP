@@ -154,6 +154,7 @@ class DbPDOMysql extends DbPDOBase
 				. $this->parseHaving()
 				. $this->parseOrder()
 				. $this->parseLimit()
+				. $this->parseLock()
 				;
 	}
 
@@ -169,11 +170,11 @@ class DbPDOMysql extends DbPDOBase
 		if(isAssocArray($data))
 		{
 			$keys = array_keys($data);
-			return 'insert into ' . $this->parseTable($table) . '(' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values(:' . implode(',:',$keys) . ')';
+			return 'insert into ' . $this->parseTable($table) . '(' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values(:' . implode(',:',$keys) . ')' . $this->parseLock();
 		}
 		else
 		{
-			return 'insert into ' . $this->parseTable($table) . ' values(' . substr(str_repeat('?,',count($data)),0,-1) . ')';
+			return 'insert into ' . $this->parseTable($table) . ' values(' . substr(str_repeat('?,',count($data)),0,-1) . ')' . $this->parseLock();
 		}
 	}
 
@@ -207,6 +208,7 @@ class DbPDOMysql extends DbPDOBase
 				. $where
 				. $this->parseOrder()
 				. $this->parseLimit()
+				. $this->parseLock()
 				;
 	}
 
@@ -227,6 +229,7 @@ class DbPDOMysql extends DbPDOBase
 				. $where
 				. $this->parseOrder()
 				. $this->parseLimit()
+				. $this->parseLock()
 				;
 	}
 
@@ -269,5 +272,60 @@ class DbPDOMysql extends DbPDOBase
 			return '';
 		}
 		return 'limit ' . $this->operationOption['limit'][0] . (isset($this->operationOption['limit'][1]) ? (',' . $this->operationOption['limit'][1]) : '');
+	}
+
+	/**
+	 * parseLock
+	 * @return string
+	 */
+	public function parseLock()
+	{
+		if(isset($this->operationOption['lock']))
+		{
+			if('share' === $this->operationOption['lock'])
+			{
+				return ' LOCK IN SHARE MODE';
+			}
+			else if('ex' === $this->operationOption['lock'])
+			{
+				return ' FOR UPDATE';
+			}
+		}
+		else
+		{
+			return '';
+		}
+	}
+
+	/**
+	 * 锁定表
+	 * @param array $option 
+	 * @return bool 
+	 */
+	public function lockTable($option = null)
+	{
+		if(empty($option))
+		{
+			return false;
+		}
+		else
+		{
+			$sql = 'lock table ';
+			foreach($option as $tableName => $type)
+			{
+				$sql .= $tableName . ' ' . $type . ',';
+			}
+			return $this->execute(substr($sql, 0, -1));
+		}
+	}	
+
+	/**
+	 * 解锁表
+	 * @param array $option 
+	 * @return bool 
+	 */
+	public function unlockTable($option = null)
+	{
+		return $this->execute('unlock table');
 	}
 }

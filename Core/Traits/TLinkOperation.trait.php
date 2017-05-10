@@ -37,6 +37,7 @@ trait TLinkOperation
 		'min'			=>	array('custom'=>'last','return'=>true),
 		'avg'			=>	array('custom'=>'last','return'=>true),
 		'count'			=>	array('custom'=>'last','return'=>true),
+		'lock'			=>	array('onlyOne'=>true),
 	);
 
 	/**
