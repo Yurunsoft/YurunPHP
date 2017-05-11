@@ -494,6 +494,46 @@ class Model extends ArrayData
 		}
 		return false;
 	}
+
+	public function import($data = null, $return = Db::RETURN_ISOK)
+	{
+		if(null === $data)
+		{
+			$data = $this->data;
+		}
+		$option = $this->getOption();
+		foreach($data as $index => $item)
+		{
+			$result = $this->__saveBefore($data[$index],$option);
+			if(null !== $result && true !== $result)
+			{
+				return false;
+			}
+			$result = $this->__addBefore($data[$index],$option);
+			if(null !== $result && true !== $result)
+			{
+				return false;
+			}
+			$data[$index] = $this->parseSaveData($data[$index], false);
+		}
+		$this->db->operationOption = $option;
+		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $data, $return);
+		if(!$saveResult)
+		{
+			$this->error = '数据库操作失败';
+			return false;
+		}
+		$result = $this->__saveAfter($data,$saveResult,$option);
+		if(null === $result || true === $result)
+		{
+			$result = $this->__addAfter($data,$saveResult,$option);
+			if(null === $result || true === $result)
+			{
+				return $saveResult;
+			}
+		}
+		return false;
+	}
 	
 	/**
 	 * 编辑数据

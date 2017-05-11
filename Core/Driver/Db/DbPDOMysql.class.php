@@ -179,6 +179,31 @@ class DbPDOMysql extends DbPDOBase
 	}
 
 	/**
+	 * 构建批量INSERT语句
+	 * @param string $table 
+	 * @param array $data 
+	 * @return string 
+	 */
+	public function buildInsertBatchSQL($table = null, $data = array())
+	{
+		$keys = array_keys($data[0]);
+		$values = array();
+		foreach($data as $item)
+		{
+			$params = array();
+			foreach($keys as $key)
+			{
+				$paramName = ':' . $this->getParamName();
+				$this->bindValue($paramName, $item[$key]);
+				$params[] = $paramName;
+			}
+			$values[] = '(' . implode(',', $params) . ')';
+		}
+		$this->operationOption['params'] = array();
+		return 'insert into ' . $this->parseTable($table) . ' (' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values ' . implode(',', $values) . $this->parseLock();
+	}
+
+	/**
 	 * 构建UPDATE语句
 	 * @param string $table 
 	 * @param array $data 

@@ -22,7 +22,7 @@ trait TDbOperation
 		// 记录sql语句和参数
 		$this->lastSql = $sql;
 		$this->lastSqlParams = $params;
-		if(empty($params))
+		if(empty($params) && empty($this->bindValues))
 		{
 			// 没有参数的查询
 			$result = $this->lastStmt = $this->handler->query($sql);
@@ -201,6 +201,15 @@ trait TDbOperation
 	}
 
 	/**
+	 * 批量插入数据
+	 * @return mixed 
+	 */
+	public function insertBatch()
+	{
+		return $this->parseIUD(func_get_args(),'InsertBatch');
+	}
+
+	/**
 	 * 更新数据
 	 * @return mixed 
 	 */
@@ -219,7 +228,7 @@ trait TDbOperation
 	}
 
 	/**
-	 * 处理Insert、Update、Delete
+	 * 处理Insert、InsertBatch、Update、Delete
 	 * @param mixed $args 
 	 * @param mixed $operation 
 	 * @return mixed 
@@ -251,11 +260,7 @@ trait TDbOperation
 			}
 			$return = Db::RETURN_ISOK;
 		}
-		if(!isset($this->operationOption['params']))
-		{
-			$this->operationOption['params'] = array();
-		}
-		$result = $this->execute($this->{'build' . $operation . 'SQL'}($table, $data),$this->operationOption['params']);
+		$result = $this->execute($this->{'build' . $operation . 'SQL'}($table, $data));
 		if(Db::RETURN_ROWS === $return)
 		{
 			return $this->rowCount();
@@ -677,6 +682,14 @@ trait TDbOperation
 	 * @return string 
 	 */
 	abstract public function buildInsertSQL($table = null, $data = array());
+
+	/**
+	 * 构建批量INSERT语句
+	 * @param string $table 
+	 * @param array $data 
+	 * @return string 
+	 */
+	abstract public function buildInsertBatchSQL($table = null, $data = array());
 
 	/**
 	 * 构建UPDATE语句
