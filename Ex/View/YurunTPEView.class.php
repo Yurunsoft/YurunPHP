@@ -416,6 +416,11 @@ PHP
 	}
 	private static function initConst()
 	{
+		$webroot = Request::getHome();
+		if('/' === substr($webroot,-1,1))
+		{
+			$webroot = substr($webroot,0,-1);
+		}
 		$consts = array(
 			'__MODULE__'	=>	Dispatch::module(),				// 当前模块名
 			'__CONTROL__'	=>	Dispatch::control(),			// 当前控制器名
@@ -423,7 +428,7 @@ PHP
 			'__DYNAMIC_MODULE__'	=>	'Dispatch::module()',	// 当前模块名
 			'__DYNAMIC_CONTROL__'	=>	'Dispatch::control()',	// 当前控制器名
 			'__DYNAMIC_ACTION__'	=>	'Dispatch::action()',	// 当前动作名
-			'__WEBROOT__'	=>	Request::getHome(),				// 站点根目录
+			'__WEBROOT__'	=>	$webroot,						// 站点根目录
 			'__STATIC__'	=>	STATIC_PATH,					// 静态文件目录
 			'__THEME__'		=>	Config::get('@.THEME')			// 当前主题名
 		);

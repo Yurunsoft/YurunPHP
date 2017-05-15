@@ -210,6 +210,11 @@ class View extends ArrayData
 	 */
 	public function display($template = null, $theme = null)
 	{
+		Event::trigger('YURUN_DISPLAY_BEFORE',array('thisObj'=>$this,'template'=>&$template,'theme'=>&$theme,'result'=>&$result));
+		if($result)
+		{
+			return;
+		}
 		// 设置内容类型和编码
 		header('Content-type: ' . $this->contentType . '; charset=utf-8');
 		if(empty($theme))
@@ -219,6 +224,7 @@ class View extends ArrayData
 		$this->themeStack[] = $theme;
 		$this->showTemplate($template,$theme);
 		array_pop($this->themeStack);
+		Event::trigger('YURUN_DISPLAY_AFTER',array('thisObj'=>$this,'template'=>&$template,'theme'=>&$theme,'result'=>&$result));
 	}
 	
 	/**
@@ -229,6 +235,7 @@ class View extends ArrayData
 	 */
 	public function getHtml($template = null, $theme = null)
 	{
+		Event::trigger('YURUN_DISPLAY_BEFORE',array('thisObj'=>$this,'template'=>&$template,'theme'=>&$theme,'result'=>&$result));
 		// 解析出模版文件名
 		$file = $this->getTemplateFile($template, $theme);
 		$this->pathStack[] = dirname($file).'/';
@@ -241,7 +248,9 @@ class View extends ArrayData
 		flock($fp,LOCK_SH);
 		include $file;
 		fclose($fp);
-		return ob_get_clean();
+		$content = ob_get_clean();
+		Event::trigger('YURUN_DISPLAY_AFTER',array('thisObj'=>$this,'template'=>&$template,'theme'=>&$theme,'result'=>&$result));
+		return $content;
 	}
 	
 

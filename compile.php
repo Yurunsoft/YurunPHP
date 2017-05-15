@@ -22,6 +22,7 @@ while (false !== ($file = $dir->read()))
 		}
 	}
 }
+$result .= includeFile(__DIR__ . '/Core/Traits/TLinkOperation.trait.php');
 $dir->close();
 // 加载驱动
 $dir = dir(__DIR__ . '/Core/Driver/');
@@ -32,7 +33,14 @@ while (false !== ($file = $dir->read()))
 		$fileName = __DIR__ . '/Core/Driver/' . $file;
 		if(is_dir($fileName))
 		{
-			$baseFileName = $file . 'Base.class.php';
+			if('Db' === $file)
+			{
+				$baseFileName = $file . 'PDOBase.class.php';
+			}
+			else
+			{
+				$baseFileName = $file . 'Base.class.php';
+			}
 			$baseFileNames = array($baseFileName);
 			$result .= includeFile($fileName . '/' . $baseFileName);
 			switch($file)
@@ -56,10 +64,10 @@ while (false !== ($file = $dir->read()))
 	}
 }
 $dir->close();
-$yurunContent = strip_whitespace(file_get_contents('Yurun.php'));
+$yurunContent = strip_whitespace(file_get_contents(__DIR__.'/Yurun.php'));
 $yurunContent = substr($yurunContent, 5);
 $result = '<?php define(\'IS_COMPILE\',true);' . $result . $yurunContent;
-file_put_contents('Yurun-min.php', $result,LOCK_EX);
+file_put_contents(__DIR__.'/Yurun-min.php', $result,LOCK_EX);
 header('Content-type: text/html; charset=utf-8');
 echo '生成成功！';
 /**

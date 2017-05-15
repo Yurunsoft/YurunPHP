@@ -9,7 +9,7 @@ class Yurun
 	/**
 	 * 框架版本号
 	 */
-	const YURUN_VERSION = '2.0.1 Beta';
+	const YURUN_VERSION = '2.0.0 Beta';
 	/**
 	 * 框架核心设置
 	 * @var array 
@@ -85,11 +85,6 @@ class Yurun
 		}
 		// 静态文件目录
 		define('STATIC_PATH',$staticPath);
-		// 自动启动session
-		if(Config::get('@.SESSION_AUTO_OPEN'))
-		{
-			Session::start();
-		}
 		// 初始化路由规则
 		Dispatch::initRouteRules();
 		Dispatch::resolve();
@@ -97,6 +92,11 @@ class Yurun
 		self::$routeResolveComplete = true;
 		// 释放变量
 		unset($file,$str,$staticPath);
+		// CLI处理
+		if(IS_CLI)
+		{
+			exec('chcp 65001'); // 编码设为UTF-8防止乱码
+		}
 		Dispatch::exec();
 	}
 	public static function autoload($class)
@@ -157,7 +157,23 @@ class Yurun
 				}
 				if($canInclude)
 				{
-					$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR . $file;
+					if(isset($rule['filepath']))
+					{
+						$filePath = parseAutoloadPath($rule['filepath'],$class,$rule['word']);
+					}
+					else
+					{
+						$filePath = parseAutoloadPath($rule['path'],$class,$rule['word']) . DIRECTORY_SEPARATOR;
+						// 扩展名支持
+						if(isset($rule['ext']))
+						{
+							$filePath .= $class . $rule['ext'];
+						}
+						else
+						{
+							$filePath .= $file;
+						}
+					}
 					if(self::$routeResolveComplete)
 					{
 						$files = array (
@@ -266,6 +282,11 @@ class Yurun
 			ob_end_clean();
 			self::printError($e);
 		}
+		else
+		{
+			Event::trigger('YURUN_SHUTDOWN');
+		}
+		Session::save();
 		if(class_exists('Log',false))
 		{
 			Log::save();

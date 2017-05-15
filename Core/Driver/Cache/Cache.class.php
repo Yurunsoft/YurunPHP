@@ -131,8 +131,8 @@ abstract class Cache extends Driver
 	{
 		if (null === self::$pageCacheName)
 		{
-			self::$pageCacheName = urlencode($_SERVER['HTTP_HOST'] . '#' . $_SERVER['REQUEST_URI']) . serialize($_REQUEST);
+			self::$pageCacheName = urlencode($_SERVER['HTTP_HOST'] . '#' . $_SERVER['REQUEST_URI']) . serialize(array_merge($_GET, $_POST));
 		}
-		return self::$pageCacheName;
+		return md5(self::$pageCacheName);
 	}
 }

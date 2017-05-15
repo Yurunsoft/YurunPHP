@@ -41,16 +41,26 @@ function require_once_multi($files, $all = true)
 /**
  * 按别名导入文件，在配置文件IMPORT项中配置
  */
-function import($name)
+function import()
 {
-	$filePath = Config::get('@.IMPORT.' . $name);
-	if(false === $filePath)
+	if(null === Yurun::$config)
 	{
-		return false;
+		$args = func_get_args();
+		Event::register('YURUN_APP_ONLOAD',function()use($args){
+			call_user_func_array('import', $args);
+		});
 	}
 	else
 	{
-		require_once $filePath;
+		$names = func_get_args();
+		foreach($names as $name)
+		{
+			$filePath = Config::get('@.IMPORT.' . str_replace('.','\.',$name));
+			if(false !== $filePath)
+			{
+				require_once $filePath;
+			}
+		}
 	}
 }
 /**
@@ -474,30 +484,15 @@ function unparse_url($parsed_url)
  */
 function parseStatic($src)
 {
-	$str = substr($src,0,7);
-	if('http://'===$str || 'https:/'===$str)
+	$arr = explode('//',$src);
+	if(isset($arr[1]))
 	{
 		// 绝对地址
 		return $src;
 	}
 	else
 	{
-		$staticPath = Config::get('@.PATH_STATIC','');
-		if('/'!==substr($staticPath,-1,1))
-		{
-			$staticPath .= '/';
-		}
-		$str = substr($staticPath,0,7);
-		if('http://'===$str || 'https:/'===$str)
-		{
-			// 静态文件是某域名下的
-			return $staticPath . $src;
-		}
-		else
-		{
-			// 静态文件是网站根目录下的
-			return Request::getHome($staticPath . $src);
-		}
+		return STATIC_PATH . '/' . $src;
 	}
 }
 /**
@@ -532,4 +527,13 @@ function parseMuiltLine($text,$newLineSplit = PHP_EOL)
 function parseAutoloadPath($rule,$class = '',$word = '')
 {
 	return str_replace('%word', $word, str_replace('%class', $class, $rule));
+}
+/**
+ * 判断数组是否为关联数组
+ * @param array $array 
+ * @return bool 
+ */
+function isAssocArray($array)
+{  
+    return array_keys($array) !== range(0, count($array) - 1);  
 }

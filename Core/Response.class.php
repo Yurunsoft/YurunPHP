@@ -180,7 +180,7 @@ JS
 				'spl' => 'application/x-futuresplash',
 				'gtar' => 'application/x-gtar',
 				'hdf' => 'application/x-hdf',
-				'js' => 'application/x-javascript',
+				'js' => 'application/javascript',
 				'skp' => 'application/x-koan',
 				'skd' => 'application/x-koan',
 				'skt' => 'application/x-koan',
@@ -292,5 +292,47 @@ JS
 	public static function setDownFile($fileName)
 	{
 		header('Content-Disposition: attachment; filename=' . $fileName);
+	}
+    
+    /**
+     * 发送Last-Modified头.时间验证匹配返回true，不匹配返回false。
+     * @param string $modifiedTime 最后修改时间
+     * @param bool $notModifiedExit
+     */
+    public static function lastModified($modifiedTime, $notModifiedExit = true)
+    {
+		$modifiedTime = gmdate('D, d M Y H:i:s', $modifiedTime) . ' GMT';
+		header("Last-Modified: {$modifiedTime}");
+		if ($notModifiedExit && isset($_SERVER['HTTP_IF_MODIFIED_SINCE']) && $modifiedTime === $_SERVER['HTTP_IF_MODIFIED_SINCE'])
+		{
+			self::status(304);
+            return true;
+		}
+        return false;
+	}
+	/**
+	 * 发送expires头
+	 * @param int $seconds 缓存描述
+	 */
+	public static function expires($seconds)
+	{
+		$time = gdate('D, d M Y H:i:s', $_SERVER['REQUEST_TIME'] + $seconds) . ' GMT';
+		header("Expires: {$time}");
+	}
+	/**
+	 * 发送eTag头。etag验证匹配返回true，不匹配返回false。
+	 * @param string $etag 
+	 * @param bool $notModifiedExit 
+     * @return bool
+	 */
+	public static function eTag($etag, $notModifiedExit = true)
+	{
+		header("Etag: {$etag}");
+		if ($notModifiedExit && isset($_SERVER['HTTP_IF_NONE_MATCH']) && $etag === $_SERVER['HTTP_IF_NONE_MATCH'])
+		{
+			self::status(304);
+            return true;
+		}
+        return false;
 	}
 }

@@ -43,6 +43,15 @@ class Dispatch
 	 */
 	public static function resolve()
 	{
+		$params = array('module'=>&$module,'control'=>&$control,'action'=>&$action,'result'=>&$result);
+		Event::trigger('YURUN_ROUTE_RESOLVE',$params);
+		if($params['result'])
+		{
+			self::$module = $module;
+			self::$control = $control;
+			self::$action = $action;
+			return;
+		}
 		// 路由解析
 		if(IS_CLI)
 		{
@@ -426,6 +435,12 @@ class Dispatch
 	public static function exec($rule = null, $pageNotFound = true)
 	{
 		self::switchMCA($rule);
+		$params = array('result'=>&$result);
+		Event::trigger('YURUN_DISPATCH',$params);
+		if($params['result'])
+		{
+			return;
+		}
 		// 载入模块配置
 		Config::removeInstance('Module');
 		Config::create(array(
@@ -540,7 +555,7 @@ class Dispatch
 	 * @param bool	$noEvent 是否强制不触发生成事件，默认为false
 	 * @return type
 	 */
-	public static function url($rule = null, $param = null, $subDomain = null, $noEvent = false)
+	public static function url($rule = null, $param = null, $subDomain = null, $noEvent = false, $scheme = '')
 	{
 		// 支持数组和文本两种数据格式
 		if(empty($param))
@@ -635,17 +650,24 @@ class Dispatch
 			}
 		}
 		// 协议，http、https……
-		if(isset($urlInfo['scheme']))
+		if('' === $scheme)
 		{
-			$protocol=$urlInfo['scheme'];
+			if(isset($urlInfo['scheme']))
+			{
+				$protocol=$urlInfo['scheme'];
+			}
+			else
+			{
+				$protocol = Config::get('@.URL_PROTOCOL');
+				if(empty($protocol))
+				{
+					$protocol=Request::getProtocol();
+				}
+			}
 		}
 		else
 		{
-			$protocol = Config::get('@.URL_PROTOCOL');
-			if(empty($protocol))
-			{
-				$protocol=Request::getProtocol();
-			}
+			$protocol = $scheme;
 		}
 		// 域名
 		if(isset($urlInfo['host']))

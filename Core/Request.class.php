@@ -77,26 +77,26 @@ class Request
 	 * @param string $path
 	 * @return string
 	 */
-	public static function getHome($path = '')
+	public static function getHome($path = '',$scheme = '')
 	{
 		$domain = Config::get('@.DOMAIN');
 		if(empty($domain))
 		{
-			$domain = $_SERVER['HTTP_HOST'];
+			$domain = $_SERVER['HTTP_HOST'] . strtr(dirname($_SERVER['SCRIPT_NAME']), '\\','/');
 		}
-		if('' === $path || '/' === $path[0])
+		if('' === $scheme)
 		{
-			return self::getProtocol() . $domain . $path;
-		}
-		else
-		{
-			$dir = dirname($_SERVER['SCRIPT_NAME']);
-			if('\\' === $dir)
+			$scheme = Config::get('@.URL_PROTOCOL');
+			if(empty($scheme))
 			{
-				$dir = '';
+				$scheme=Request::getProtocol();
 			}
-			return self::getProtocol()."{$domain}{$dir}/{$path}";
 		}
+		if((!isset($path[0]) || '/' !== $path[0]) && '/' !== substr($domain,-1,1))
+		{
+			$path = '/' . $path;
+		}
+		return $scheme . $domain . $path;
 	}
 	/**
 	 * 魔术方法

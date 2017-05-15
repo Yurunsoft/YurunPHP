@@ -44,6 +44,10 @@ return array (
 	'AUTOLOAD_RULES'	=>	array(
 		array('type'=>'FirstWord','word'=>'YC','path'=>'Ex/Component/%class'),
 		array('type'=>'LastWord','word'=>'Component','path'=>'Ex/Component'),
+		array('type'=>'Word','word'=>'IDb','path'=>'Core/Driver/Db','ext'=>'.implements.php'),
+		array('type'=>'Word','word'=>'TDbOperation','path'=>'Core/Driver/Db','ext'=>'.trait.php'),
+		array('type'=>'Word','word'=>'TDbSQLHelper','path'=>'Core/Driver/Db','ext'=>'.trait.php'),
+		array('type'=>'Word','word'=>'TLinkOperation','path'=>'Core/Traits','ext'=>'.trait.php'),
 		array('type'=>'Path','path'=>'Lib'),
 		array('type'=>'Path','path'=>'Lib/%class'),
 	),
@@ -93,7 +97,7 @@ return array (
 	// 模型是否自动获取字段信息
 	'MODEL_AUTO_FIELDS'		=>	true,
 	// 是否对模型字段缓存
-	'MODEL_FIELDS_CACHE'	=>	true,
+	'MODEL_FIELDS_CACHE'	=>	false,
 	
 	/**
 	 * 数据库部分
@@ -182,6 +186,8 @@ return array (
 	 */
 	// 是否记录PHP异常和错误
 	'LOG_ERROR'			=>	true,
+	// 在命令行模式下是否每条日志都触发保存操作，对长时间运行的cli操作应该设置为true，否则不会在日志中看到记录
+	'LOG_CLI_AUTOSAVE'	=>	false,
 	// 日志路径
 	'LOG_PATH'			=>	'Logs',
 	// 日志驱动配置

@@ -327,11 +327,6 @@ class YCBase extends ArrayData
 				$params = array();
 			}
 			$db = Db::getInstance();
-			if(null === $db)
-			{
-				new Model;
-				$db = Db::getInstance();
-			}
 			if(null !== $db)
 			{
 				$db->execProc($this->proc,$params);
