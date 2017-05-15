@@ -1,29 +1,25 @@
-#简介
+# 简介
 YurunPHP是一款MVC开源PHP框架，它的一切都是根据实际项目需求总结归纳而出，力争减少开发者在项目开发中的重复工作量。它经历了许多大小项目的考验（其中不乏年销售额上亿的系统），不断完善改进，已经十分成熟。
 
 YurunPHP框架支持PHP 5.3-7.x 版本，兼容 Windows / Linux 。
 
-#仓库地址
+# 仓库地址
 
 Github仓库：https://github.com/Yurunsoft/YurunPHP
 
-Coding仓库：https://coding.net/u/yurunsoft/p/YurunPHP/git
-
 码云仓库：http://git.oschina.net/yurunsoft/YurunPHP
 
-#文档手册
+# 文档手册
 
 YurunPHP 2.x 开发手册：http://www.kancloud.cn/yurun/yurunphp2
 
 YurunPHP 1.x 开发手册：http://www.kancloud.cn/yurun/php-framework-1_0
 
-#开源项目
+# 开源项目
 
 YurunBlog
 
 Github仓库：https://github.com/Yurunsoft/YurunBlog
-
-Coding：https://coding.net/u/yurunsoft/p/YurunBlog/git
 
 码云仓库：http://git.oschina.net/yurunsoft/YurunBlog
 
@@ -31,7 +27,7 @@ YurunPHP最新消息都会在官网以及QQ中发布，欢迎关注，共同学�
 
 宇润PHP技术交流群：74401592
 
-#YurunPHP 2
+# YurunPHP 2
 
 * 进行了小范围重构，减少内存占用，少量提升性能
 * 命令行CLI模式支持
@@ -43,7 +39,7 @@ YurunPHP最新消息都会在官网以及QQ中发布，欢迎关注，共同学�
 * 支持将Session保存至数据库
 * 新增一个XML转换类
 
-#特色功能
+# 特色功能
 
 > * **双向路由：**解析、生成一步到位
 > * **动态分层架构：**除了常见的Control、Model、View，开发者还可通过配置文件自定义分层
@@ -60,5 +56,5 @@ YurunPHP最新消息都会在官网以及QQ中发布，欢迎关注，共同学�
 > * **驱动扩展：**内置Redis、Memcache等常用驱动，通过配置文件即可使用
 > * **其它：**缓存、配置、数据库、错误日志记录、多语言支持、Session、Cookie、Request、Response
 
-#开源协议
+# 开源协议
 Apache Licence是著名的非盈利开源组织Apache采用的协议。该协议和BSD类似，同样鼓励代码共享和尊重原作者的著作权，同样允许代码修改，再发布（作为开源或商业软件）。
