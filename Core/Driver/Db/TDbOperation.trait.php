@@ -707,11 +707,11 @@ trait TDbOperation
 	abstract public function buildDeleteSQL($table = null);
 
 	/**
-	 * 获得随机的参数名
+	 * 获得参数名
 	 * @return string 
 	 */
 	protected function getParamName()
 	{
-		return 'rnd_' . (++$this->randomParamNum);
+		return 'p' . (++$this->randomParamNum);
 	}
 }
