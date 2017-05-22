@@ -278,6 +278,10 @@ class Yurun
 			if(Config::get('@.LOG_ERROR'))
 			{
 				Log::add("错误:{$e['message']} 文件:{$e['file']} 行数:{$e['line']}");
+				if(isset($GLOBALS['debug']['lastsql']))
+				{
+					Log::add('最后执行的SQL语句:' . $GLOBALS['debug']['lastsql']);
+				}
 			}
 			ob_end_clean();
 			self::printError($e);
@@ -308,6 +312,10 @@ class Yurun
 			if(Config::get('@.LOG_ERROR'))
 			{
 				Log::add("错误:{$error['message']} 文件:{$error['file']} 行数:{$error['line']}");
+				if(isset($GLOBALS['debug']['lastsql']))
+				{
+					Log::add('最后执行的SQL语句:' . $GLOBALS['debug']['lastsql']);
+				}
 			}
 			self::printError($error);
 		}
@@ -320,6 +328,10 @@ class Yurun
 		if(Config::get('@.LOG_ERROR'))
 		{
 			Log::add('错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
+			if(isset($GLOBALS['debug']['lastsql']))
+			{
+				Log::add('最后执行的SQL语句:' . $GLOBALS['debug']['lastsql']);
+			}
 		}
 		ob_end_clean();
 		self::printError($exception);
