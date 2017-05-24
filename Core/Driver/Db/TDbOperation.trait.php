@@ -712,6 +712,6 @@ trait TDbOperation
 	 */
 	protected function getParamName()
 	{
-		return 'p' . (++$this->randomParamNum);
+		return 'p' . dechex(++$this->randomParamNum);
 	}
 }
