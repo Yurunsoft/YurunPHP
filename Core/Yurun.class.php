@@ -273,7 +273,9 @@ class Yurun
 	 */
 	public static function onShutdown()
 	{
-		if ($e = error_get_last() && in_array($e['type'],array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR)))
+		Event::trigger('YURUN_SHUTDOWN');
+		$e = error_get_last();
+		if (in_array($e['type'],array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR)))
 		{
 			if(Config::get('@.LOG_ERROR'))
 			{
@@ -283,17 +285,17 @@ class Yurun
 					Log::add('最后执行的SQL语句:' . $GLOBALS['debug']['lastsql']);
 				}
 			}
-			ob_end_clean();
-			self::printError($e);
-		}
-		else
-		{
-			Event::trigger('YURUN_SHUTDOWN');
+			$hasError = true;
 		}
 		Session::save();
 		if(class_exists('Log',false))
 		{
 			Log::save();
+		}
+		if($hasError)
+		{
+			ob_end_clean();
+			self::printError($e);
 		}
 	}
 	/**
@@ -301,6 +303,12 @@ class Yurun
 	 */
 	public static function onError($errno, $errstr, $errfile, $errline)
 	{
+		Event::trigger('YURUN_ERROR', array(
+			'type'		=>	$errno,
+			'message'	=>	$errstr,
+			'file'		=>	$errfile,
+			'line'		=>	$errline,
+		));
 		if(in_array($errno,array(E_ERROR,E_PARSE,E_CORE_ERROR,E_COMPILE_ERROR,E_USER_ERROR)))
 		{
 			ob_end_clean();
@@ -325,6 +333,7 @@ class Yurun
 	 */
 	public static function onException($exception)
 	{
+		Event::trigger('YURUN_EXCEPTION', $exception);
 		if(Config::get('@.LOG_ERROR'))
 		{
 			Log::add('错误:'.$exception->getMessage().' 文件:'.$exception->getFile().' 行数:'.$exception->getLine());
