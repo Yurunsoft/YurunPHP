@@ -261,7 +261,45 @@ class Model extends ArrayData
 		$this->__selectAfter($data,$option);
 		return $data;
 	}
-	
+
+	/**
+	 * 分页查询，获取总记录数
+	 * @param int $page
+	 * @param int $show
+	 * @param int $recordCount
+	 * @return array
+	 */
+	public function &selectPageEx($page = 1,$show = 10,&$recordCount = null)
+	{
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
+		$option = $this->operationOption;
+		if(null === $recordCount)
+		{
+			// 去除排序，提高效率
+			if(isset($this->operationOption['order']))
+			{
+				unset($this->operationOption['order']);
+			}
+			$recordCount = $this->count();
+		}
+		$this->operationOption = $option;
+		$this->operationOption['field'] = array($this->tableName() . '.' . $this->pk);
+		$this->db->operationOption = $this->page($page,$show)->getOption();
+		$pks = $this->db->queryColumn();
+
+		$this->operationOption = $option;
+		$this->operationOption['where'] = array(
+			array($this->tableName() . '.' . $this->pk => array('in', $pks))
+		);
+		$this->db->operationOption = $this->getOption();
+		$data = $this->db->query();
+		$this->__selectAfter($data,$option);
+		return $data;
+	}
+
 	/**
 	 * 结尾方法自定义处理
 	 * @param array $arguments 
