@@ -43,7 +43,7 @@ class YurunTPEView
 		self::initConst();
 		self::$isInit = true;
 	}
-	public function &parse($file)
+	public function parse($file)
 	{
 		$html = file_get_contents($file);
 		$this->parseConst($html);
@@ -402,7 +402,7 @@ PHP
 					'<?php echo Dispatch::url(\\1);?>',
 					$html);
 	}
-	private function &parseAttrsString($attrs)
+	private function parseAttrsString($attrs)
 	{
 		$attrsStr = '';
 		if(is_array($attrs))

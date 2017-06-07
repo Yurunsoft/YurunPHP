@@ -206,7 +206,7 @@ function autoNumber(&$arr,$name)
  * @param array $array
  * @return array
  */
-function &arrayRefer(&$array)
+function arrayRefer(&$array)
 {
 	$result=array();
 	foreach($array as &$item)
@@ -277,7 +277,7 @@ function arrayColumnToKey(&$array,$column,$keepOld = false)
  * @param int $lengthEnd 长度结束
  * @return string
  */
-function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
+function convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 {
 	$result = null;
 	if('int' === $type)
@@ -350,7 +350,7 @@ function checkRegexTypeValue($type,$lengthStart = null,$lengthEnd = null,$value)
  * 处理name按.分隔，支持\.转义不分隔
  * @param string $name
  */
-function &parseCfgName($name)
+function parseCfgName($name)
 {
 	$result = preg_split('#(?<!\\\)\.#', $name);
 	array_walk($result,function(&$value,$key){
@@ -366,7 +366,7 @@ function &parseCfgName($name)
  * @param string $control
  * @param string $action
  */
-function &autoLoadControl($control,$action)
+function autoLoadControl($control,$action)
 {
 	$currModulePath = APP_MODULE . Dispatch::module() . '/Control/';
 	$controlFile = $control . 'Control.class.php';
@@ -401,7 +401,7 @@ function &autoLoadControl($control,$action)
  * @param string $group
  * @return array
  */
-function &getDataByGroup($group,$method = 'all')
+function getDataByGroup($group,$method = 'all')
 {
 	$fields = getFieldsByGroup($group,$method);
 	$data = array();
@@ -417,7 +417,7 @@ function &getDataByGroup($group,$method = 'all')
  * @param string $group
  * @return array
  */
-function &getDataArrayByGroup($group,$method = 'all')
+function getDataArrayByGroup($group,$method = 'all')
 {
 	$fields = getFieldsByGroup($group,$method);
 	$data = array();
@@ -442,7 +442,7 @@ function &getDataArrayByGroup($group,$method = 'all')
  * @param string $group
  * @return array
  */
-function &getFieldsByGroup($group,$method = 'all')
+function getFieldsByGroup($group,$method = 'all')
 {
 	$isGroup = '' !== $group && null !== $group;
 	$group = $isGroup ? ($group . '_') : '';

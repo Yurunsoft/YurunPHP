@@ -145,7 +145,7 @@ class Model extends ArrayData
 	 * @param string $table 数据表名
 	 * @return Model
 	 */
-	public static function &obj($model='',$table=null)
+	public static function obj($model='',$table=null)
 	{
 		$ref = new ReflectionClass(ucfirst($model) . 'Model');
 		$args = func_get_args();
@@ -239,7 +239,7 @@ class Model extends ArrayData
 	 * @param int $recordCount
 	 * @return array
 	 */
-	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
+	public function selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
 		if($this->isSelectBefore)
 		{
@@ -269,7 +269,7 @@ class Model extends ArrayData
 	 * @param int $recordCount
 	 * @return array
 	 */
-	public function &selectPageEx($page = 1,$show = 10,&$recordCount = null)
+	public function selectPageEx($page = 1,$show = 10,&$recordCount = null)
 	{
 		if($this->isSelectBefore)
 		{
@@ -393,7 +393,7 @@ class Model extends ArrayData
 	 * 根据字段查询记录
 	 * @return mixed
 	 */
-	public function &selectBy($field,$value)
+	public function selectBy($field,$value)
 	{
 		return $this->where(array($this->tableName() . '.' . $field=>$value))->select();
 	}
@@ -401,7 +401,7 @@ class Model extends ArrayData
 	 * 根据字段获取一条记录
 	 * @return mixed
 	 */
-	public function &getBy($field,$value)
+	public function getBy($field,$value)
 	{
 		return $this->where(array($this->tableName() . '.' . $field=>$value))->getOne();
 	}
@@ -411,7 +411,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function &randomEx($num = 1)
+	public function randomEx($num = 1)
 	{
 		if($this->isSelectBefore)
 		{
@@ -443,7 +443,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function &random($num = 1)
+	public function random($num = 1)
 	{
 		if($this->isSelectBefore)
 		{
@@ -743,7 +743,7 @@ class Model extends ArrayData
 	 * 获取连贯配置
 	 * @return array
 	 */
-	public function &getOption()
+	public function getOption()
 	{
 		$option = $this->operationOption;
 		// 清空连贯配置
@@ -839,7 +839,7 @@ class Model extends ArrayData
 	 * @param int $type        	
 	 * @return array
 	 */
-	public function &parseFieldsMap($data = null, $type = Model::TO_DB)
+	public function parseFieldsMap($data = null, $type = Model::TO_DB)
 	{
 		if (null === $data)
 		{
@@ -1042,7 +1042,7 @@ class Model extends ArrayData
 	 * @param int $id
 	 * @return array
 	 */
-	public function &getByPk($value)
+	public function getByPk($value)
 	{
 		return $this->wherePk($value)
 					->limit(1)
