@@ -289,7 +289,10 @@ class Model extends ArrayData
 		$this->operationOption['field'] = array($this->tableName() . '.' . $this->pk);
 		$this->db->operationOption = $this->page($page,$show)->getOption();
 		$pks = $this->db->queryColumn();
-
+		if(!isset($pks[0]))
+		{
+			return array();
+		}
 		$this->operationOption = $option;
 		$this->operationOption['where'] = array(
 			array($this->tableName() . '.' . $this->pk => array('in', $pks))
