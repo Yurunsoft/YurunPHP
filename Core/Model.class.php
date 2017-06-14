@@ -542,7 +542,7 @@ class Model extends ArrayData
 		{
 			$data = $this->data;
 		}
-		$option = $this->getOption();
+		$option = $this->operationOption;
 		foreach($data as $index => $item)
 		{
 			$result = $this->__saveBefore($data[$index],$option);
@@ -558,6 +558,7 @@ class Model extends ArrayData
 			$data[$index] = $this->parseSaveData($data[$index], false);
 		}
 		$this->db->operationOption = $option;
+		$this->operationOption = array();
 		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $data, $return);
 		if(!$saveResult)
 		{
@@ -782,7 +783,14 @@ class Model extends ArrayData
 		{
 			foreach($this->operationOption['table'] as $table => $alias)
 			{
-				return $table;
+				if(is_numeric($table))
+				{
+					return $alias;
+				}
+				else
+				{
+					return $table;
+				}
 			}
 			return $this->tableName();
 		}
