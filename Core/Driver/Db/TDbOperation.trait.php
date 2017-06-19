@@ -548,6 +548,10 @@ trait TDbOperation
 							}
 						}
 					}
+					else if(is_numeric($key))
+					{
+						$result .= $value;
+					}
 					else
 					{
 						// 直接等于
