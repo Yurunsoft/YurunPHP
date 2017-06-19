@@ -7,9 +7,9 @@
 // 记录开始执行时间
 define('YURUN_START', microtime(true));
 // 判断PHP版本
-if (PHP_VERSION < 5.3)
+if (PHP_VERSION < 5.4)
 {
-	exit('运行YurunPHP框架需要最低PHP 5.3版本！');
+	exit('运行YurunPHP框架需要最低PHP 5.4版本！');
 }
 // 是否编译模式
 defined('IS_COMPILE') or define('IS_COMPILE',false);
