@@ -22,6 +22,32 @@ class DbPDOMysql extends DbPDOBase
 	);
 
 	/**
+	 * 驱动类型
+	 * @var string
+	 */
+	protected $type = 'Mysql';
+
+	/**
+	 * 是否初始化了链式操作
+	 * @var boolean
+	 */
+	private static $isInitLinkOperation = false;
+
+	/**
+	 * 构造方法
+	 * @param array $option 
+	 */
+	public function __construct($option = array())
+	{
+		parent::__construct($option);
+		if(!self::$isInitLinkOperation)
+		{
+			self::$operations['fieldBefore'] = array();
+			self::$isInitLinkOperation = true;
+		}
+	}
+
+	/**
 	 * 构建DNS字符串
 	 * @param array $option 
 	 * @return string 
@@ -145,6 +171,7 @@ class DbPDOMysql extends DbPDOBase
 			$where = 'where ' . $where . ' ';
 		}
 		return 'select ' . $this->parseDistinct()
+				. $this->parseFieldBefore()
 				. $this->parseField(null,'*')
 				. 'from '
 				. $this->parseTable() . ' '
@@ -315,6 +342,22 @@ class DbPDOMysql extends DbPDOBase
 			{
 				return ' FOR UPDATE';
 			}
+		}
+		else
+		{
+			return '';
+		}
+	}
+
+	/**
+	 * parseFieldBefore
+	 * @return string
+	 */
+	public function parseFieldBefore()
+	{
+		if(isset($this->operationOption['fieldBefore']))
+		{
+			return implode(' ', $this->operationOption['fieldBefore']) . ' ';
 		}
 		else
 		{

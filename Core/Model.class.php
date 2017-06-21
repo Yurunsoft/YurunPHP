@@ -248,16 +248,32 @@ class Model extends ArrayData
 		$option = $this->operationOption;
 		if(null === $recordCount)
 		{
-			// 去除排序，提高效率
-			if(isset($this->operationOption['order']))
+			if('Mysql' === $this->db->getType())
 			{
-				unset($this->operationOption['order']);
+				$isMysqlCount = true;
 			}
-			$recordCount = $this->count();
+			else
+			{
+				// 去除排序，提高效率
+				if(isset($this->operationOption['order']))
+				{
+					unset($this->operationOption['order']);
+				}
+				$recordCount = $this->count();
+				$this->operationOption = $option;
+			}
 		}
-		$this->operationOption = $option;
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
+		}
+		$this->operationOption['field'][0] = array($fieldBefore . ' ' . $this->tableName() . '.' . $this->pk);
 		$this->db->operationOption = $this->page($page,$show)->getOption();
 		$data = $this->db->query();
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$recordCount = $this->db->getScalar('select FOUND_ROWS()');
+		}
 		$this->__selectAfter($data,$option);
 		return $data;
 	}
@@ -278,20 +294,35 @@ class Model extends ArrayData
 		$option = $this->operationOption;
 		if(null === $recordCount)
 		{
-			// 去除排序，提高效率
-			if(isset($this->operationOption['order']))
+			if('Mysql' === $this->db->getType())
 			{
-				unset($this->operationOption['order']);
+				$isMysqlCount = true;
 			}
-			$recordCount = $this->count();
+			else
+			{
+				// 去除排序，提高效率
+				if(isset($this->operationOption['order']))
+				{
+					unset($this->operationOption['order']);
+				}
+				$recordCount = $this->count();
+				$this->operationOption = $option;
+			}
 		}
-		$this->operationOption = $option;
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
+		}
 		$this->operationOption['field'] = array($this->tableName() . '.' . $this->pk);
 		$this->db->operationOption = $this->page($page,$show)->getOption();
 		$pks = $this->db->queryColumn();
 		if(!isset($pks[0]))
 		{
 			return array();
+		}
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$recordCount = $this->db->getScalar('select FOUND_ROWS()');
 		}
 		$this->operationOption = $option;
 		$this->operationOption['where'] = array(
