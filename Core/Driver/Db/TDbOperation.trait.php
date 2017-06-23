@@ -468,6 +468,33 @@ trait TDbOperation
 				$result .= $item;
 				continue;
 			}
+			if(isset($item['__str'], $item['__values']))
+			{
+				// 参数化绑定
+				if ('' !== $result)
+				{
+					// 不是第一个条件，默认加上 and
+					$result .= ' ' . $this->getOperator('and') . ' ';
+				}
+				$count = 0;
+				$result .= '(' . preg_replace_callback('/(((%)([bdsl]))|((:)([a-zA-Z0-9_-]+)))/', function($match)use($item, &$count){
+					$name = array_pop($match);
+					$prefix = array_pop($match);
+					switch($prefix)
+					{
+						case '%':
+							$paramName = ':' . $this->getParamName();
+							$this->bindValue($paramName, $item['__values'][$count++], $this->getPDOParamType($name));
+							return $paramName;
+							break;
+						case ':':
+							$this->bindValue($match[0], $item['__values'][$count++]);
+							return $match[0];
+							break;
+					}
+				}, $item['__str']) . ')';
+				continue;
+			}
 			foreach($item as $key => $value)
 			{
 				$skey = strtolower($key);
@@ -717,5 +744,25 @@ trait TDbOperation
 	protected function getParamName()
 	{
 		return 'p' . dechex(++$this->randomParamNum);
+	}
+
+	/**
+	 * 获取PDO参数类型
+	 * @param string $type
+	 * @return int
+	 */
+	public function getPDOParamType($type)
+	{
+		switch($type)
+		{
+			case 'b':
+				return PDO::PARAM_BOOL;
+			case 'd':
+				return PDO::PARAM_INT;
+			case 'l':
+				return PDO::PARAM_LOB;
+			default:
+				return PDO::PARAM_STR;
+		}
 	}
 }

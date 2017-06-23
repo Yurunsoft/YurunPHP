@@ -16,7 +16,7 @@ trait TLinkOperation
 		'field'			=>	array('merge'=>true),
 		'from'			=>	array('alias'=>'table','merge'=>true),
 		'table'			=>	array('merge'=>true),
-		'where'			=>	array('merge'=>true),
+		'where'			=>	array('custom'=>true),
 		'group'			=>	array('merge'=>true),
 		'having'		=>	array('merge'=>true),
 		'order'			=>	array('merge'=>true),
@@ -186,6 +186,7 @@ trait TLinkOperation
 			$this->operationOption['params'] = $arguments[0];
 		}
 	}
+
 	/**
 	 * page 自定义处理
 	 * @param array $arguments 
@@ -195,6 +196,27 @@ trait TLinkOperation
 		if(isset($arguments[1]))
 		{
 			$this->limit($this->calcLimitStart($arguments[0], $arguments[1]),$arguments[1]);
+		}
+	}
+
+	/**
+	 * where 自定义处理
+	 * @param array $arguments
+	 */
+	protected function __linkWhere($arguments)
+	{
+		if(isset($arguments[1]))
+		{
+			$str = reset($arguments);
+			array_shift($arguments);
+			$this->operationOption['where'][] = array(
+				'__str'		=>	$str,
+				'__values'	=>	$arguments,
+			);
+		}
+		else
+		{
+			$this->operationOption['where'][] = $arguments[0];
 		}
 	}
 }
