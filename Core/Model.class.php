@@ -1211,6 +1211,8 @@ class Model extends ArrayData
 	/**
 	 * 加入主键条件
 	 * @param mixed $pkData
+	 * @param mixed $table 表名，为null时获取当前表名
+	 * @param mixed $tableAlias 表别名，为null时使用当前表名，为false时不使用别名
 	 * @return Model
 	 */
 	public function wherePk($pkData,$table = null,$tableAlias = null)
@@ -1239,14 +1241,14 @@ class Model extends ArrayData
 			{
 				if(isset($pkData[$pkName]))
 				{
-					$tWhere['and'] = array($tableAlias . '.' . $pkName => $pkData[$pkName]);
+					$tWhere['and'] = array((false === $tableAlias ? '' : ($tableAlias . '.')) . $pkName => $pkData[$pkName]);
 					$tWhere = &$tWhere['and'];
 				}
 			}
 		}
 		else
 		{
-			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
+			$where = array((false === $tableAlias ? '' : ($tableAlias . '.')) . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
 	}
