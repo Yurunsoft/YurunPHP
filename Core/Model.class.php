@@ -574,6 +574,7 @@ class Model extends ArrayData
 			$data = $this->data;
 		}
 		$option = $this->operationOption;
+		$saveData = array();
 		foreach($data as $index => $item)
 		{
 			$result = $this->__saveBefore($data[$index],$option);
@@ -586,11 +587,11 @@ class Model extends ArrayData
 			{
 				return false;
 			}
-			$data[$index] = $this->parseSaveData($data[$index], false);
+			$saveData[$index] = $this->parseSaveData($data[$index], false);
 		}
 		$this->db->operationOption = $option;
 		$this->operationOption = array();
-		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $data, $return);
+		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
