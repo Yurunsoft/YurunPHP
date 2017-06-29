@@ -408,17 +408,30 @@ class Model extends ArrayData
 	 * 查询获取值，getScalar的别名，兼容旧版
 	 * @return mixed
 	 */
-	public function selectValue()
+	public function selectValue($field = null)
 	{
-		return $this->getScalar();
+		return $this->getScalar($field);
+	}
+
+	/**
+	 * 查询获取值，getScalar的别名
+	 * @return mixed
+	 */
+	public function getField($field = null)
+	{
+		return $this->getScalar($field);
 	}
 
 	/**
 	 * 查询获取值，第一行第一列
 	 * @return mixed 
 	 */
-	public function getScalar()
+	public function getScalar($field = null)
 	{
+		if(null !== $field)
+		{
+			$this->operationOption['field'] = array($field);
+		}
 		$this->db->operationOption = $this->getOption();
 		return $this->db->getScalar();
 	}
