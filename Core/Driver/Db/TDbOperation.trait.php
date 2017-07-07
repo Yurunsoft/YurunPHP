@@ -48,7 +48,7 @@ trait TDbOperation
 						$paramName = ':' . $key;
 					}
 					// 绑定参数
-					$this->lastStmt->bindValue($paramName, $value);
+					$this->lastStmt->bindValue($paramName, $value, $this->geetParamTypeByValue($value));
 				}
 				// 手动绑定的参数
 				foreach($this->bindValues as $bindValue)
