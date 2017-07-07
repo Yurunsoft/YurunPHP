@@ -22,6 +22,7 @@ trait TDbOperation
 		// 记录sql语句和参数
 		$this->lastSql = $sql;
 		$this->lastSqlParams = $params;
+		$beginTime = microtime(true);
 		if(empty($params) && empty($this->bindValues))
 		{
 			// 没有参数的查询
@@ -58,6 +59,11 @@ trait TDbOperation
 				$result = $this->lastStmt->execute();
 			}
 		}
+		Event::trigger('ON_DB_QUERY', array(
+			'handler'	=>	$this,
+			'time'		=>	microtime(true) - $beginTime,
+			'sql'		=>	$sql,
+		));
 		if(false === $result)
 		{
 			$GLOBALS['debug']['lastsql'] = $sql;
