@@ -221,12 +221,9 @@ function arrayRefer(&$array)
  */
 function multimerge()
 {
-	$arrs = func_get_args ();
 	$merged = array ();
-	$s = count($arrs);
-	for($i=0;$i<$s;++$i)
+	foreach(func_get_args() as $array)
 	{
-		$array = $arrs[$i];
 		if (!is_array($array))
 		{
 			continue;
