@@ -428,12 +428,16 @@ class Model extends ArrayData
 	 */
 	public function getScalar($field = null)
 	{
+		$option = $this->operationOption;
+		$this->__getScalarBefore($option);
 		if(null !== $field)
 		{
 			$this->operationOption['field'] = array($field);
 		}
 		$this->db->operationOption = $this->getOption();
-		return $this->db->getScalar();
+		$result = $this->db->getScalar();
+		$this->__getScalarAfter($result,$option);
+		return $result;
 	}
 	
 	/**
@@ -1367,6 +1371,24 @@ class Model extends ArrayData
 	 * @return mixed 
 	 */
 	public function __deleteAfter($result,$linkOption)
+	{
+
+	}
+	/**
+	 * 查询获取值前置方法
+	 * @param array $pkData 
+	 * @return mixed 
+	 */
+	public function __getScalarBefore($linkOption)
+	{
+
+	}
+	/**
+	 * 查询获取值后置方法
+	 * @param array $result 
+	 * @return mixed 
+	 */
+	public function __getScalarAfter($result,$linkOption)
 	{
 
 	}
