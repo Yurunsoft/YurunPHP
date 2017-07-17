@@ -442,19 +442,33 @@ class Model extends ArrayData
 	
 	/**
 	 * 根据字段查询记录
+	 * @param $field 字段名
+	 * @param $value 字段值条件
+	 * @param $table 表名/表别名，为空则为当前表名，为false不使用表名
 	 * @return mixed
 	 */
-	public function selectBy($field,$value)
+	public function selectBy($field, $value, $table = null)
 	{
-		return $this->where(array($this->tableName() . '.' . $field=>$value))->select();
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		return $this->where(array((false === $table ? '' : ($table . '.')) . $field=>$value))->select();
 	}
 	/**
 	 * 根据字段获取一条记录
+	 * @param $field 字段名
+	 * @param $value 字段值条件
+	 * @param $table 表名/表别名，为空则为当前表名，为false不使用表名
 	 * @return mixed
 	 */
-	public function getBy($field,$value)
+	public function getBy($field, $value, $table = null)
 	{
-		return $this->where(array($this->tableName() . '.' . $field=>$value))->getOne();
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		return $this->where(array((false === $table ? '' : ($table . '.')) . $field=>$value))->getOne();
 	}
 	
 	/**
