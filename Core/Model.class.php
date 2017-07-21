@@ -75,6 +75,12 @@ class Model extends ArrayData
 	protected static $isInit = false;
 
 	/**
+	 * 缓存的字段信息，当MODEL_DYNAMIC_FIELDS_CACHE为true时启用
+	 * @var array
+	 */
+	public static $cacheFields = array();
+
+	/**
 	 * 初始化
 	 * @return mixed 
 	 */
@@ -1198,6 +1204,18 @@ class Model extends ArrayData
 		{
 			$table = $this->tableName();
 		}
+		// 变量中动态缓存模型字段缓存读取
+		if(Config::get('@.MODEL_DYNAMIC_FIELDS_CACHE'))
+		{
+			$data = $this->getDynamicCacheFields($table);
+			if(null !== $data)
+			{
+				$fields = $data['fields'];
+				$fieldNames = $data['fieldNames'];
+				$pk = $data['pk'];
+				return;
+			}
+		}
 		$cacheName = 'Db/TableFields/' . $table;
 		if($refresh || !Config::get('@.MODEL_FIELDS_CACHE'))
 		{
@@ -1239,7 +1257,35 @@ class Model extends ArrayData
 		{
 			$pk = $pk[0];
 		}
+		// 变量中动态缓存模型字段缓存保存
+		if(Config::get('@.MODEL_DYNAMIC_FIELDS_CACHE'))
+		{
+			$this->setdynamicCacheFields($table, $fields, $fieldNames, $pk);
+		}
 	}
+
+	/**
+	 * 设置动态缓存字段信息
+	 * @return void
+	 */
+	protected function setdynamicCacheFields($table, $fields, $fieldNames, $pk)
+	{
+		static::$cacheFields[$table] = array(
+			'pk'			=>	$pk,
+			'fields'		=>	$fields,
+			'fieldNames'	=>	$fieldNames,
+		);
+	}
+
+	/**
+	 * 获取动态缓存字段信息，失败返回null
+	 * @return array|null
+	 */
+	protected function getDynamicCacheFields($tableName)
+	{
+		return isset(static::$cacheFields[$tableName]) ? static::$cacheFields[$tableName] : null;
+	}
+
 	/**
 	 * 加入主键条件
 	 * @param mixed $pkData

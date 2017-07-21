@@ -96,8 +96,10 @@ return array (
 	 */
 	// 模型是否自动获取字段信息
 	'MODEL_AUTO_FIELDS'		=>	true,
-	// 是否对模型字段缓存
+	// 是否对模型字段缓存，为true则会缓存直到手动删除缓存才会更新
 	'MODEL_FIELDS_CACHE'	=>	false,
+	// 是否在变量中动态缓存模型字段缓存，好处是多次实例化不会重复处理表字段，坏处是占用内存
+	'MODEL_DYNAMIC_FIELDS_CACHE'	=>	true,
 	
 	/**
 	 * 数据库部分
