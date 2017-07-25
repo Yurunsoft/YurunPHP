@@ -789,7 +789,7 @@ class Model extends ArrayData
 			$this->wherePk($pkData,$this->getOptionTable());
 		}
 		$option = $this->getOption();
-		$result = $this->__deleteBefore($pkData);
+		$result = $this->__deleteBefore($pkData, $option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
