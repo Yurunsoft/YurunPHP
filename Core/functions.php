@@ -534,3 +534,22 @@ function isAssocArray($array)
 {  
     return array_keys($array) !== range(0, count($array) - 1);  
 }
+/**
+ * 获取出错文件指定行的前后代码
+ * @param string $file 文件路径
+ * @param int $errorLine 错误行数
+ * @param int $beforeAfterLines 错误行数前后再取多少行，默认为5
+ * @return void
+ */
+function getErrorFileCode($file, $errorLine, $beforeAfterLines = 5)
+{
+	$sfo = new SplFileObject($file);
+	$sfo->seek($errorLine - $beforeAfterLines - 1);
+	$result = array();
+	for ($i = 0; $i <= $beforeAfterLines * 2; ++$i)
+	{
+		$result[] = array('line'=>$sfo->key() + 1, 'content'=>$sfo->current(), 'is_error_line'=>$errorLine == $sfo->key() + 1);
+		$sfo->next();
+	}
+	return $result;
+}
