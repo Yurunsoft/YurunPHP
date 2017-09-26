@@ -544,7 +544,7 @@ function isAssocArray($array)
 function getErrorFileCode($file, $errorLine, $beforeAfterLines = 5)
 {
 	$sfo = new SplFileObject($file);
-	$sfo->seek($errorLine - $beforeAfterLines - 1);
+	$sfo->seek(max($errorLine - $beforeAfterLines - 1, 0));
 	$result = array();
 	for ($i = 0; $i <= $beforeAfterLines * 2; ++$i)
 	{
