@@ -248,11 +248,9 @@ class Dispatch
 					self::$checkAuth = true;
 					$s = count($cfg['fields']);
 					self::$data = array();
-					$index = 1;
 					for($i=0;$i<$s;++$i)
 					{
-						self::$data[$cfg['fields'][$i]['name']] = $matches[$index];
-						$index += (substr_count($cfg['fields'][$i]['rule'], '(') - substr_count($cfg['fields'][$i]['rule'], '\('));
+						self::$data[$cfg['fields'][$i]['name']] = $matches[$i+1];
 					}
 					$_GET = array_merge($_GET,self::$data);
 					$_REQUEST = array_merge($_REQUEST,self::$data);
@@ -594,7 +592,7 @@ class Dispatch
 		}
 		// 处理path
 		try {
-			$mca = explode('/', isset($urlInfo['path'][1]) && '/' === $urlInfo['path'][1] ? substr($urlInfo['path'], 1) : $urlInfo['path']);
+			$mca = explode('/', $urlInfo['path']);
 		} catch (Exception $e) {
 		}
 		if(isset($mca[2])) // 3个成员
@@ -656,7 +654,7 @@ class Dispatch
 		{
 			if(isset($urlInfo['scheme']))
 			{
-				$protocol=$urlInfo['scheme'] . '://';
+				$protocol=$urlInfo['scheme'];
 			}
 			else
 			{
