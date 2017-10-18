@@ -50,7 +50,10 @@ class YurunTPEView
 		$this->parseTemplate($html);
 		$this->parsePrint($html);
 		$this->parsePHP($html);
-		$this->optimizePHP($html);
+		if(Config::get('@.TEMPLATE_OPTIMIZE_PHP'))
+		{
+			$this->optimizePHP($html);
+		}
 		return $html;
 	}
 	private function parseTemplate(&$html)

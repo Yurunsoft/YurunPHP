@@ -252,7 +252,9 @@ return array (
 	// 语言输出标签左
 	'TEMPLATE_ECHO_LANG_TAG_LEFT'		=>	'<LANG:',
 	// 语言输出标签右
-	'TEMPLATE_ECHO_LANG_TAG_RIGHT'	=>	'>',
+	'TEMPLATE_ECHO_LANG_TAG_RIGHT'		=>	'>',
+	// 是否优化php代码，合并php标签和语句
+	'TEMPLATE_OPTIMIZE_PHP'				=>	true,
 
 	/**
 	 * 杂项
