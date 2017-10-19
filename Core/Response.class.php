@@ -316,7 +316,7 @@ JS
 	 */
 	public static function expires($seconds)
 	{
-		$time = gdate('D, d M Y H:i:s', $_SERVER['REQUEST_TIME'] + $seconds) . ' GMT';
+		$time = gmdate('D, d M Y H:i:s', $_SERVER['REQUEST_TIME'] + $seconds) . ' GMT';
 		header("Expires: {$time}");
 	}
 	/**

@@ -44,7 +44,7 @@ class YurunComponent
 	 * 将控件属性转为渲染用字符串
 	 * @return string
 	 */
-	public static function &parseAttrsString($attrs,$excludeAttrs = array())
+	public static function parseAttrsString($attrs,$excludeAttrs = array())
 	{
 		$result = '';
 		if(is_array($attrs))

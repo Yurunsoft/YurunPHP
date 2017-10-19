@@ -1,0 +1,9 @@
+{
+    "name": "yurunsoft/yurun-php",
+    "description": "YurunPHP是宇润软件专为懒人开发者设计的一款开源PHP框架，基于MVC动态分层架构，开发者可以根据需要自行扩充分层。它来自中国！",
+	"type": "library",
+    "license": "Apache2",
+    "autoload": {
+        "files": ["Yurun.php"]
+    }
+}

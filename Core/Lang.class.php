@@ -87,7 +87,7 @@ class Lang
 			$list = array_merge($list, $data);
 		}
 		// 项目语言包
-		$file = APP_LANG . Config::get('@.LANG_PATH') . '/' . $lang . '.lang.php';
+		$file = APP_LANG . $lang . '.lang.php';
 		if (is_file($file))
 		{
 			$data = include $file;

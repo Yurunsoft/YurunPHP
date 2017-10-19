@@ -39,7 +39,7 @@ abstract class Log extends Driver
 		if($object)
 		{
 			$object->add($content, $option);
-			if(IS_CLI && Config::get('@.CLI_AUTOSAVE'))
+			if(IS_CLI && Config::get('@.LOG_CLI_AUTOSAVE'))
 			{
 				$object->save();
 				$object->data = array();

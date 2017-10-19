@@ -22,6 +22,7 @@ trait TDbOperation
 		// 记录sql语句和参数
 		$this->lastSql = $sql;
 		$this->lastSqlParams = $params;
+		$beginTime = microtime(true);
 		if(empty($params) && empty($this->bindValues))
 		{
 			// 没有参数的查询
@@ -47,7 +48,7 @@ trait TDbOperation
 						$paramName = ':' . $key;
 					}
 					// 绑定参数
-					$this->lastStmt->bindValue($paramName, $value);
+					$this->lastStmt->bindValue($paramName, $value, $this->geetParamTypeByValue($value));
 				}
 				// 手动绑定的参数
 				foreach($this->bindValues as $bindValue)
@@ -58,6 +59,11 @@ trait TDbOperation
 				$result = $this->lastStmt->execute();
 			}
 		}
+		Event::trigger('ON_DB_QUERY', array(
+			'handler'	=>	$this,
+			'time'		=>	microtime(true) - $beginTime,
+			'sql'		=>	$sql,
+		));
 		if(false === $result)
 		{
 			$GLOBALS['debug']['lastsql'] = $sql;
@@ -468,6 +474,33 @@ trait TDbOperation
 				$result .= $item;
 				continue;
 			}
+			if(isset($item['__str'], $item['__values']))
+			{
+				// 参数化绑定
+				if ('' !== $result)
+				{
+					// 不是第一个条件，默认加上 and
+					$result .= ' ' . $this->getOperator('and') . ' ';
+				}
+				$count = 0;
+				$result .= '(' . preg_replace_callback('/(((%)([bdsl]))|((:)([a-zA-Z0-9_-]+)))/', function($match)use($item, &$count){
+					$name = array_pop($match);
+					$prefix = array_pop($match);
+					switch($prefix)
+					{
+						case '%':
+							$paramName = ':' . $this->getParamName();
+							$this->bindValue($paramName, $item['__values'][$count++], $this->getPDOParamType($name));
+							return $paramName;
+							break;
+						case ':':
+							$this->bindValue($match[0], $item['__values'][$count++]);
+							return $match[0];
+							break;
+					}
+				}, $item['__str']) . ')';
+				continue;
+			}
 			foreach($item as $key => $value)
 			{
 				$skey = strtolower($key);
@@ -547,6 +580,10 @@ trait TDbOperation
 								}
 							}
 						}
+					}
+					else if(is_numeric($key))
+					{
+						$result .= $value;
 					}
 					else
 					{
@@ -712,6 +749,26 @@ trait TDbOperation
 	 */
 	protected function getParamName()
 	{
-		return 'p' . (++$this->randomParamNum);
+		return 'p' . dechex(++$this->randomParamNum);
+	}
+
+	/**
+	 * 获取PDO参数类型
+	 * @param string $type
+	 * @return int
+	 */
+	public function getPDOParamType($type)
+	{
+		switch($type)
+		{
+			case 'b':
+				return PDO::PARAM_BOOL;
+			case 'd':
+				return PDO::PARAM_INT;
+			case 'l':
+				return PDO::PARAM_LOB;
+			default:
+				return PDO::PARAM_STR;
+		}
 	}
 }

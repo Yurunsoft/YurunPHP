@@ -49,6 +49,12 @@ abstract class DbPDOBase implements IDb
 	);
 
 	/**
+	 * 驱动类型
+	 * @var string
+	 */
+	protected $type = '';
+
+	/**
 	 * 构造方法
 	 * @param array $option 
 	 */
@@ -232,5 +238,38 @@ abstract class DbPDOBase implements IDb
 	{
 		$fieldType = strtolower($fieldType);
 		return isset($this->paramType[$fieldType]) ? $this->paramType[$fieldType] : PDO::PARAM_STR;
+	}
+
+	/**
+	 * 根据值获取PDO的参数数据类型
+	 * @param mixed $value 
+	 * @return int 
+	 */
+	public function geetParamTypeByValue($value)
+	{
+		switch(gettype($value))
+		{
+			case 'boolean':
+				return PDO::PARAM_BOOL;
+				break;
+			case 'integer':
+				return PDO::PARAM_INT;
+				break;
+			case 'NULL':
+				return PDO::PARAM_NULL;
+				break;
+			default:
+				return PDO::PARAM_STR;
+				break;
+		}
+	}
+
+	/**
+	 * 获取驱动类型
+	 * @return string
+	 */
+	public function getType()
+	{
+		return $this->type;
 	}
 }

@@ -21,6 +21,11 @@ class Session
 	 */
 	private static $modifys = array();
 	/**
+	 * session id
+	 * @var string
+	 */
+	public static $sessionID = null;
+	/**
 	 * 初始化
 	 * @return bool 
 	 */
@@ -44,6 +49,10 @@ class Session
 				self::userSaveHandler(Config::get('@.SESSION_USER_SAVE_HANDLER'));
 			}
 			self::$isInited = true;
+			if(null !== self::$sessionID)
+			{
+				session_id(self::$sessionID);
+			}
 			session_start();
 			session_write_close();
 			return true;

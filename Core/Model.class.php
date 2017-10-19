@@ -75,6 +75,12 @@ class Model extends ArrayData
 	protected static $isInit = false;
 
 	/**
+	 * 缓存的字段信息，当MODEL_DYNAMIC_FIELDS_CACHE为true时启用
+	 * @var array
+	 */
+	public static $cacheFields = array();
+
+	/**
 	 * 初始化
 	 * @return mixed 
 	 */
@@ -145,7 +151,7 @@ class Model extends ArrayData
 	 * @param string $table 数据表名
 	 * @return Model
 	 */
-	public static function &obj($model='',$table=null)
+	public static function obj($model='',$table=null)
 	{
 		$ref = new ReflectionClass(ucfirst($model) . 'Model');
 		$args = func_get_args();
@@ -239,7 +245,7 @@ class Model extends ArrayData
 	 * @param int $recordCount
 	 * @return array
 	 */
-	public function &selectPage($page = 1,$show = 10,&$recordCount = null)
+	public function selectPage($page = 1,$show = 10,&$recordCount = null)
 	{
 		if($this->isSelectBefore)
 		{
@@ -248,20 +254,92 @@ class Model extends ArrayData
 		$option = $this->operationOption;
 		if(null === $recordCount)
 		{
-			// 去除排序，提高效率
-			if(isset($this->operationOption['order']))
+			if('Mysql' === $this->db->getType())
 			{
-				unset($this->operationOption['order']);
+				$isMysqlCount = true;
 			}
-			$recordCount = $this->count();
+			else
+			{
+				// 去除排序，提高效率
+				if(isset($this->operationOption['order']))
+				{
+					unset($this->operationOption['order']);
+				}
+				$recordCount = $this->count();
+				$this->operationOption = $option;
+			}
+		}
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
+		}
+		$this->operationOption['field'][0] = array($fieldBefore . ' ' . $this->tableName() . '.' . $this->pk);
+		$this->db->operationOption = $this->page($page,$show)->getOption();
+		$data = $this->db->query();
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$recordCount = $this->db->getScalar('select FOUND_ROWS()');
+		}
+		$this->__selectAfter($data,$option);
+		return $data;
+	}
+
+	/**
+	 * 分页查询，获取总记录数
+	 * @param int $page
+	 * @param int $show
+	 * @param int $recordCount
+	 * @return array
+	 */
+	public function selectPageEx($page = 1,$show = 10,&$recordCount = null)
+	{
+		if($this->isSelectBefore)
+		{
+			$this->__selectBefore();
+		}
+		$option = $this->operationOption;
+		if(null === $recordCount)
+		{
+			if('Mysql' === $this->db->getType())
+			{
+				$isMysqlCount = true;
+			}
+			else
+			{
+				// 去除排序，提高效率
+				if(isset($this->operationOption['order']))
+				{
+					unset($this->operationOption['order']);
+				}
+				$recordCount = $this->count();
+				$this->operationOption = $option;
+			}
+		}
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
+		}
+		$this->operationOption['field'] = array($this->tableName() . '.' . $this->pk);
+		$this->db->operationOption = $this->page($page,$show)->getOption();
+		$pks = $this->db->queryColumn();
+		if(!isset($pks[0]))
+		{
+			return array();
+		}
+		if(isset($isMysqlCount) && $isMysqlCount)
+		{
+			$recordCount = $this->db->getScalar('select FOUND_ROWS()');
 		}
 		$this->operationOption = $option;
-		$this->db->operationOption = $this->page($page,$show)->getOption();
+		$this->operationOption['where'] = array(
+			array($this->tableName() . '.' . $this->pk => array('in', $pks))
+		);
+		$this->db->operationOption = $this->getOption();
 		$data = $this->db->query();
 		$this->__selectAfter($data,$option);
 		return $data;
 	}
-	
+
 	/**
 	 * 结尾方法自定义处理
 	 * @param array $arguments 
@@ -336,36 +414,67 @@ class Model extends ArrayData
 	 * 查询获取值，getScalar的别名，兼容旧版
 	 * @return mixed
 	 */
-	public function selectValue()
+	public function selectValue($field = null)
 	{
-		return $this->getScalar();
+		return $this->getScalar($field);
+	}
+
+	/**
+	 * 查询获取值，getScalar的别名
+	 * @return mixed
+	 */
+	public function getField($field = null)
+	{
+		return $this->getScalar($field);
 	}
 
 	/**
 	 * 查询获取值，第一行第一列
 	 * @return mixed 
 	 */
-	public function getScalar()
+	public function getScalar($field = null)
 	{
+		$option = $this->operationOption;
+		$this->__getScalarBefore($option);
+		if(null !== $field)
+		{
+			$this->operationOption['field'] = array($field);
+		}
 		$this->db->operationOption = $this->getOption();
-		return $this->db->getScalar();
+		$result = $this->db->getScalar();
+		$this->__getScalarAfter($result,$option);
+		return $result;
 	}
 	
 	/**
 	 * 根据字段查询记录
+	 * @param $field 字段名
+	 * @param $value 字段值条件
+	 * @param $table 表名/表别名，为空则为当前表名，为false不使用表名
 	 * @return mixed
 	 */
-	public function &selectBy($field,$value)
+	public function selectBy($field, $value, $table = null)
 	{
-		return $this->where(array($this->tableName() . '.' . $field=>$value))->select();
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		return $this->where(array((false === $table ? '' : ($table . '.')) . $field=>$value))->select();
 	}
 	/**
 	 * 根据字段获取一条记录
+	 * @param $field 字段名
+	 * @param $value 字段值条件
+	 * @param $table 表名/表别名，为空则为当前表名，为false不使用表名
 	 * @return mixed
 	 */
-	public function &getBy($field,$value)
+	public function getBy($field, $value, $table = null)
 	{
-		return $this->where(array($this->tableName() . '.' . $field=>$value))->getOne();
+		if(null === $table)
+		{
+			$table = $this->tableName();
+		}
+		return $this->where(array((false === $table ? '' : ($table . '.')) . $field=>$value))->getOne();
 	}
 	
 	/**
@@ -373,7 +482,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function &randomEx($num = 1)
+	public function randomEx($num = 1)
 	{
 		if($this->isSelectBefore)
 		{
@@ -405,7 +514,7 @@ class Model extends ArrayData
 	 * @param int $num 获取记录数量，默认为1条
 	 * @return array
 	 */
-	public function &random($num = 1)
+	public function random($num = 1)
 	{
 		if($this->isSelectBefore)
 		{
@@ -501,7 +610,8 @@ class Model extends ArrayData
 		{
 			$data = $this->data;
 		}
-		$option = $this->getOption();
+		$option = $this->operationOption;
+		$saveData = array();
 		foreach($data as $index => $item)
 		{
 			$result = $this->__saveBefore($data[$index],$option);
@@ -514,10 +624,11 @@ class Model extends ArrayData
 			{
 				return false;
 			}
-			$data[$index] = $this->parseSaveData($data[$index], false);
+			$saveData[$index] = $this->parseSaveData($data[$index], false);
 		}
 		$this->db->operationOption = $option;
-		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $data, $return);
+		$this->operationOption = array();
+		$saveResult = $this->db->insertBatch(isset($option['table']) ? null : $this->tableName(), $saveData, $return);
 		if(!$saveResult)
 		{
 			$this->error = '数据库操作失败';
@@ -678,7 +789,7 @@ class Model extends ArrayData
 			$this->wherePk($pkData,$this->getOptionTable());
 		}
 		$option = $this->getOption();
-		$result = $this->__deleteBefore($pkData);
+		$result = $this->__deleteBefore($pkData, $option);
 		if(null !== $result && true !== $result)
 		{
 			return false;
@@ -705,7 +816,7 @@ class Model extends ArrayData
 	 * 获取连贯配置
 	 * @return array
 	 */
-	public function &getOption()
+	public function getOption()
 	{
 		$option = $this->operationOption;
 		// 清空连贯配置
@@ -741,7 +852,14 @@ class Model extends ArrayData
 		{
 			foreach($this->operationOption['table'] as $table => $alias)
 			{
-				return $table;
+				if(is_numeric($table))
+				{
+					return $alias;
+				}
+				else
+				{
+					return $table;
+				}
 			}
 			return $this->tableName();
 		}
@@ -801,7 +919,7 @@ class Model extends ArrayData
 	 * @param int $type        	
 	 * @return array
 	 */
-	public function &parseFieldsMap($data = null, $type = Model::TO_DB)
+	public function parseFieldsMap($data = null, $type = Model::TO_DB)
 	{
 		if (null === $data)
 		{
@@ -1004,7 +1122,7 @@ class Model extends ArrayData
 	 * @param int $id
 	 * @return array
 	 */
-	public function &getByPk($value)
+	public function getByPk($value)
 	{
 		return $this->wherePk($value)
 					->limit(1)
@@ -1086,6 +1204,18 @@ class Model extends ArrayData
 		{
 			$table = $this->tableName();
 		}
+		// 变量中动态缓存模型字段缓存读取
+		if(Config::get('@.MODEL_DYNAMIC_FIELDS_CACHE'))
+		{
+			$data = $this->getDynamicCacheFields($table);
+			if(null !== $data)
+			{
+				$fields = $data['fields'];
+				$fieldNames = $data['fieldNames'];
+				$pk = $data['pk'];
+				return;
+			}
+		}
 		$cacheName = 'Db/TableFields/' . $table;
 		if($refresh || !Config::get('@.MODEL_FIELDS_CACHE'))
 		{
@@ -1127,10 +1257,40 @@ class Model extends ArrayData
 		{
 			$pk = $pk[0];
 		}
+		// 变量中动态缓存模型字段缓存保存
+		if(Config::get('@.MODEL_DYNAMIC_FIELDS_CACHE'))
+		{
+			$this->setdynamicCacheFields($table, $fields, $fieldNames, $pk);
+		}
 	}
+
+	/**
+	 * 设置动态缓存字段信息
+	 * @return void
+	 */
+	protected function setdynamicCacheFields($table, $fields, $fieldNames, $pk)
+	{
+		static::$cacheFields[$table] = array(
+			'pk'			=>	$pk,
+			'fields'		=>	$fields,
+			'fieldNames'	=>	$fieldNames,
+		);
+	}
+
+	/**
+	 * 获取动态缓存字段信息，失败返回null
+	 * @return array|null
+	 */
+	protected function getDynamicCacheFields($tableName)
+	{
+		return isset(static::$cacheFields[$tableName]) ? static::$cacheFields[$tableName] : null;
+	}
+
 	/**
 	 * 加入主键条件
 	 * @param mixed $pkData
+	 * @param mixed $table 表名，为null时获取当前表名
+	 * @param mixed $tableAlias 表别名，为null时使用当前表名，为false时不使用别名
 	 * @return Model
 	 */
 	public function wherePk($pkData,$table = null,$tableAlias = null)
@@ -1159,14 +1319,14 @@ class Model extends ArrayData
 			{
 				if(isset($pkData[$pkName]))
 				{
-					$tWhere['and'] = array($tableAlias . '.' . $pkName => $pkData[$pkName]);
+					$tWhere['and'] = array((false === $tableAlias ? '' : ($tableAlias . '.')) . $pkName => $pkData[$pkName]);
 					$tWhere = &$tWhere['and'];
 				}
 			}
 		}
 		else
 		{
-			$where = array($tableAlias . '.' . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
+			$where = array((false === $tableAlias ? '' : ($tableAlias . '.')) . $pk=>is_array($pkData) ? $pkData[$pk] : $pkData);
 		}
 		return $this->where($where);
 	}
@@ -1271,6 +1431,24 @@ class Model extends ArrayData
 	 * @return mixed 
 	 */
 	public function __deleteAfter($result,$linkOption)
+	{
+
+	}
+	/**
+	 * 查询获取值前置方法
+	 * @param array $pkData 
+	 * @return mixed 
+	 */
+	public function __getScalarBefore($linkOption)
+	{
+
+	}
+	/**
+	 * 查询获取值后置方法
+	 * @param array $result 
+	 * @return mixed 
+	 */
+	public function __getScalarAfter($result,$linkOption)
 	{
 
 	}

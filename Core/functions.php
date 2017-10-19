@@ -206,7 +206,7 @@ function autoNumber(&$arr,$name)
  * @param array $array
  * @return array
  */
-function &arrayRefer(&$array)
+function arrayRefer(&$array)
 {
 	$result=array();
 	foreach($array as &$item)
@@ -221,12 +221,9 @@ function &arrayRefer(&$array)
  */
 function multimerge()
 {
-	$arrs = func_get_args ();
 	$merged = array ();
-	$s = count($arrs);
-	for($i=0;$i<$s;++$i)
+	foreach(func_get_args() as $array)
 	{
-		$array = $arrs[$i];
 		if (!is_array($array))
 		{
 			continue;
@@ -277,7 +274,7 @@ function arrayColumnToKey(&$array,$column,$keepOld = false)
  * @param int $lengthEnd 长度结束
  * @return string
  */
-function &convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
+function convertToRegexType($type,$lengthStart = null,$lengthEnd = null)
 {
 	$result = null;
 	if('int' === $type)
@@ -350,7 +347,7 @@ function checkRegexTypeValue($type,$lengthStart = null,$lengthEnd = null,$value)
  * 处理name按.分隔，支持\.转义不分隔
  * @param string $name
  */
-function &parseCfgName($name)
+function parseCfgName($name)
 {
 	$result = preg_split('#(?<!\\\)\.#', $name);
 	array_walk($result,function(&$value,$key){
@@ -366,7 +363,7 @@ function &parseCfgName($name)
  * @param string $control
  * @param string $action
  */
-function &autoLoadControl($control,$action)
+function autoLoadControl($control,$action)
 {
 	$currModulePath = APP_MODULE . Dispatch::module() . '/Control/';
 	$controlFile = $control . 'Control.class.php';
@@ -401,7 +398,7 @@ function &autoLoadControl($control,$action)
  * @param string $group
  * @return array
  */
-function &getDataByGroup($group,$method = 'all')
+function getDataByGroup($group,$method = 'all')
 {
 	$fields = getFieldsByGroup($group,$method);
 	$data = array();
@@ -417,7 +414,7 @@ function &getDataByGroup($group,$method = 'all')
  * @param string $group
  * @return array
  */
-function &getDataArrayByGroup($group,$method = 'all')
+function getDataArrayByGroup($group,$method = 'all')
 {
 	$fields = getFieldsByGroup($group,$method);
 	$data = array();
@@ -442,7 +439,7 @@ function &getDataArrayByGroup($group,$method = 'all')
  * @param string $group
  * @return array
  */
-function &getFieldsByGroup($group,$method = 'all')
+function getFieldsByGroup($group,$method = 'all')
 {
 	$isGroup = '' !== $group && null !== $group;
 	$group = $isGroup ? ($group . '_') : '';
@@ -536,4 +533,23 @@ function parseAutoloadPath($rule,$class = '',$word = '')
 function isAssocArray($array)
 {  
     return array_keys($array) !== range(0, count($array) - 1);  
+}
+/**
+ * 获取出错文件指定行的前后代码
+ * @param string $file 文件路径
+ * @param int $errorLine 错误行数
+ * @param int $beforeAfterLines 错误行数前后再取多少行，默认为5
+ * @return void
+ */
+function getErrorFileCode($file, $errorLine, $beforeAfterLines = 5)
+{
+	$sfo = new SplFileObject($file);
+	$sfo->seek(max($errorLine - $beforeAfterLines - 1, 0));
+	$result = array();
+	for ($i = 0; $i <= $beforeAfterLines * 2; ++$i)
+	{
+		$result[] = array('line'=>$sfo->key() + 1, 'content'=>$sfo->current(), 'is_error_line'=>$errorLine == $sfo->key() + 1);
+		$sfo->next();
+	}
+	return $result;
 }

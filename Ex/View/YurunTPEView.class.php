@@ -43,14 +43,17 @@ class YurunTPEView
 		self::initConst();
 		self::$isInit = true;
 	}
-	public function &parse($file)
+	public function parse($file)
 	{
 		$html = file_get_contents($file);
 		$this->parseConst($html);
 		$this->parseTemplate($html);
 		$this->parsePrint($html);
 		$this->parsePHP($html);
-		$this->optimizePHP($html);
+		if(Config::get('@.TEMPLATE_OPTIMIZE_PHP'))
+		{
+			$this->optimizePHP($html);
+		}
 		return $html;
 	}
 	private function parseTemplate(&$html)
@@ -402,7 +405,7 @@ PHP
 					'<?php echo Dispatch::url(\\1);?>',
 					$html);
 	}
-	private function &parseAttrsString($attrs)
+	private function parseAttrsString($attrs)
 	{
 		$attrsStr = '';
 		if(is_array($attrs))

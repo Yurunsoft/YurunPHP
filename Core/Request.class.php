@@ -289,4 +289,13 @@ class Request
 			return $default;
 		}
 	}
+
+	/**
+	 * 获取完整的请求地址
+	 * @return string
+	 */
+	public static function getUrl()
+	{
+		return $_SERVER['REQUEST_SCHEME'] . '://' . $_SERVER['HTTP_HOST'] . $_SERVER['REQUEST_URI'];
+	}
 }
