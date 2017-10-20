@@ -9,7 +9,7 @@ class Yurun
 	/**
 	 * 框架版本号
 	 */
-	const YURUN_VERSION = '2.0.0 Beta';
+	const YURUN_VERSION = '2.2';
 	/**
 	 * 框架核心设置
 	 * @var array 
