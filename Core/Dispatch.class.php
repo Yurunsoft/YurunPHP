@@ -166,9 +166,9 @@ class Dispatch
 							$lengthStart = null;
 							$lengthEnd = null;
 						}
-						$rule = convertToRegexType($type,$lengthStart,$lengthEnd);
+						$rule = '(' . convertToRegexType($type,$lengthStart,$lengthEnd) . ')';
 						$fields[] = array('name' => $name,'type' => $type,'lengthStart'=>$lengthStart,'lengthEnd'=>$lengthEnd,'rule'=>$rule);
-						return '(' . $rule . ')';
+						return $rule;
 					},
 					addcslashes($rule,'/.'),
 					-1);
@@ -258,6 +258,7 @@ class Dispatch
 					$_REQUEST = array_merge($_REQUEST,self::$data);
 					return;
 				}
+				exit;
 			}
 		}
 		// 模块控制器动作获取
@@ -749,7 +750,7 @@ class Dispatch
 								'/\$(\d+)/',
 								function($matches)use(&$cfg,&$paramNames){
 									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
-									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+									return $cfg['fields'][$matches[1]-1]['rule'];
 								},
 								$mcaRule[0]
 						);
@@ -761,7 +762,7 @@ class Dispatch
 								'/\$(\d+)/',
 								function($matches)use(&$cfg,&$paramNames){
 									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
-									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+									return $cfg['fields'][$matches[1]-1]['rule'];
 								},
 								$mcaRule[1]
 						);
@@ -773,7 +774,7 @@ class Dispatch
 								'/\$(\d+)/',
 								function($matches)use(&$cfg,&$paramNames){
 									$paramNames[] = $cfg['fields'][$matches[1]-1]['name'];
-									return '(' . $cfg['fields'][$matches[1]-1]['rule'] . ')';
+									return $cfg['fields'][$matches[1]-1]['rule'];
 								},
 								$mcaRule[2]
 						);
