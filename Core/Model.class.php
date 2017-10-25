@@ -1462,4 +1462,17 @@ class Model extends ArrayData
 		$this->isSelectBefore = $isSelectBefore;
 		return $this;
 	}
+
+	/**
+	 * 绑定参数
+	 * @param mixed $parameter 
+	 * @param mixed $value 
+	 * @param int $data_type 
+	 * @return Model
+	 */
+	public function bindValue($parameter, $value, $data_type = PDO::PARAM_STR)
+	{
+		$this->db->bindValue($parameter, $value, $data_type);
+		return $this;
+	}
 }
