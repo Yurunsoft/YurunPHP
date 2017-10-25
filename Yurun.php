@@ -4,7 +4,7 @@
  * @author Yurun <yurun@yurunsoft.com>
  * @copyright 宇润软件(Yurunsoft.Com) All rights reserved.
  */
-if(is_file(__DIR__ . '/Yurun-min.php'))
+if(!defined('IS_COMPILE') && is_file(__DIR__ . '/Yurun-min.php'))
 {
 	require_once __DIR__ . '/Yurun-min.php';
 }
