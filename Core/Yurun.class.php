@@ -95,7 +95,7 @@ class Yurun
 		// CLI处理
 		if(IS_CLI)
 		{
-			exec('chcp 65001'); // 编码设为UTF-8防止乱码
+			function_exists('exec') && exec('chcp 65001'); // 编码设为UTF-8防止乱码
 		}
 		Dispatch::exec();
 	}
