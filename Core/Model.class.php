@@ -273,7 +273,6 @@ class Model extends ArrayData
 		{
 			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
 		}
-		$this->operationOption['field'][0] = array($this->tableName() . '.' . $this->pk);
 		$this->db->operationOption = $this->page($page,$show)->getOption();
 		$data = $this->db->query();
 		if(isset($isMysqlCount) && $isMysqlCount)
