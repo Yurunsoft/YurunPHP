@@ -67,7 +67,7 @@ class YurunTPEView
 	}
 	private function pregParseTagEx(&$html,$pattern)
 	{
-		$_this = &$this;
+		$_this = $this;
 		do
 		{
 			$count = 0;
@@ -98,7 +98,7 @@ class YurunTPEView
 	}
 	private function pregParseTag(&$html,$pattern)
 	{
-		$_this = &$this;
+		$_this = $this;
 		do
 		{
 			$count = 0;

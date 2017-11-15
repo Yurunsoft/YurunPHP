@@ -166,13 +166,13 @@ class Request
 		$arrName = strtolower($arrName);
 		if('server' === $arrName)
 		{
-			$data = &$_SERVER;
+			$data = $_SERVER;
 		}
 		else if(IS_CLI)
 		{
 			if(is_integer($name))
 			{
-				$data = &$_SERVER['argv'];
+				$data = $_SERVER['argv'];
 			}
 			else
 			{
@@ -187,19 +187,19 @@ class Request
 		{
 			if('get' === $arrName)
 			{
-				$data = &$_GET;
+				$data = $_GET;
 			}
 			else if('post' === $arrName)
 			{
-				$data = &$_POST;
+				$data = $_POST;
 			}
 			else if('cookie' === $arrName)
 			{
-				$data = &$_COOKIE;
+				$data = $_COOKIE;
 			}
 			else
 			{
-				$data = &$_REQUEST;
+				$data = $_REQUEST;
 			}
 		}
 		if ('' === $name)

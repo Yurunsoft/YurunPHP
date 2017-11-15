@@ -25,29 +25,28 @@ abstract class YCCheckRadioGroupBase extends YCBase
 	 */
 	public function prepareView()
 	{
-		$dataset = &$this->dataset;
-		if(isset($dataset[0]) && !is_array($dataset[0]))
+		if(isset($this->dataset[0]) && !is_array($this->dataset[0]))
 		{
-			$s = count($dataset);
+			$s = count($this->dataset);
 			for($i = 0;$i < $s;++$i)
 			{
-				$val = $dataset[$i];
-				$dataset[$i] = array();
+				$val = $this->dataset[$i];
+				$this->dataset[$i] = array();
 				if('value' === $this->dataset_1d_array_text_field)
 				{
-					$dataset[$i][$this->text_field] = $val;
+					$this->dataset[$i][$this->text_field] = $val;
 				}
 				else
 				{
-					$dataset[$i][$this->text_field] = $i;
+					$this->dataset[$i][$this->text_field] = $i;
 				}
 				if('value' === $this->dataset_1d_array_value_field)
 				{
-					$dataset[$i][$this->value_field] = $val;
+					$this->dataset[$i][$this->value_field] = $val;
 				}
 				else
 				{
-					$dataset[$i][$this->value_field] = $i;
+					$this->dataset[$i][$this->value_field] = $i;
 				}
 			}
 		}
