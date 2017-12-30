@@ -197,7 +197,12 @@ class DbPDOMysql extends DbPDOBase
 		if(isAssocArray($data))
 		{
 			$keys = array_keys($data);
-			return 'insert into ' . $this->parseTable($table) . '(' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values(:' . implode(',:',$keys) . ')' . $this->parseLock();
+			$valuesKeys = $keys;
+			foreach($valuesKeys as $i => $v)
+			{
+				$valuesKeys[$i] = $this->parseParamName($valuesKeys[$i]);
+			}
+			return 'insert into ' . $this->parseTable($table) . '(' . implode(',',array_map(array($this,'parseKeyword'),$keys)) . ') values(:' . implode(',:',$valuesKeys) . ')' . $this->parseLock();
 		}
 		else
 		{
@@ -248,7 +253,7 @@ class DbPDOMysql extends DbPDOBase
 			$data = $this->parseParams($data);
 			foreach($data as $key => $value)
 			{
-				$sql .= $this->parseKeyword($key) . "=:{$key},";
+				$sql .= $this->parseKeyword($key) . '=:' . $this->parseParamName($key) . ',';
 			}
 		}
 		$where = $this->parseCondition(isset($this->operationOption['where']) ? $this->operationOption['where'] : '');

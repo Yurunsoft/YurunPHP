@@ -768,7 +768,7 @@ class Model extends ArrayData
 				$result[$field] = $data[$field];
 				if($parseBindValue)
 				{
-					$this->db->bindValue(':' . $field, $result[$field], $this->db->getParamType($this->fields[$field]['type']));
+					$this->db->bindValue(':' . $this->db->parseParamName($field), $result[$field], $this->db->getParamType($this->fields[$field]['type']));
 				}
 			}
 		}

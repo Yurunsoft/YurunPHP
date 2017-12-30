@@ -45,7 +45,7 @@ trait TDbOperation
 					else
 					{
 						// 名称形式的参数
-						$paramName = ':' . $key;
+						$paramName = ':' . $this->parseParamName($key);
 					}
 					// 绑定参数
 					$this->lastStmt->bindValue($paramName, $value, $this->geetParamTypeByValue($value));
@@ -750,6 +750,16 @@ trait TDbOperation
 	protected function getParamName()
 	{
 		return 'p' . dechex(++$this->randomParamNum);
+	}
+
+	/**
+	 * 获取处理后的参数名，解决参数名为中文等情况
+	 * @param string $name
+	 * @return string
+	 */
+	public function parseParamName($name)
+	{
+		return str_replace('\\', '', substr(json_encode($name), 1, -1));
 	}
 
 	/**
