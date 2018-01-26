@@ -34,7 +34,7 @@ class YCTable extends YCBase
 	 */
 	public function prepareView()
 	{
-		self::$stack[] = &$this;
+		self::$stack[] = $this;
 		++self::$stackSize;
 		parent::prepareView();
 	}

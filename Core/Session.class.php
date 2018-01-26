@@ -123,7 +123,7 @@ class Session
 				return $_SESSION;
 			}
 			$names = parseCfgName($name);
-			$var = &$_SESSION;
+			$var = $_SESSION;
 			foreach($names as $name)
 			{
 				if('@' === $name)
@@ -132,7 +132,7 @@ class Session
 				}
 				if('' !== $name)
 				{
-					$var = &$var[$name];
+					$var = $var[$name];
 				}
 			}
 			return isset($var) ? $var : $default;
@@ -222,7 +222,7 @@ class Session
 			self::init();
 			self::save();
 			$names = parseCfgName($name);
-			$var = &$_SESSION;
+			$var = $_SESSION;
 			foreach($names as $name)
 			{
 				if('@' === $name)
@@ -231,7 +231,7 @@ class Session
 				}
 				if('' !== $name)
 				{
-					$var = &$var[$name];
+					$var = $var[$name];
 				}
 			}
 			return isset($var);

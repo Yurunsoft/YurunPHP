@@ -161,7 +161,7 @@ class Dispatch
 						}
 						else
 						{
-							$name = &$matches[1];
+							$name = $matches[1];
 							$type = null;
 							$lengthStart = null;
 							$lengthEnd = null;
@@ -870,7 +870,7 @@ class Dispatch
 						}
 						else
 						{
-							$name = &$matches[1];
+							$name = $matches[1];
 						}
 						$result = $param[$name];
 						unset($param[$name]);

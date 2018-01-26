@@ -55,6 +55,13 @@ class Model extends ArrayData
 	 * 字段所有属性数组
 	 */
 	public $fields = array();
+
+	/**
+	 * bit类型字段数组
+	 * @var array
+	 */
+	public $bitFields = array();
+
 	/**
 	 * 数据库连接配置别名，为空则使用默认连接
 	 */
@@ -135,7 +142,7 @@ class Model extends ArrayData
 				$this->prefix = $this->db->tablePrefix;
 				if($this->autoFields && $this->table != '')
 				{
-					$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+					$this->loadFields($this->fields, $this->fieldNames, $this->pk, $this->bitFields);
 				}
 			}
 			else
@@ -273,7 +280,6 @@ class Model extends ArrayData
 		{
 			$this->operationOption['fieldBefore'] = array('SQL_CALC_FOUND_ROWS');
 		}
-		$this->operationOption['field'][0] = array($fieldBefore . ' ' . $this->tableName() . '.' . $this->pk);
 		$this->db->operationOption = $this->page($page,$show)->getOption();
 		$data = $this->db->query();
 		if(isset($isMysqlCount) && $isMysqlCount)
@@ -704,7 +710,7 @@ class Model extends ArrayData
 		$table = $this->getOptionTable();
 		if(empty($this->fields) || $table !== $this->tableName())
 		{
-			$this->loadFields($fields, $fieldNames, $pk, $table);
+			$this->loadFields($fields, $fieldNames, $pk, $bitFields, $table);
 		}
 		else
 		{
@@ -755,7 +761,7 @@ class Model extends ArrayData
 		$table = $this->getOptionTable();
 		if(empty($this->fields) || $table !== $this->tableName())
 		{
-			$this->loadFields($fields, $fieldNames, $pk, $table);
+			$this->loadFields($fields, $fieldNames, $pk, $bitFields, $table);
 		}
 		else
 		{
@@ -769,7 +775,7 @@ class Model extends ArrayData
 				$result[$field] = $data[$field];
 				if($parseBindValue)
 				{
-					$this->db->bindValue(':' . $field, $result[$field], $this->db->getParamType($this->fields[$field]['type']));
+					$this->db->bindValue(':' . $this->db->parseParamName($field), $result[$field], $this->db->getParamType($this->fields[$field]['type']));
 				}
 			}
 		}
@@ -1149,7 +1155,7 @@ class Model extends ArrayData
 			$tTable=$this->table;
 			$this->table=$table;
 		}
-		$this->loadFields($this->fields,$this->fieldNames,$this->pk);
+		$this->loadFields($this->fields, $this->fieldNames, $this->pk, $this->bitFields);
 	}
 	/**
 	 * 获取最后执行的sql语句
@@ -1198,7 +1204,7 @@ class Model extends ArrayData
 	 * @param string $table
 	 * @param bool $refresh
 	 */
-	public function loadFields(&$fields,&$fieldNames,&$pk,$table = null,$refresh = false)
+	public function loadFields(&$fields, &$fieldNames, &$pk, &$bitFields, $table = null, $refresh = false)
 	{
 		if(null === $table)
 		{
@@ -1213,6 +1219,7 @@ class Model extends ArrayData
 				$fields = $data['fields'];
 				$fieldNames = $data['fieldNames'];
 				$pk = $data['pk'];
+				$bitFields = $data['bitFields'];
 				return;
 			}
 		}
@@ -1229,8 +1236,8 @@ class Model extends ArrayData
 		{
 			$_this = $this;
 			$isNewCache = false;
-			$data = Cache::get($cacheName,function() use($_this,&$fields,&$fieldNames,&$pk,$table,&$isNewCache){
-				$_this->loadFields($fields,$fieldNames,$pk,$table,true);
+			$data = Cache::get($cacheName,function() use($_this, &$fields, &$fieldNames, &$pk, &$bitFields, $table, &$isNewCache){
+				$_this->loadFields($fields, $fieldNames, $pk, $bitFields, $table,true);
 				$isNewCache = true;
 			});
 			if($isNewCache)
@@ -1246,11 +1253,16 @@ class Model extends ArrayData
 		
 		$fieldNames = array_keys($fields);
 		$pk = array();
+		$bitFields = array();
 		foreach($fields as $field)
 		{
 			if($field['pk'])
 			{
 				$pk[] = $field['name'];
+			}
+			if('bit' === $field['type'])
+			{
+				$bitFields[] = $field['name'];
 			}
 		}
 		if(isset($pk[0]) && !isset($pk[1]))
@@ -1260,7 +1272,7 @@ class Model extends ArrayData
 		// 变量中动态缓存模型字段缓存保存
 		if(Config::get('@.MODEL_DYNAMIC_FIELDS_CACHE'))
 		{
-			$this->setdynamicCacheFields($table, $fields, $fieldNames, $pk);
+			$this->setDynamicCacheFields($table, $fields, $fieldNames, $pk, $bitFields);
 		}
 	}
 
@@ -1268,12 +1280,13 @@ class Model extends ArrayData
 	 * 设置动态缓存字段信息
 	 * @return void
 	 */
-	protected function setdynamicCacheFields($table, $fields, $fieldNames, $pk)
+	protected function setDynamicCacheFields($table, $fields, $fieldNames, $pk, $bitFields)
 	{
 		static::$cacheFields[$table] = array(
 			'pk'			=>	$pk,
 			'fields'		=>	$fields,
 			'fieldNames'	=>	$fieldNames,
+			'bitFields'		=>	$bitFields,
 		);
 	}
 
@@ -1305,7 +1318,7 @@ class Model extends ArrayData
 		}
 		if(empty($this->fields) || $table !== $this->tableName())
 		{
-			$this->loadFields($fields, $fieldNames, $pk, $table);
+			$this->loadFields($fields, $fieldNames, $pk, $bitFields, $table);
 		}
 		else
 		{
@@ -1356,9 +1369,15 @@ class Model extends ArrayData
 	 * @param array $data 
 	 * @return mixed
 	 */
-	public function __selectOneAfter(&$data,$linkOption)
+	public function __selectOneAfter(&$data, $linkOption)
 	{
-		
+		foreach($this->bitFields as $field)
+		{
+			if(isset($data[$field]))
+			{
+				$data[$field] = (1 == $data[$field] || chr(1) == $data[$field]);
+			}
+		}
 	}
 	/**
 	 * 添加数据前置方法

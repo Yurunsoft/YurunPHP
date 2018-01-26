@@ -94,7 +94,7 @@ class YCBase extends ArrayData
 	 */
 	protected function _push()
 	{
-		self::$_controls[] = &$this;
+		self::$_controls[] = $this;
 	}
 	/**
 	 * 控件出栈
