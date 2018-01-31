@@ -25,7 +25,16 @@ return array (
 				'prefix' => 'tb_',
 				'charset' => 'utf8',
 			)
-		)
+		),
+		'sqlite'	=>	array(
+			'type'	=>	'PDOSQLite',
+			'option'	=>	array(
+				// 'version'	=>	'2', // sqlite 2设置为2，sqlite3无需设置
+				'path'		=>	APP_PATH . 'sqlite.db', // 数据库路径，是:memory:时则为内存数据库
+				'password'	=>	'', // sqlite数据库密码
+				'prefix'	=>	'',
+			)
+		),
 	),
 	// 默认使用default数据库配置
 	'DEFAULT_DB'	=>	'default',

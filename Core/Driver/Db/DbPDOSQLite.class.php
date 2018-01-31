@@ -1,5 +1,5 @@
 <?php
-class DbPDOMysql extends DbPDOBase
+class DbPDOSQLite extends DbPDOBase
 {
 	/**
 	 * 参数标识
@@ -12,20 +12,24 @@ class DbPDOMysql extends DbPDOBase
 	 * @var array
 	 */
 	public $paramType = array(
-		'int'			=>	PDO::PARAM_INT,
-		'smallint'		=>	PDO::PARAM_INT,
-		'tinyint'		=>	PDO::PARAM_INT,
-		'mediumint'		=>	PDO::PARAM_INT,
-		'bigint'		=>	PDO::PARAM_INT,
-		'bit'			=>	PDO::PARAM_BOOL,
-		'year'			=>	PDO::PARAM_INT,
+		'null'				=>	PDO::PARAM_NULL,
+		'int'				=>	PDO::PARAM_INT,
+		'integer'			=>	PDO::PARAM_INT,
+		'tinyint'			=>	PDO::PARAM_INT,
+		'smallint'			=>	PDO::PARAM_INT,
+		'mediumint'			=>	PDO::PARAM_INT,
+		'bigint'			=>	PDO::PARAM_INT,
+		'unsigned big int'	=>	PDO::PARAM_INT,
+		'int2'				=>	PDO::PARAM_INT,
+		'int8'				=>	PDO::PARAM_INT,
+		'blob'				=>	PDO::PARAM_LOB,
 	);
 
 	/**
 	 * 驱动类型
 	 * @var string
 	 */
-	protected $type = 'Mysql';
+	protected $type = 'SQLite';
 
 	/**
 	 * 是否初始化了链式操作
@@ -62,18 +66,8 @@ class DbPDOMysql extends DbPDOBase
 		{
 			return $option['dsn'];
 		}
-		$charset = (isset($option['charset']) ? $option['charset'] : 'utf8');
-		// php<5.3.6的版本不认charset的处理
-		if(-1 === version_compare(PHP_VERSION, '5.3.6'))
-		{
-			$this->option['options'][PDO::MYSQL_ATTR_INIT_COMMAND] = 'SET NAMES ' . $charset;
-		}
-		return 'mysql:'
-				 . 'host=' . (isset($option['host']) ? $option['host'] : '127.0.0.1')
-				 . ';port=' . (isset($option['port']) ? $option['port'] : '3306')
-				 . ';dbname=' . (isset($option['dbname']) ? $option['dbname'] : '')
-				 . ';unix_socket=' . (isset($option['unix_socket']) ? $option['unix_socket'] : '')
-				 . ';charset=' . $charset
+		return 'sqlite' . (isset($option['version']) ? $option['version'] : '') . ':'
+				 . (isset($option['path']) ? $option['path'] : ':memory:')
 				 ;
 	}
 	
@@ -83,7 +77,7 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function foundRows()
 	{
-		return (int)$this->handler->query('select found_rows()')->fetchColumn();
+		return 0;
 	}
 
 	/**
@@ -93,14 +87,24 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function getTables($dbName = null)
 	{
-		if (empty($dbName))
-		{ // 当前表
-			$sql = 'show tables';
-		}
-		else
-		{ // 其他表
-			$sql = 'show tables from ' . $this->parseKeyword($dbName);
-		}
+		$sql = <<<SQL
+SELECT
+	name
+FROM
+	(
+		SELECT
+			*
+		FROM
+			sqlite_master
+		UNION ALL
+			SELECT
+				*
+			FROM
+				sqlite_temp_master
+	)
+WHERE
+	type IN ('table', 'view')
+SQL;
 		// 查询
 		$result = $this->query($sql);
 		if (false === $result)
@@ -131,7 +135,7 @@ class DbPDOMysql extends DbPDOBase
 	public function getFields($table)
 	{
 		// 查询
-		$result = $this->query('show columns from ' . $this->parseKeyword($table));
+		$result = $this->query('PRAGMA table_info(' . $this->parseKeyword($table) . ')');
 		if (false === $result)
 		{
 			// 失败
@@ -141,19 +145,38 @@ class DbPDOMysql extends DbPDOBase
 		else
 		{
 			$fields = array ();
+			$tableSQL = $this->getScalar(<<<SQL
+SELECT
+	sql
+FROM
+	(
+		SELECT
+			*
+		FROM
+			sqlite_master
+		UNION ALL
+			SELECT
+				*
+			FROM
+				sqlite_temp_master
+	)
+WHERE
+	name = :name
+limit 1
+SQL
+			, ['name'=>$table]);
 			// 处理数据
 			foreach($result as $item)
 			{
-				$this->parseFieldType($item['Type'], $typeName, $length, $accuracy);
-				$fields[$item['Field']] = array(
-					'name'			=>	$item['Field'],
-					'type'			=>	$typeName,
-					'length'		=>	$length,
-					'accuracy'		=>	$accuracy,
-					'null'			=>	'yes' === strtolower($item['Null']),
-					'default'		=>	$item['Default'],
-					'pk'			=>	'PRI' === $item['Key'],
-					'is_auto_inc'	=>	false !== strpos($item['Extra'], 'auto_increment'),
+				$fields[$item['name']] = array(
+					'name'			=>	$item['name'],
+					'type'			=>	$item['type'],
+					'length'		=>	0,
+					'accuracy'		=>	0,
+					'null'			=>	'0' === $item['notnull'],
+					'default'		=>	$item['dflt_value'],
+					'pk'			=>	'1' === $item['pk'],
+					'is_auto_inc'	=>	'1' === $item['pk'] && preg_match('/[^`\[\'"]+[`\[\'"\s]AUTOINCREMENT/im', $tableSQL) > 0,
 					'key'			=>	$item['Key'],
 					'extra'			=>	$item['Extra']
 				);
@@ -341,21 +364,7 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function parseLock()
 	{
-		if(isset($this->operationOption['lock']))
-		{
-			if('share' === $this->operationOption['lock'])
-			{
-				return ' LOCK IN SHARE MODE';
-			}
-			else if('ex' === $this->operationOption['lock'])
-			{
-				return ' FOR UPDATE';
-			}
-		}
-		else
-		{
-			return '';
-		}
+		return '';
 	}
 
 	/**
@@ -381,19 +390,7 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function lockTable($option = null)
 	{
-		if(empty($option))
-		{
-			return false;
-		}
-		else
-		{
-			$sql = 'lock table ';
-			foreach($option as $tableName => $type)
-			{
-				$sql .= $tableName . ' ' . $type . ',';
-			}
-			return $this->execute(substr($sql, 0, -1));
-		}
+		return true;
 	}	
 
 	/**
@@ -403,6 +400,6 @@ class DbPDOMysql extends DbPDOBase
 	 */
 	public function unlockTable($option = null)
 	{
-		return $this->execute('unlock table');
+		return true;
 	}
 }
