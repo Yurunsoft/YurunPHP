@@ -143,15 +143,6 @@ abstract class DbPDOBase implements IDb
 	}
 
 	/**
-	 * 获取结果行数
-	 * @return int
-	 */
-	public function foundRows()
-	{
-		return (int)$this->handler->query('select found_rows()')->fetchColumn();
-	}
-
-	/**
 	 * 获取影响行数
 	 * @return int
 	 */
