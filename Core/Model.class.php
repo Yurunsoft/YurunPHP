@@ -24,7 +24,7 @@ class Model extends ArrayData
 	/**
 	 * 前缀
 	 */
-	public $prefix ='';
+	public $prefix = null;
 	/**
 	 * 表名
 	 */
@@ -139,7 +139,10 @@ class Model extends ArrayData
 			if($this->db->isConnect())
 			{
 				// 表前缀
-				$this->prefix = $this->db->tablePrefix;
+				if(null === $this->prefix)
+				{
+					$this->prefix = $this->db->tablePrefix;
+				}
 				if($this->autoFields && $this->table != '')
 				{
 					$this->loadFields($this->fields, $this->fieldNames, $this->pk, $this->bitFields);
