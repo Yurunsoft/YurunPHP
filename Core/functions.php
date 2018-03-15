@@ -110,7 +110,10 @@ function enumFiles($path, $event)
 			}
 		}
 	}
-	$dir->close();
+	if(false !== $dir)
+	{
+		$dir->close();
+	}
 }
 /**
  * 执行过滤操作
