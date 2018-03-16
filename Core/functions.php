@@ -95,7 +95,7 @@ function enumFiles($path, $event)
 		$path .= '/';
 	}
 	$dir = dir($path);
-	while (false !== ($file = $dir->read()))
+	while (false !== $file && false !== ($file = $dir->read()))
 	{
 		if ('.' !== $file && '..' !== $file)
 		{
