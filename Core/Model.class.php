@@ -343,10 +343,22 @@ class Model extends ArrayData
 		$this->operationOption['where'] = array(
 			array($this->tableName() . '.' . $this->pk => array('in', $pks))
 		);
-		$this->db->operationOption = $this->getOption();
+		$this->__selectPageLastBefore($page, $show, $recordCount);
 		$data = $this->db->query();
 		$this->__selectAfter($data,$option);
 		return $data;
+	}
+
+	/**
+	 * 分页查询最后的查询之前的处理
+	 * @param integer $page
+	 * @param integer $show
+	 * @param int $recordCount
+	 * @return void
+	 */
+	protected function __selectPageLastBefore($page = 1, $show = 10, &$recordCount = null)
+	{
+		$this->db->operationOption = $this->getOption();
 	}
 
 	/**
