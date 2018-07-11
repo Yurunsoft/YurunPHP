@@ -54,7 +54,7 @@ class Session
 				session_id(self::$sessionID);
 			}
 			session_start();
-			session_write_close();
+			session_abort();
 			return true;
 		}
 		else
