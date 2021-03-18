@@ -55,6 +55,7 @@ class Session
 			}
 			session_start();
 			session_abort();
+			header_remove('Set-Cookie');
 			return true;
 		}
 		else
