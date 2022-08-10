@@ -26,6 +26,10 @@ class CacheRedis extends CacheBase
 		{
 			$this->cache->connect($host, $port, $timeout);
 		}
+		if (isset($option['auth']))
+		{
+			$this->cache->auth($option['auth']);
+		}
 	}
 	
 	/**
