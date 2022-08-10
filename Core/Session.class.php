@@ -54,7 +54,8 @@ class Session
 				session_id(self::$sessionID);
 			}
 			session_start();
-			session_write_close();
+			session_abort();
+			header_remove('Set-Cookie');
 			return true;
 		}
 		else

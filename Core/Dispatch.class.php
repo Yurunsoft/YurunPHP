@@ -476,7 +476,7 @@ class Dispatch
 	public static function checkDomain()
 	{
 		$domain = Config::get('@.DOMAIN');
-		return empty($domain) || !Config::get('@.FILTER_DOMAIN') || $domain === Request::server('HTTP_HOST');
+		return IS_CLI || empty($domain) || !Config::get('@.FILTER_DOMAIN') || $domain === Request::server('HTTP_HOST');
 	}
 	/**
 	 * 准备调用的数据

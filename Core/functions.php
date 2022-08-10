@@ -95,7 +95,7 @@ function enumFiles($path, $event)
 		$path .= '/';
 	}
 	$dir = dir($path);
-	while (false !== ($file = $dir->read()))
+	while (false !== $dir && false !== ($file = $dir->read()))
 	{
 		if ('.' !== $file && '..' !== $file)
 		{
@@ -110,7 +110,10 @@ function enumFiles($path, $event)
 			}
 		}
 	}
-	$dir->close();
+	if(false !== $dir)
+	{
+		$dir->close();
+	}
 }
 /**
  * 执行过滤操作
